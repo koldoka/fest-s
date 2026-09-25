@@ -1,6 +1,7 @@
 -- A szerver belépési pontja: felépíti a várost, elindítja a festést, és újrakezdi, ha minden színes.
 
 local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
@@ -30,6 +31,10 @@ for _, name in { "Baseplate", "SpawnLocation" } do
 	end
 end
 
+-- Ha a hely korábban más projekthez (pl. Toybox Tanks) volt csatlakoztatva, ott ez ki lehetett kapcsolva,
+-- és akkor a játékosnak nem lenne karaktere.
+Players.CharacterAutoLoads = true
+
 -- Napos délután, hogy a színek jól látsszanak.
 Lighting.ClockTime = 14
 Lighting.Brightness = 2
@@ -37,6 +42,13 @@ Lighting.OutdoorAmbient = Color3.fromRGB(140, 140, 150)
 
 local buildings, tanks = CityBuilder.build()
 PaintService.setCity(buildings, tanks)
+
+-- Aki a város felépülése előtt belépett és karakter nélkül maradt, most kap egyet.
+for _, player in Players:GetPlayers() do
+	if not player.Character then
+		player:LoadCharacter()
+	end
+end
 
 local resetting = false
 PaintService.start(function()

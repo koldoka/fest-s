@@ -23,6 +23,12 @@ pontok, a város festettségének kijelzése, újrakezdés, ha minden színes.
 4. Tesztelés: **Play** (F5), vagy többjátékos: **Test** → *Clients and Servers* → 2 játékos → **Start**.
 5. A hibák a **View → Output** ablakban jelennek meg pirossal. Ezeket kell továbbküldeni.
 
+## Ha valami furcsa (nincs karakter, régi elemek a pályán)
+
+- Mindig **új Baseplate helyen** teszteld, ne abban, amelyikben a Toybox Tanks fut. A két projekt beállításai
+  (pl. a `Players.CharacterAutoLoads`) és szkriptjei összekeveredhetnek.
+- Egyszerre csak **egy** `rojo serve` fusson.
+
 ## Játékmenet
 
 - Ugorj bele egy **festéktartályba** (a kereszteződésekben álló színes hengerek): felveszed a színét, és teli lesz a festéked.

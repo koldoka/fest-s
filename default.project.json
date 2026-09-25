@@ -22,6 +22,11 @@
           "$path": "src/client"
         }
       }
+    },
+    "Players": {
+      "$properties": {
+        "CharacterAutoLoads": true
+      }
     }
   }
 }
