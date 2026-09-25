@@ -232,6 +232,7 @@ end
 -- szabad cellába tesz valamit. Egy telken belül egy téma van (pl. gyümölcsös, veteményeskert, rét, liget), így a
 -- kitöltés természetesebb, nem cellánként véletlenszerű. A fészer és a kút ritka, és távol kerülnek egymástól.
 -- zone(x, z) mondja meg a hely jellegét: "garden", "park", "farm", "yard", vagy nil (üresen marad).
+-- tankChance: ekkora eséllyel lesz egy rét-, liget-, virágos vagy udvarcellában festéktartály-hely is.
 local THEMES = {
 	garden = { { "orchard", 3 }, { "veggies", 3 }, { "meadow", 2 }, { "grove", 2 } },
 	park = { { "grove", 4 }, { "meadow", 3 }, { "flowers", 2 } },
@@ -255,7 +256,15 @@ local function pickTheme(rng: Random, kind: string): string
 	return list[1][1]
 end
 
-function Kit.fill(x0: number, z0: number, x1: number, z1: number, cell: number, zone: (number, number) -> string?)
+function Kit.fill(
+	x0: number,
+	z0: number,
+	x1: number,
+	z1: number,
+	cell: number,
+	zone: (number, number) -> string?,
+	tankChance: number?
+)
 	local rng = Common.rng
 	local half = cell / 2
 	local specials: { { pos: Vector3, kind: string } } = {} -- fészrek és kutak, a ritkításhoz
@@ -294,6 +303,10 @@ function Kit.fill(x0: number, z0: number, x1: number, z1: number, cell: number, 
 					local jitter = Vector3.new(rng:NextNumber(-1, 1), 0, rng:NextNumber(-1, 1)) * half * 0.35
 					local at = center + jitter
 					local roll = rng:NextNumber()
+					local open = theme == "meadow" or theme == "grove" or theme == "flowers" or theme == "yard"
+					if open and rng:NextNumber() < (tankChance or 0) then
+						Kit.tankSpot(center)
+					end
 
 					if theme == "orchard" then
 						-- Gyümölcsfák közel szabályos sorban, a fák alatt néha egy bokor

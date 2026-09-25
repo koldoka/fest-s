@@ -315,28 +315,37 @@ local function streets(Kit)
 	})
 
 	-- Lámpák és tartályhelyek az utcák mentén
+	-- Pontok egyenletesen a teljes pontsor mentén, "every" studonként (a töréspontokon át is számolva).
 	local function along(points: { Vector3 }, every: number, fn: (Vector3, Vector3) -> ())
+		local nextAt = every / 2
+		local walked = 0
 		for i = 1, #points - 1 do
 			local a, b = points[i], points[i + 1]
 			local flat = V(b.X - a.X, 0, b.Z - a.Z)
-			local n = math.floor(flat.Magnitude / every)
-			for k = 1, n do
-				fn(a + flat * (k / (n + 1)), flat.Unit)
+			local length = flat.Magnitude
+			while nextAt <= walked + length do
+				fn(a + flat.Unit * (nextAt - walked), flat.Unit)
+				nextAt += every
 			end
+			walked += length
 		end
 	end
 	for _, points in STREETS do
 		along(points, 40, function(p, dir)
-			Kit.tankSpot(p)
 			Kit.lamp(p + V(-dir.Z, 0, dir.X) * 6.5)
 		end)
-	end
-	for _, points in LANES do
-		along(points, 55, function(p)
+		along(points, 28, function(p)
 			Kit.tankSpot(p)
 		end)
 	end
-	along(PROMENADE, 50, function(p)
+	for _, list in { LANES, ALLEYS } do
+		for _, points in list do
+			along(points, 30, function(p)
+				Kit.tankSpot(p)
+			end)
+		end
+	end
+	along(PROMENADE, 35, function(p)
 		Kit.tankSpot(p)
 	end)
 end
@@ -375,7 +384,7 @@ function Level.build(Kit)
 	windmillHill(Kit)
 	eastPark(Kit)
 	streets(Kit)
-	Kit.fill(-HALF + 3, -HALF + 3, HALF - 3, HALF - 3, 12, zone)
+	Kit.fill(-HALF + 3, -HALF + 3, HALF - 3, HALF - 3, 12, zone, 0.05)
 end
 
 return Level
