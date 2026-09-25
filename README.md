@@ -48,14 +48,16 @@ src/server/
   Main.server.luau     indítás, a város újrakezdése
   CityBuilder.luau     a szürke város felépítése, festéktartályok
   PaintService.luau    festés: mihez ér a játékos, festék, pontok (erről mindig a szerver dönt)
+  BlobCharacter.luau   a paca figura: elrejti az avatart, szín és méret a festék szerint
 src/client/
   Main.client.luau     indítás
   Hud.luau             a város festettsége, saját festék, üzenetek
   Effects.luau         fröccsenő festék és felvillanás festéskor
+  BlobAnimator.luau    a pacák lapulása és nyúlása (csak látvány)
 ```
 
 ## Ismert korlátok (prototípus)
 
-- A figura még a sima Roblox-avatar színes derengéssel, nem igazi paca.
+- A paca csak látvány: a mozgást és az ütközést a láthatatlan Roblox-avatar végzi, ezért a paca picit belelóghat a falakba.
 - A grafika egyszerű dobozokból áll, nincs hang és zene.
 - Nincs PvP, mentés és bolt. Ezek a [ROADMAP.md](ROADMAP.md) szerint jönnek.

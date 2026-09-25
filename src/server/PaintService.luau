@@ -7,6 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+local BlobCharacter = require(script.Parent.BlobCharacter)
 
 local PaintedRemote = ReplicatedStorage.Remotes.Painted
 
@@ -20,21 +21,6 @@ local onCityComplete: (() -> ())? = nil
 local overlap = OverlapParams.new()
 overlap.FilterType = Enum.RaycastFilterType.Include
 
--- A játékos körüli színes fény mutatja, milyen festék van nála.
-local function updateGlow(player: Player)
-	local character = player.Character
-	local glow = character and character:FindFirstChild("PaintGlow") :: Highlight?
-	if not glow then
-		return
-	end
-	local color = Config.PAINT_COLOR_BY_NAME[player:GetAttribute("PaintColor")]
-	local paint = player:GetAttribute("Paint") or 0
-	glow.Enabled = color ~= nil and paint > 0
-	if color then
-		glow.FillColor = color
-	end
-end
-
 local function updateCityStats()
 	workspace:SetAttribute("PaintedCount", paintedCount)
 	workspace:SetAttribute("BuildingCount", #buildingsFolder:GetChildren())
@@ -47,7 +33,7 @@ local function refill(player: Player, tank: BasePart)
 	end
 	player:SetAttribute("PaintColor", colorName)
 	player:SetAttribute("Paint", Config.PAINT_MAX)
-	updateGlow(player)
+	BlobCharacter.update(player)
 end
 
 local function tryPaint(player: Player, building: BasePart)
@@ -65,7 +51,7 @@ local function tryPaint(player: Player, building: BasePart)
 	building.Color = color
 	building:SetAttribute("ColorName", colorName)
 	player:SetAttribute("Paint", paint - 1)
-	updateGlow(player)
+	BlobCharacter.update(player)
 
 	if previous == "" then
 		paintedCount += 1
@@ -89,7 +75,12 @@ local function checkPlayer(player: Player)
 	if not root or not humanoid or humanoid.Health <= 0 then
 		return
 	end
-	for _, part in workspace:GetPartBoundsInRadius(root.Position, Config.PAINT_RADIUS, overlap) do
+	-- A paca körül nézzük (ha még nincs paca, a karakter közepe körül).
+	local blob = character:FindFirstChild("Blob") :: BasePart?
+	local center = if blob then blob.Position else root.Position
+	local diameter = if blob then blob:GetAttribute("Diameter") or Config.BLOB.MIN_SIZE else Config.BLOB.MIN_SIZE
+	local radius = diameter / 2 + Config.PAINT_REACH
+	for _, part in workspace:GetPartBoundsInRadius(center, radius, overlap) do
 		if part.Parent == tanksFolder then
 			refill(player, part)
 		elseif part.Parent == buildingsFolder then
@@ -108,14 +99,8 @@ local function setupCharacter(player: Player, character: Model)
 	humanoid.UseJumpPower = true
 	humanoid.JumpPower = Config.JUMP_POWER
 
-	local glow = Instance.new("Highlight")
-	glow.Name = "PaintGlow"
-	glow.FillTransparency = 0.35
-	glow.OutlineColor = Color3.new(1, 1, 1)
-	glow.DepthMode = Enum.HighlightDepthMode.Occluded
-	glow.Enabled = false
-	glow.Parent = character
-	updateGlow(player)
+	BlobCharacter.setup(character, humanoid)
+	BlobCharacter.update(player)
 end
 
 local function setupPlayer(player: Player)

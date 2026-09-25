@@ -30,11 +30,18 @@ local Config = {
 
 	-- Festés
 	PAINT_MAX = 10, -- ennyi épületre elég egy teli tartály
-	PAINT_RADIUS = 4, -- a játékos ekkora körzetben festi be, amihez hozzáér (stud)
+	PAINT_REACH = 1.5, -- a paca felszínétől ennyire lévő dolgokat festi be / tölti fel belőlük (stud)
 	PAINT_CHECK_INTERVAL = 0.1, -- ilyen gyakran nézi a szerver, mihez ér hozzá a játékos (mp)
 	POINTS_PAINT = 10, -- pont egy szürke épület befestéséért
 
-	-- Mozgás: a blob gyors és pattogós
+	-- A paca figura (BlobCharacter). Az átmérő a festék mennyiségével nő MIN_SIZE és MAX_SIZE között.
+	BLOB = {
+		MIN_SIZE = 3, -- nagyon nagy paca belelógna a falakba, mert a mozgáshoz az avatar teste ütközik
+		MAX_SIZE = 4.5,
+		EMPTY_COLOR = Color3.fromRGB(236, 236, 240), -- festék nélkül fehéres
+	},
+
+	-- Mozgás: a paca gyors és pattogós
 	WALK_SPEED = 24,
 	JUMP_POWER = 60,
 

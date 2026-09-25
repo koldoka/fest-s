@@ -10,11 +10,14 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Pontok (ranglista), a város festettsége a képernyő tetején
 - [x] Fröccsenő festék és felvillanás festéskor
 - [x] Újrakezdés, ha minden épület színes
-- [ ] Első teszt a Studióban, hangolás (sebesség, ugrás, festékmennyiség)
+- [x] Első teszt a Studióban (a karakterbetöltés és a festékfelvétel javítva)
+- [ ] Hangolás (sebesség, ugrás, festékmennyiség)
 
 ## 2. mérföldkő: a paca és a játékérzet
-- [ ] Saját figura: guruló, pattogó festékpaca (a Roblox-avatar helyett), a festék színében
-- [ ] A paca mérete a nála lévő festék mennyiségével nő
+- [x] Saját figura: festékpaca szemekkel a Roblox-avatar helyett, a festék színében (`BlobCharacter`)
+- [x] A paca mérete a nála lévő festék mennyiségével nő
+- [x] Lapulás-nyúlás: ugráskor megnyúlik, földet éréskor ellapul, mozgás közben rezeg (`BlobAnimator`)
+- [ ] Gurulásérzet: fényes csík vagy minta, ami forog a mozgás irányában
 - [ ] Faltól visszapattanás, falra felgurulás
 - [ ] Festéknyomok az úton (a paca útja színes marad egy ideig)
 - [ ] Festés közben színes minta az épületen (ablakok, ajtók, díszek jelennek meg), nem csak átszíneződés
