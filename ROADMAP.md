@@ -39,6 +39,10 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Nincs üres terület: telkenkénti témák (gyümölcsös, veteményeskert fészerrel, vadvirágos rét, liget, termőföld, udvar) (`Kit.fill`)
 - [x] Kevesebb ablak (szélesebb falszakaszok, az oldalfalakon ritkábban)
 - [x] Festéktartályok véletlen helyen és színnel, használat után máshol jelennek meg (`TankService`); 108 lehetséges hely, egyszerre 20–40 (a játékosszámtól függ)
+- [x] Oromfal két ékből: a fal anyagának mintája (tégla, deszka) vízszintes marad (a ferde minta helyett)
+- [x] Részletesebb ablakképek: klasszikus, függönyös virágládával, magas íves; a zsalugáter is kép a festék színében (ablakonként 1 alkatrész)
+- [ ] Az új ablakképek feltöltése (7 kép), az azonosítók beírása (`BUILDINGS.WINDOWS`, `BUILDINGS.SHUTTERS`)
+- [x] Festékár méret szerint: kis ház 3, közepes 6, nagy 10, tárgy 1; tartály 20 egység; figyelmeztetés, ha kevés
 - [ ] 1. pálya finomítása a Studio-teszt alapján
 - [ ] A szélmalom lapátjai forogjanak
 - [ ] További pályák

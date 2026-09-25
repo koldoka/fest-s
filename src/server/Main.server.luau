@@ -3,25 +3,26 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Config = require(ReplicatedStorage.Shared.Config)
-local LevelLoader = require(script.Parent.LevelLoader)
-local PaintService = require(script.Parent.PaintService)
-local TankService = require(script.Parent.TankService)
-
--- Ha a Rojo valamiért nem hozta volna létre a hálózati csatornákat, itt pótoljuk.
+-- Ha a Rojo valamiért nem hozta volna létre a hálózati csatornákat, itt pótoljuk
+-- (még a szolgáltatások betöltése előtt, mert azok már az elején hivatkoznak rájuk).
 local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
 if not Remotes then
 	Remotes = Instance.new("Folder")
 	Remotes.Name = "Remotes"
 	Remotes.Parent = ReplicatedStorage
 end
-for _, name in { "Painted" } do
+for _, name in { "Painted", "NeedPaint" } do
 	if not Remotes:FindFirstChild(name) then
 		local remote = Instance.new("RemoteEvent")
 		remote.Name = name
 		remote.Parent = Remotes
 	end
 end
+
+local Config = require(ReplicatedStorage.Shared.Config)
+local LevelLoader = require(script.Parent.LevelLoader)
+local PaintService = require(script.Parent.PaintService)
+local TankService = require(script.Parent.TankService)
 
 -- A "Baseplate" sablon alap elemei útban lennének.
 for _, name in { "Baseplate", "SpawnLocation" } do

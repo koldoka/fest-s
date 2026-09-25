@@ -94,18 +94,39 @@ local function addWindow(
 	local b = Config.BUILDINGS
 	local w = math.min(bayWidth * 0.5, 2.6)
 	local h = if style == "tall" then 4.4 else 2.8
-	if b.WINDOW_MODE == "decal" and b.FACADE.GREY ~= "" and b.FACADE.LIT ~= "" then
-		-- A képen az ablak a csempe szélességének kb. felét, magasságának kb. 60%-át foglalja el.
+	-- Melyik ablakkép: magas (templom, városháza), vagy az épületre sorsolt változat (klasszikus / függönyös).
+	local variant = if style == "tall" then "tall" else body:GetAttribute("WindowVariant") or "classic"
+	local images = b.WINDOWS[variant]
+	local grey = if images and images.grey ~= "" then images.grey else b.FACADE.GREY
+	local lit = if images and images.lit ~= "" then images.lit else b.FACADE.LIT
+	local shutterDecal = style == "shutters" and b.SHUTTERS ~= ""
+	if b.WINDOW_MODE == "decal" and grey ~= "" and lit ~= "" then
+		-- Egy láthatatlan lap a képpel. A képen az ablak a lap szélességének felét foglalja el (a két szélén
+		-- a zsalugáterek helye); a lap magassága a kép arányát követi, hogy ne torzuljon.
+		local width = w / 0.5
+		local height = width * (if variant == "tall" then 1.5 else 1)
 		local panel = trimDetail(body, "WindowPanel", {
-			Size = faceSize(dir, w / 0.52, h / 0.6, 0.2),
-			CFrame = onFace(part, dir, 0.1, shift, y - h * 0.08),
+			Size = faceSize(dir, width, height, 0.2),
+			CFrame = onFace(part, dir, 0.1, shift, y - height * 0.085),
 			Transparency = 1,
 		}, body.Color)
 		local decal = Instance.new("Decal")
-		decal.Texture = b.FACADE.GREY
+		decal.Texture = grey
 		decal.Face = normal
 		decal:SetAttribute("Role", "Facade")
+		decal:SetAttribute("Grey", grey)
+		decal:SetAttribute("Lit", lit)
 		decal.Parent = panel
+		if shutterDecal then
+			-- Zsalugáter: fehér kép ugyanazon a lapon, a színét a Color3 adja (befestve a festék sötétebb árnyalata)
+			local shutters = Instance.new("Decal")
+			shutters.Texture = b.SHUTTERS
+			shutters.Face = normal
+			shutters.Color3 = darker(body.Color, 0.25)
+			shutters:SetAttribute("Role", "Shutter")
+			shutters:SetAttribute("BaseColor", shutters.Color3)
+			shutters.Parent = panel
+		end
 	else
 		local frameColor = lighter(body.Color, 0.3)
 		trimDetail(
@@ -127,7 +148,7 @@ local function addWindow(
 			frameColor
 		)
 	end
-	if style == "shutters" then
+	if style == "shutters" and not shutterDecal then
 		for _, side in { -1, 1 } do
 			trimDetail(body, "Shutter", {
 				Size = faceSize(dir, w * 0.5, h + 0.3, 0.2),
@@ -227,13 +248,19 @@ local function addGable(body: BasePart, onPart: BasePart, alongX: boolean, roofC
 	local length = if alongX then s.X else s.Z
 	local span = if alongX then s.Z else s.X
 	local half = span / 2
-	local side = span / math.sqrt(2)
 
-	detail(body, "Gable", {
-		Size = Vector3.new(length, side, side),
-		CFrame = frame * CFrame.Angles(math.rad(45), 0, 0),
-		Material = body.Material,
-	}, onPart.Color)
+	-- Oromfal: két ék (WedgePart) háttal egymásnak. Az ék függőleges hátlapja a helyi +Z, a lejtője a -Z felé
+	-- ereszkedik. Nincsenek elforgatva, így a fal anyagának mintája (tégla, deszka) vízszintes marad.
+	for _, sign in { -1, 1 } do
+		detail(body, "Gable", {
+			ClassName = "WedgePart",
+			Size = Vector3.new(length, half, half),
+			CFrame = frame * CFrame.new(0, half / 2, sign * half / 2) * (if sign > 0
+				then CFrame.Angles(0, math.pi, 0)
+				else CFrame.identity),
+			Material = body.Material,
+		}, onPart.Color)
+	end
 
 	local overhang, endOverhang, thickness = 0.9, 0.7, 0.5
 	local slope = (half + overhang) * math.sqrt(2)
@@ -513,6 +540,8 @@ Egy épület. A spec mezői (csak az "at" és a "size" kötelező):
   tier      table     { floors = 1, scale = 0.65, roof = "flat" } — kisebb felső emelet (tornyok)
   clock     string    óra ezen az oldalon (a felső emeleten, ha van)
   rose      string    kerek ablak ezen az oldalon, fent (templomok)
+  windowVariant string "classic" vagy "curtain" (függönyös, virágládás); alapból sorsolt
+  paintCost number    festékár (alapból a méret szerint: Config.PAINT_COST)
 ]]
 function Buildings.building(spec: { [string]: any }): BasePart
 	local b = Config.BUILDINGS
@@ -528,6 +557,23 @@ function Buildings.building(spec: { [string]: any }): BasePart
 	})
 	body:SetAttribute("BaseColor", grey) -- ide áll vissza a pálya újrakezdésekor
 	body:SetAttribute("ColorName", "") -- "" = még festetlen
+	body:SetAttribute(
+		"WindowVariant",
+		spec.windowVariant or (if Common.rng:NextNumber() < 0.3 then "curtain" else "classic")
+	)
+	-- Festékár a ház mérete szerint (alapterület × emeletek)
+	local cost = Config.PAINT_COST
+	local volume = spec.size.X * spec.size.Y * floors
+	body:SetAttribute(
+		"PaintCost",
+		spec.paintCost
+			or (
+				if volume >= cost.LARGE_FROM
+					then cost.LARGE
+					elseif volume >= cost.MEDIUM_FROM then cost.MEDIUM
+					else cost.SMALL
+			)
+	)
 
 	addPlinth(body)
 	if spec.bands or (spec.bands == nil and floors >= 3) then

@@ -12,7 +12,7 @@ local function num(x) return string.format("%.3f", x) end
 local lines = {}
 local function dump(inst, owner, kind)
 	local cf, s, c = inst.CFrame, inst.Size, inst.Color or Color3.new(0.5, 0.5, 0.5)
-	table.insert(lines, table.concat({ kind, owner, inst.Name, tostring(inst.Shape or ""),
+	table.insert(lines, table.concat({ kind, owner, inst.Name, (if inst.ClassName == "WedgePart" then "Wedge" else tostring(inst.Shape or "")),
 		num(cf.p.X), num(cf.p.Y), num(cf.p.Z), num(cf.rx.X), num(cf.rx.Y), num(cf.rx.Z), num(cf.ry.X), num(cf.ry.Y), num(cf.ry.Z),
 		num(cf.rz.X), num(cf.rz.Y), num(cf.rz.Z), num(s.X), num(s.Y), num(s.Z), num(c.R), num(c.G), num(c.B),
 		tostring(inst.Transparency or 0) }, "|"))
@@ -22,12 +22,12 @@ for bi, b in folders.buildings:GetChildren() do
 	dump(b, bi, "B")
 	parts += 1
 	for _, d in b:GetDescendants() do
-		if d.ClassName == "Part" then dump(d, bi, "B") parts += 1 end
+		if d.ClassName == "Part" or d.ClassName == "WedgePart" then dump(d, bi, "B") parts += 1 end
 	end
 end
 for pi, p in folders.props:GetChildren() do
 	for _, d in p:GetDescendants() do
-		if d.ClassName == "Part" then dump(d, pi, "P") parts += 1 end
+		if d.ClassName == "Part" or d.ClassName == "WedgePart" then dump(d, pi, "P") parts += 1 end
 	end
 end
 for _, w in folders.world:GetChildren() do

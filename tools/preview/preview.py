@@ -73,10 +73,44 @@ def parse(lines):
     for line in lines[1:]:
         r = line.split("|")
         v = list(map(float, r[4:22]))
-        parts.append(dict(kind=r[0], owner=int(r[1]), name=r[2], p=np.array(v[0:3]),
+        parts.append(dict(kind=r[0], owner=int(r[1]), name=r[2], shape=r[3], p=np.array(v[0:3]),
                           ax=[np.array(v[3:6]), np.array(v[6:9]), np.array(v[9:12])],
                           s=np.array(v[12:15]), c=np.array(v[15:18]), tr=float(r[22])))
     return parts
+
+
+def faces_of(q):
+    """Egy alkatrész lapjai (normális, csúcsok). Az ék (WedgePart) függőleges hátlapja a helyi +Z,
+    a lejtője a felső-hátsó éltől az alsó-elülső élig tart."""
+    hs = q["s"] / 2
+    ax = q["ax"]
+    P = lambda x, y, z: q["p"] + ax[0] * x * hs[0] + ax[1] * y * hs[1] + ax[2] * z * hs[2]  # noqa: E731
+    if q.get("shape") == "Wedge":
+        polys = [
+            [P(-1, -1, -1), P(1, -1, -1), P(1, -1, 1), P(-1, -1, 1)],  # alj
+            [P(-1, -1, 1), P(1, -1, 1), P(1, 1, 1), P(-1, 1, 1)],  # hátlap
+            [P(-1, -1, -1), P(1, -1, -1), P(1, 1, 1), P(-1, 1, 1)],  # lejtő
+            [P(-1, -1, -1), P(-1, -1, 1), P(-1, 1, 1)],  # bal háromszög
+            [P(1, -1, -1), P(1, -1, 1), P(1, 1, 1)],  # jobb háromszög
+        ]
+        out = []
+        for poly in polys:
+            n = np.cross(poly[1] - poly[0], poly[2] - poly[0])
+            n = n / (np.linalg.norm(n) + 1e-9)
+            c = sum(poly) / len(poly)
+            if n @ (c - q["p"]) < 0:
+                n = -n
+            out.append((n, poly))
+        return out
+    out = []
+    for k in range(3):
+        for sg in (-1, 1):
+            n = ax[k] * sg
+            o = [(k + 1) % 3, (k + 2) % 3]
+            cs = [q["p"] + n * hs[k] + ax[o[0]] * s1 * hs[o[0]] + ax[o[1]] * s2 * hs[o[1]]
+                  for s1, s2 in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+            out.append((n, cs))
+    return out
 
 
 def render(parts, out, center, radius, az, el, scale, W=1200, H=900, topdown=False):
@@ -100,40 +134,34 @@ def render(parts, out, center, radius, az, el, scale, W=1200, H=900, topdown=Fal
             continue
         if q["tr"] >= 0.99 and q["name"] != "WindowPanel":
             continue
-        hs = q["s"] / 2
-        for k in range(3):
-            for sg in (-1, 1):
-                n = q["ax"][k] * sg
-                if n @ fwd >= 0:
+        for n, cs in faces_of(q):
+            if n @ fwd >= 0:
+                continue
+            P = np.array([[W / 2 + scale * ((c - center) @ right), H / 2 - scale * ((c - center) @ up),
+                           (c - center) @ fwd] for c in cs])
+            col = np.array([0.55, 0.62, 0.75]) if q["name"] == "WindowPanel" else q["c"]
+            col = np.clip(col * (0.55 + 0.45 * max(0, n @ light)), 0, 1)
+            for tri in [(0, i, i + 1) for i in range(1, len(cs) - 1)]:
+                T = P[list(tri)]
+                x0, x1 = int(max(0, np.floor(T[:, 0].min()))), int(min(W - 1, np.ceil(T[:, 0].max())))
+                y0, y1 = int(max(0, np.floor(T[:, 1].min()))), int(min(H - 1, np.ceil(T[:, 1].max())))
+                if x1 < x0 or y1 < y0:
                     continue
-                o = [(k + 1) % 3, (k + 2) % 3]
-                cs = [q["p"] + n * hs[k] + q["ax"][o[0]] * s1 * hs[o[0]] + q["ax"][o[1]] * s2 * hs[o[1]]
-                      for s1, s2 in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
-                P = np.array([[W / 2 + scale * ((c - center) @ right), H / 2 - scale * ((c - center) @ up),
-                               (c - center) @ fwd] for c in cs])
-                col = np.array([0.55, 0.62, 0.75]) if q["name"] == "WindowPanel" else q["c"]
-                col = np.clip(col * (0.55 + 0.45 * max(0, n @ light)), 0, 1)
-                for tri in ((0, 1, 2), (0, 2, 3)):
-                    T = P[list(tri)]
-                    x0, x1 = int(max(0, np.floor(T[:, 0].min()))), int(min(W - 1, np.ceil(T[:, 0].max())))
-                    y0, y1 = int(max(0, np.floor(T[:, 1].min()))), int(min(H - 1, np.ceil(T[:, 1].max())))
-                    if x1 < x0 or y1 < y0:
-                        continue
-                    X = xs[y0:y1 + 1, x0:x1 + 1] + 0.5
-                    Y = ys[y0:y1 + 1, x0:x1 + 1] + 0.5
-                    (ax_, ay, az_), (bx, by, bz), (cx, cy, cz) = T
-                    den = (by - cy) * (ax_ - cx) + (cx - bx) * (ay - cy)
-                    if abs(den) < 1e-9:
-                        continue
-                    l1 = ((by - cy) * (X - cx) + (cx - bx) * (Y - cy)) / den
-                    l2 = ((cy - ay) * (X - cx) + (ax_ - cx) * (Y - cy)) / den
-                    l3 = 1 - l1 - l2
-                    inside = (l1 >= -1e-6) & (l2 >= -1e-6) & (l3 >= -1e-6)
-                    z = l1 * az_ + l2 * bz + l3 * cz
-                    sub = zb[y0:y1 + 1, x0:x1 + 1]
-                    upd = inside & (z < sub - 0.01)
-                    sub[upd] = z[upd]
-                    img[y0:y1 + 1, x0:x1 + 1][upd] = col
+                X = xs[y0:y1 + 1, x0:x1 + 1] + 0.5
+                Y = ys[y0:y1 + 1, x0:x1 + 1] + 0.5
+                (ax_, ay, az_), (bx, by, bz), (cx, cy, cz) = T
+                den = (by - cy) * (ax_ - cx) + (cx - bx) * (ay - cy)
+                if abs(den) < 1e-9:
+                    continue
+                l1 = ((by - cy) * (X - cx) + (cx - bx) * (Y - cy)) / den
+                l2 = ((cy - ay) * (X - cx) + (ax_ - cx) * (Y - cy)) / den
+                l3 = 1 - l1 - l2
+                inside = (l1 >= -1e-6) & (l2 >= -1e-6) & (l3 >= -1e-6)
+                z = l1 * az_ + l2 * bz + l3 * cz
+                sub = zb[y0:y1 + 1, x0:x1 + 1]
+                upd = inside & (z < sub - 0.01)
+                sub[upd] = z[upd]
+                img[y0:y1 + 1, x0:x1 + 1][upd] = col
     Image.fromarray((img * 255).astype(np.uint8)).save(out)
 
 

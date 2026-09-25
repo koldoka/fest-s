@@ -104,7 +104,7 @@ function Hud.start()
 		if color and paint > 0 then
 			swatch.BackgroundColor3 = color
 			paintFill.BackgroundColor3 = color
-			paintText.Text = `{colorName} paint`
+			paintText.Text = `{colorName} paint  {paint}/{Config.PAINT_MAX}`
 		else
 			swatch.BackgroundColor3 = Config.BUILDINGS.GREY
 			paintFill.BackgroundColor3 = Config.BUILDINGS.GREY
@@ -115,6 +115,28 @@ function Hud.start()
 	player:GetAttributeChangedSignal("PaintColor"):Connect(updatePaint)
 	player:GetAttributeChangedSignal("Paint"):Connect(updatePaint)
 	updatePaint()
+
+	-- Ha kevés a festék egy házhoz vagy tárgyhoz: rövid figyelmeztetés a festéksáv fölött
+	local warning = label({
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.new(0, 16, 1, -80),
+		Size = UDim2.fromOffset(260, 28),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextColor3 = Color3.fromRGB(255, 220, 120),
+		Text = "",
+		Parent = gui,
+	})
+	local warningToken = 0
+	ReplicatedStorage.Remotes:WaitForChild("NeedPaint").OnClientEvent:Connect(function(cost: number)
+		warningToken += 1
+		local token = warningToken
+		warning.Text = `Not enough paint! This needs {cost}.`
+		task.delay(2, function()
+			if token == warningToken then
+				warning.Text = ""
+			end
+		end)
+	end)
 
 	-- Üzenet középen
 	local message = label({

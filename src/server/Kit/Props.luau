@@ -557,13 +557,15 @@ function Props.shed(at: Vector3, rot: number)
 	local walls =
 		propPart(model, WOOD, { Size = Vector3.new(w, h, d), CFrame = base * CFrame.new(0, h / 2, 0) }, "paint")
 	walls.Material = Enum.Material.WoodPlanks
-	-- Oromfal: 45 fokkal elforgatott hasáb, az alsó fele a falban
-	local side = d / math.sqrt(2)
-	propPart(model, WOOD, {
-		Size = Vector3.new(w, side, side),
-		CFrame = base * CFrame.new(0, h, 0) * CFrame.Angles(math.rad(45), 0, 0),
-		Material = Enum.Material.WoodPlanks,
-	}, "paint")
+	-- Oromfal: két ék háttal egymásnak (nincs elforgatva, így a deszkaminta vízszintes marad)
+	for _, sign in { -1, 1 } do
+		propPart(model, WOOD, {
+			ClassName = "WedgePart",
+			Size = Vector3.new(w, d / 2, d / 2),
+			CFrame = base * CFrame.new(0, h + d / 4, sign * d / 4) * (if sign > 0 then CFrame.Angles(0, math.pi, 0) else CFrame.identity),
+			Material = Enum.Material.WoodPlanks,
+		}, "paint")
+	end
 	for _, sign in { 1, -1 } do
 		local half = d / 2 + 0.5
 		propPart(model, Color3.fromRGB(150, 70, 56), {

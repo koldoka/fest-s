@@ -47,13 +47,22 @@ Mind fel van töltve és be van írva. Ha egy hangot vagy képet újragenerálun
 
 A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` üres szkript kapcsolja ki.
 
+| Kép | Config-név |
+|---|---|
+| `window_classic_grey.png`, `window_classic_lit.png` | `BUILDINGS.WINDOWS.classic` (`grey`, `lit`) |
+| `window_curtain_grey.png`, `window_curtain_lit.png` | `BUILDINGS.WINDOWS.curtain` |
+| `window_tall_grey.png`, `window_tall_lit.png` | `BUILDINGS.WINDOWS.tall` |
+| `shutters.png` | `BUILDINGS.SHUTTERS` (a zsalugáter; a játék a festék színére színezi) |
+
 ## Játékmenet
 
 - Ugorj bele egy **festéktartályba** (színes, világító henger): felveszed a színét, és teli lesz a festéked.
   A tartály ezután eltűnik, és kis idő múlva máshol, más színnel jelenik meg (egyszerre 20 van a pályán, minden további játékossal 4-gyel több, legfeljebb 40).
-- **Érj hozzá egy épülethez** (neki is ugorhatsz, vagy ráugorhatsz a tetejére): befested, és elfogy egy adag festék.
-- Szürke épületért pont jár. Már befestett épületet más színre át lehet festeni, de azért nincs pont.
-- A fák, padok, lámpák, kerítések és más tárgyak érintésre színesek lesznek (ez nem fogyaszt festéket).
+- **Érj hozzá egy épülethez** (neki is ugorhatsz, vagy ráugorhatsz a tetejére): befested. Egy teli tartály 20 egység;
+  egy kis ház 3, egy közepes 6, egy nagy 10 egységbe kerül, egy tárgy (fa, pad, veteményes…) 1-be.
+  Ha nincs elég festéked, a játék kiírja, mennyi kellene.
+- Pont az első befestésért jár (egységenként 5). Már befestett dolgot más színre át lehet festeni, de azért nincs pont.
+- A fák, padok, lámpák, kerítések és más tárgyak érintésre színesek lesznek.
 - Ha az összes ház színes, 10 másodperc múlva minden újra szürke lesz.
 
 Irányítás: a Roblox alap irányítása (WASD + Space, mobilon joystick + ugrás gomb).
@@ -102,7 +111,7 @@ a `Kit.building` fölött van. A betöltendő pályát a `Config.LEVEL` adja meg
 - **Épületek**: a játékos befesti őket a saját színével, ezekért jár pont. Ha mind színes, a pálya újraindul.
 - **Tárgyak** (fák, padok, lámpák, kerítések, szökőkút, standok…): érintésre színesek lesznek; a festhető
   részeik (lomb, ülőke, lámpaoszlop, napernyő…) a festék színét kapják, a többi a természetes színét.
-  Át is festhetők. Ehhez festék kell, de nem fogy, és pont sem jár érte.
+  Át is festhetők. Egységnyi festékbe kerülnek.
 
 ### Pálya-előnézet a Studio nélkül
 

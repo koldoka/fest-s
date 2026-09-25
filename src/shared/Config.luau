@@ -15,10 +15,17 @@ local Config = {
 		-- "3d" = keret, üveg, párkány külön alkatrészekből (háromszor annyi alkatrész);
 		-- "texture" = az egész falra feszített kép (a legkevesebb alkatrész, de az ajtók mögött is van ablak).
 		WINDOW_MODE = "decal",
-		-- Ablakképek (assets/textures, a tools/generate_textures.py készíti).
+		-- Ablakképek (assets/textures, a tools/generate_textures.py készíti). Mindegyik szürke (festetlen) és
+		-- kivilágított (befestett) változatban. Ami még üres, ott a FACADE régi képe látszik.
+		WINDOWS = {
+			classic = { grey = "", lit = "" }, -- window_classic_grey.png, window_classic_lit.png
+			curtain = { grey = "", lit = "" }, -- window_curtain_*.png: függönnyel, virágládával
+			tall = { grey = "", lit = "" }, -- window_tall_*.png: magas, íves (templom, városháza)
+		},
+		SHUTTERS = "", -- shutters.png: zsalugáterek (a játék színezi); amíg üres, alkatrészekből
 		FACADE = {
-			GREY = "rbxassetid://115620819300161", -- window_grey.png: festetlen ház
-			LIT = "rbxassetid://75949786836220", -- window_lit.png: befestett ház, meleg fényű ablakok
+			GREY = "rbxassetid://115620819300161", -- window_grey.png: a régi ablakkép (tartalék)
+			LIT = "rbxassetid://75949786836220", -- window_lit.png
 		},
 		DOOR_SIZE = Vector2.new(3, 5), -- szélesség, magasság
 		-- Befestve fix színű részletek (a többi a festék színéből számolódik, lásd PaintService)
@@ -60,10 +67,19 @@ local Config = {
 	},
 
 	-- Festés
-	PAINT_MAX = 10, -- ennyi épületre elég egy teli tartály
+	PAINT_MAX = 20, -- egy teli tartály ennyi egység festék
 	PAINT_REACH = 1.5, -- a paca felszínétől ennyire lévő dolgokat festi be / tölti fel belőlük (stud)
 	PAINT_CHECK_INTERVAL = 0.1, -- ilyen gyakran nézi a szerver, mihez ér hozzá a játékos (mp)
-	POINTS_PAINT = 10, -- pont egy szürke épület befestéséért
+	-- Festékár: a ház mérete (alapterület × emeletek, köbstud helyett "négyzetstud-emelet") szerint, a tárgyaké 1.
+	PAINT_COST = {
+		SMALL = 3,
+		MEDIUM = 6, -- MEDIUM_FROM-tól
+		LARGE = 10, -- LARGE_FROM-tól
+		MEDIUM_FROM = 300,
+		LARGE_FROM = 700,
+		PROP = 1,
+	},
+	POINTS_PER_PAINT = 5, -- pont minden elfestett egységért (csak az első befestésnél, átfestésért nem jár)
 
 	-- A paca figura (BlobCharacter). Az átmérő a festék mennyiségével nő MIN_SIZE és MAX_SIZE között.
 	BLOB = {

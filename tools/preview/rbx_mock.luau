@@ -99,7 +99,7 @@ end
 function methods:ClearAllChildren() rawset(self, "_children", {}) end
 function methods:IsA(c)
 	local cls = rawget(self, "ClassName")
-	if c == "BasePart" then return cls == "Part" or cls == "SpawnLocation" end
+	if c == "BasePart" then return cls == "Part" or cls == "SpawnLocation" or cls == "WedgePart" end
 	if c == "Decal" then return cls == "Decal" or cls == "Texture" end
 	return cls == c
 end

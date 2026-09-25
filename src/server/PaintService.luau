@@ -1,6 +1,7 @@
 -- Festés: a szerver nézi, mihez ér hozzá a játékos, és ő dönt a festékről, az épületek színéről és a pontokról.
 --   Festéktartály -> felveszi a színt, teli lesz a tartálya
---   Épület, aminek más a színe -> befesti, egy adag festék elfogy; szürke épületért pont jár
+--   Épület, aminek más a színe -> befesti, a mérete szerinti festék elfogy; szürke épületért pont jár
+--   Tárgy (fa, pad, veteményes…) -> színes lesz, 1 egység festék fogy
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,6 +12,7 @@ local BlobCharacter = require(script.Parent.BlobCharacter)
 local TankService = require(script.Parent.TankService)
 
 local PaintedRemote = ReplicatedStorage.Remotes.Painted
+local NeedPaintRemote = ReplicatedStorage.Remotes.NeedPaint
 
 local PaintService = {}
 
@@ -82,7 +84,9 @@ local function colorBuilding(building: BasePart, color: Color3?)
 	for _, detail in building:GetDescendants() do
 		local role = detail:GetAttribute("Role")
 		if detail:IsA("Decal") and role == "Facade" then
-			detail.Texture = if color then Config.BUILDINGS.FACADE.LIT else Config.BUILDINGS.FACADE.GREY
+			detail.Texture = if color then detail:GetAttribute("Lit") else detail:GetAttribute("Grey")
+		elseif detail:IsA("Decal") and role == "Shutter" then
+			detail.Color3 = if color then ROLE_COLORS.Shutter(color) else detail:GetAttribute("BaseColor")
 		elseif detail:IsA("BasePart") and role then
 			if not color then
 				detail.Color = detail:GetAttribute("BaseColor")
@@ -113,13 +117,41 @@ local function owningProp(part: Instance): Model?
 	return current :: Model?
 end
 
+-- Ha kevés a festék: a kliens kiírja, mennyi kellene (játékosonként legfeljebb másodpercenként egyszer).
+local lastWarning: { [Player]: number } = {}
+local function warnNeedPaint(player: Player, cost: number)
+	if os.clock() - (lastWarning[player] or 0) > 1 then
+		lastWarning[player] = os.clock()
+		NeedPaintRemote:FireClient(player, cost)
+	end
+end
+
+local function addScore(player: Player, points: number)
+	local score = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Score")
+	if score then
+		score.Value += points
+	end
+end
+
 -- Tárgy: érintésre színes lesz; a festhető részei a festék színét kapják, a többi a természetes színét.
--- Festék kell hozzá, de nem fogy, és pont sem jár érte. Más színnel át lehet festeni.
+-- Kevés festéket fogyaszt (Config.PAINT_COST.PROP). Más színnel át lehet festeni.
 local function tryColorProp(player: Player, prop: Model)
 	local colorName = player:GetAttribute("PaintColor")
 	local paintColor = Config.PAINT_COLOR_BY_NAME[colorName]
-	if not paintColor or (player:GetAttribute("Paint") or 0) <= 0 or prop:GetAttribute("ColorName") == colorName then
+	local paint = player:GetAttribute("Paint") or 0
+	local previous = prop:GetAttribute("ColorName")
+	if not paintColor or paint <= 0 or previous == colorName then
 		return
+	end
+	local cost = Config.PAINT_COST.PROP
+	if paint < cost then
+		warnNeedPaint(player, cost)
+		return
+	end
+	player:SetAttribute("Paint", paint - cost)
+	BlobCharacter.update(player)
+	if previous == "" then
+		addScore(player, cost * Config.POINTS_PER_PAINT)
 	end
 	prop:SetAttribute("ColorName", colorName)
 	for _, part in prop:GetDescendants() do
@@ -165,18 +197,20 @@ local function tryPaint(player: Player, building: BasePart)
 	if previous == colorName then
 		return
 	end
+	local cost = building:GetAttribute("PaintCost") or Config.PAINT_COST.SMALL
+	if paint < cost then
+		warnNeedPaint(player, cost)
+		return
+	end
 
 	colorBuilding(building, color)
 	building:SetAttribute("ColorName", colorName)
-	player:SetAttribute("Paint", paint - 1)
+	player:SetAttribute("Paint", paint - cost)
 	BlobCharacter.update(player)
 
 	if previous == "" then
 		paintedCount += 1
-		local score = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Score")
-		if score then
-			score.Value += Config.POINTS_PAINT
-		end
+		addScore(player, cost * Config.POINTS_PER_PAINT)
 		updateCityStats()
 	end
 	PaintedRemote:FireAllClients(building, colorName, player)
