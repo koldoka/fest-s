@@ -23,7 +23,7 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Épületrészletek: ablaksávok, ajtó, tetőperem; befestéskor az ablakok kivilágosodnak, a perem és az ajtó a festék sötétebb árnyalatát kapja
 - [ ] Díszek a befestett épületen (virágládák, napellenzők, cégérek)
 - [x] Hangok: placcs, festékfelvétel, ugrás, földet érés, a város elkészülte (`Sounds`, `tools/generate_sounds.py`)
-- [ ] A hangok feltöltése a Robloxra, az azonosítók beírása a `Config.SOUNDS`-ba
+- [x] A hangok feltöltése a Robloxra, az azonosítók beírása a `Config.SOUNDS`-ba
 - [ ] Zenei rétegek: minél színesebb a város, annál több hangszer szól
 - [ ] Színkeverés: két szín egymás után keverve új színt ad (pl. piros + kék = lila)
 

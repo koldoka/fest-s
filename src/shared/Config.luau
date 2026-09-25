@@ -62,11 +62,11 @@ local Config = {
 	-- Hangok (assets/sounds/*.ogg, a tools/generate_sounds.py készíti). Feltöltés után ide kell beírni
 	-- az azonosítót "rbxassetid://SZÁM" formában. Üres = nincs hang.
 	SOUNDS = {
-		Splat = { id = "", volume = 0.6, vary = true }, -- épület befestése
-		Refill = { id = "", volume = 0.5 }, -- festék felvétele
-		Jump = { id = "", volume = 0.35, vary = true },
-		Land = { id = "", volume = 0.45, vary = true },
-		CityDone = { id = "", volume = 0.7 }, -- az egész város színes
+		Splat = { id = "rbxassetid://115543090630588", volume = 0.6, vary = true }, -- épület befestése
+		Refill = { id = "rbxassetid://124300779326945", volume = 0.5 }, -- festék felvétele
+		Jump = { id = "rbxassetid://115722313654094", volume = 0.35, vary = true },
+		Land = { id = "rbxassetid://104543177045415", volume = 0.45, vary = true },
+		CityDone = { id = "rbxassetid://125442387668911", volume = 0.7 }, -- az egész város színes
 	},
 
 	-- Kör
