@@ -51,22 +51,27 @@ local Config = {
 	WALK_SPEED = 24,
 	JUMP_POWER = 60,
 
-	-- Festéknyomok az úton (csak látvány, a klienseken)
+	-- Festékcsík a paca után (csak látvány, a klienseken)
 	TRAIL = {
-		SPACING = 0.6, -- a paca átmérőjének ekkora része után tesz új foltot
-		SIZE = 0.8, -- a folt átmérője a paca átmérőjéhez képest
-		LIFETIME = 8, -- ennyi mp alatt tűnik el egy folt
-		MAX_MARKS = 400, -- ennél több folt esetén a legrégebbi eltűnik
+		WIDTH = 0.55, -- a csík szélessége a paca átmérőjéhez képest
+		SEGMENT_LENGTH = 1.2, -- ennyi stud után tesz le új csíkdarabot
+		SPLATTER_CHANCE = 0.35, -- ekkora eséllyel fröccsen pár apró csepp egy csíkdarab mellé
+		LIFETIME = 8, -- ennyi mp alatt szárad fel (vékonyodik el és tűnik el) a csík
+		MAX_MARKS = 700, -- ennél több darab esetén a legrégebbi eltűnik
 	},
 
 	-- Hangok (assets/sounds/*.ogg, a tools/generate_sounds.py készíti). Feltöltés után ide kell beírni
-	-- az azonosítót "rbxassetid://SZÁM" formában. Üres = nincs hang.
+	-- az azonosítókat "rbxassetid://SZÁM" formában. Több azonosító esetén lejátszáskor véletlenszerűen választ.
+	-- Üres lista = nincs hang.
 	SOUNDS = {
-		Splat = { id = "rbxassetid://115543090630588", volume = 0.6, vary = true }, -- épület befestése
-		Refill = { id = "rbxassetid://124300779326945", volume = 0.5 }, -- festék felvétele
-		Jump = { id = "rbxassetid://115722313654094", volume = 0.35, vary = true },
-		Land = { id = "rbxassetid://104543177045415", volume = 0.45, vary = true },
-		CityDone = { id = "rbxassetid://125442387668911", volume = 0.7 }, -- az egész város színes
+		-- Épület befestése: paint_1..4.ogg. Amíg nincsenek feltöltve, a régi splat szól.
+		Paint = { ids = { "rbxassetid://115543090630588" }, volume = 0.45, vary = true },
+		Refill = { ids = { "rbxassetid://124300779326945" }, volume = 0.5 }, -- festék felvétele
+		-- Ugrás és földet érés: az új jump.ogg és land.ogg azonosítóit ide kell beírni a régiek helyére.
+		Jump = { ids = { "rbxassetid://115722313654094" }, volume = 0.35, vary = true },
+		Land = { ids = { "rbxassetid://104543177045415" }, volume = 0.45, vary = true },
+		CityDone = { ids = { "rbxassetid://125442387668911" }, volume = 0.7 }, -- az egész város színes
+		Roll = { ids = {}, volume = 0.5 }, -- roll_loop.ogg: ismétlődő gurulás, a sebességgel hangosodik
 	},
 
 	-- Kör

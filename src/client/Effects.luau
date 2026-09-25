@@ -59,7 +59,7 @@ function Effects.start()
 			local root = painter
 				and painter.Character
 				and painter.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
-			Sounds.play("Splat", if root then root.Position else building.Position)
+			Sounds.play("Paint", if root then root.Position else building.Position)
 		end
 	end)
 end

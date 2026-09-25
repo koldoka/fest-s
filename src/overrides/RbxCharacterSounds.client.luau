@@ -1,0 +1,2 @@
+-- Szándékosan üres. Ha a StarterPlayerScripts-ben van ilyen nevű szkript, a Roblox nem teszi be a sajátját,
+-- így nincsenek lépéshangok (a paca guruló hangját a Client.Sounds adja).

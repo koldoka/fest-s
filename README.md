@@ -34,17 +34,20 @@ pontok, a város festettségének kijelzése, újrakezdés, ha minden színes.
 A hangokat a `tools/generate_sounds.py` állítja elő kódból, ezek az `assets/sounds/` mappában vannak.
 Amíg nincsenek feltöltve, a játék néma, de minden más működik.
 
-1. Studio: **Asset Manager** → **Import** → válaszd ki az `assets/sounds/` mind az öt `.ogg` fájlját.
+1. Studio: **Asset Manager** → **Import** → válaszd ki az `assets/sounds/` `.ogg` fájljait.
 2. Mindegyiken jobb klikk → **Copy ID to Clipboard**.
-3. Az azonosítót írd be a `src/shared/Config.luau` fájl `SOUNDS` részébe, pl. `id = "rbxassetid://1234567890"`.
+3. Az azonosítót írd be a `src/shared/Config.luau` fájl `SOUNDS` részébe, pl. `ids = { "rbxassetid://1234567890" }`.
 
 | Fájl | Config-név | Mikor szól |
 |---|---|---|
-| `splat.ogg` | `Splat` | épület befestése |
-| `refill.ogg` | `Refill` | festék felvétele tartályból |
+| `paint_1.ogg` … `paint_4.ogg` | `Paint` (mind a négy azonosító a listába) | épület befestése, véletlenszerűen |
+| `roll_loop.ogg` | `Roll` | gurulás (ismétlődik, a sebességgel hangosodik) |
 | `jump.ogg` | `Jump` | ugrás |
 | `land.ogg` | `Land` | földet érés |
+| `refill.ogg` | `Refill` | festék felvétele tartályból |
 | `city_done.ogg` | `CityDone` | az egész város színes |
+
+A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` üres szkript kapcsolja ki.
 
 ## Játékmenet
 
