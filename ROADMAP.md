@@ -38,7 +38,7 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Organikus elrendezés: kanyargó utcák, sikátorok, a házak az utcák mentén (`Kit.path`, `Kit.streetRow`)
 - [x] Nincs üres terület: telkenkénti témák (gyümölcsös, veteményeskert fészerrel, vadvirágos rét, liget, termőföld, udvar) (`Kit.fill`)
 - [x] Kevesebb ablak (szélesebb falszakaszok, az oldalfalakon ritkábban)
-- [x] Festéktartályok véletlen helyen és színnel, használat után máshol jelennek meg (`TankService`)
+- [x] Festéktartályok véletlen helyen és színnel, használat után máshol jelennek meg (`TankService`); 108 lehetséges hely, egyszerre 20–40 (a játékosszámtól függ)
 - [ ] 1. pálya finomítása a Studio-teszt alapján
 - [ ] A szélmalom lapátjai forogjanak
 - [ ] További pályák

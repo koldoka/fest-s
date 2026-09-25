@@ -1,5 +1,5 @@
--- Festéktartályok: a pálya lehetséges tartályhelyei (Kit.tankSpot) közül egyszerre Config.TANKS.ACTIVE darabon
--- van tartály, véletlen színnel. Ha valaki festéket vesz belőle, a tartály eltűnik, és kis idő múlva egy másik
+-- Festéktartályok: a pálya lehetséges tartályhelyei (Kit.tankSpot) közül egyszerre néhányon van tartály,
+-- véletlen színnel (hány: a játékosok számától függ, lásd Config.TANKS). Ha valaki festéket vesz belőle, a tartály eltűnik, és kis idő múlva egy másik
 -- szabad helyen, más színnel jelenik meg.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -15,6 +15,13 @@ local spots: { Vector3 } = {}
 local used: { [number]: boolean } = {} -- melyik helyen áll most tartály
 local rng = Random.new()
 local onRefill: ((Player, BasePart) -> ())? = nil
+local planned = 0 -- a pályán lévő tartályok + a már ütemezett újak
+
+-- Hány tartály legyen egyszerre a pályán.
+local function target(): number
+	local t = Config.TANKS
+	return math.clamp(t.MIN + t.PER_PLAYER * (#Players:GetPlayers() - 1), t.MIN, t.MAX)
+end
 
 local SIZE = Vector3.new(3, 6, 6) -- álló henger: a tengely (X) függőleges
 
@@ -27,6 +34,7 @@ local function spawnTank()
 		end
 	end
 	if #free == 0 then
+		planned -= 1
 		return
 	end
 	local index = free[rng:NextInteger(1, #free)]
@@ -74,7 +82,20 @@ function TankService.consume(tank: BasePart)
 		tank:Destroy()
 		used[index] = nil
 	end)
-	task.delay(Config.TANKS.RESPAWN, spawnTank)
+	-- Csak akkor jön helyette új, ha nincs több a kelleténél (pl. kilépett egy játékos)
+	if planned > target() then
+		planned -= 1
+	else
+		task.delay(Config.TANKS.RESPAWN, spawnTank)
+	end
+end
+
+-- Feltöltés a kívánt darabszámig (induláskor és új játékosnál).
+local function topUp()
+	while planned < math.min(target(), #spots) do
+		planned += 1
+		spawnTank()
+	end
 end
 
 -- refill(player, tank): a PaintService adja; akkor hívódik, ha egy játékos hozzáér egy tartályhoz.
@@ -83,10 +104,10 @@ function TankService.start(tankFolder: Folder, tankSpots: { Vector3 }, refill: (
 	spots = tankSpots
 	used = {}
 	onRefill = refill
+	planned = 0
 	folder:ClearAllChildren()
-	for _ = 1, math.min(Config.TANKS.ACTIVE, #spots) do
-		spawnTank()
-	end
+	topUp()
+	Players.PlayerAdded:Connect(topUp)
 end
 
 return TankService

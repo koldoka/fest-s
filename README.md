@@ -50,7 +50,7 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
 ## Játékmenet
 
 - Ugorj bele egy **festéktartályba** (színes, világító henger): felveszed a színét, és teli lesz a festéked.
-  A tartály ezután eltűnik, és kis idő múlva máshol, más színnel jelenik meg (egyszerre 12 van a pályán).
+  A tartály ezután eltűnik, és kis idő múlva máshol, más színnel jelenik meg (egyszerre 20 van a pályán, minden további játékossal 4-gyel több, legfeljebb 40).
 - **Érj hozzá egy épülethez** (neki is ugorhatsz, vagy ráugorhatsz a tetejére): befested, és elfogy egy adag festék.
 - Szürke épületért pont jár. Már befestett épületet más színre át lehet festeni, de azért nincs pont.
 - A fák, padok, lámpák, kerítések és más tárgyak érintésre színesek lesznek (ez nem fogyaszt festéket).

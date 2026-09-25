@@ -50,10 +50,12 @@ local Config = {
 		{ name = "Orange", color = Color3.fromRGB(250, 140, 40) },
 	},
 
-	-- Festéktartályok: egyszerre ennyi van a pályán, véletlen helyen és színnel; egy használat után eltűnik,
-	-- és RESPAWN mp múlva máshol jelenik meg egy új.
+	-- Festéktartályok: véletlen helyen és színnel; egy használat után eltűnik, és RESPAWN mp múlva máshol jelenik
+	-- meg egy új. Egyszerre MIN darab van a pályán, minden további játékossal PER_PLAYER-rel több, legfeljebb MAX.
 	TANKS = {
-		ACTIVE = 12,
+		MIN = 20,
+		MAX = 40,
+		PER_PLAYER = 4,
 		RESPAWN = 6,
 	},
 
