@@ -29,6 +29,23 @@ pontok, a város festettségének kijelzése, újrakezdés, ha minden színes.
   (pl. a `Players.CharacterAutoLoads`) és szkriptjei összekeveredhetnek.
 - Egyszerre csak **egy** `rojo serve` fusson.
 
+## Hangok feltöltése (egyszer)
+
+A hangokat a `tools/generate_sounds.py` állítja elő kódból, ezek az `assets/sounds/` mappában vannak.
+Amíg nincsenek feltöltve, a játék néma, de minden más működik.
+
+1. Studio: **Asset Manager** → **Import** → válaszd ki az `assets/sounds/` mind az öt `.ogg` fájlját.
+2. Mindegyiken jobb klikk → **Copy ID to Clipboard**.
+3. Az azonosítót írd be a `src/shared/Config.luau` fájl `SOUNDS` részébe, pl. `id = "rbxassetid://1234567890"`.
+
+| Fájl | Config-név | Mikor szól |
+|---|---|---|
+| `splat.ogg` | `Splat` | épület befestése |
+| `refill.ogg` | `Refill` | festék felvétele tartályból |
+| `jump.ogg` | `Jump` | ugrás |
+| `land.ogg` | `Land` | földet érés |
+| `city_done.ogg` | `CityDone` | az egész város színes |
+
 ## Játékmenet
 
 - Ugorj bele egy **festéktartályba** (a kereszteződésekben álló színes hengerek): felveszed a színét, és teli lesz a festéked.
@@ -54,10 +71,13 @@ src/client/
   Hud.luau             a város festettsége, saját festék, üzenetek
   Effects.luau         fröccsenő festék és felvillanás festéskor
   BlobAnimator.luau    a pacák lapulása és nyúlása (csak látvány)
+  Trails.luau          festéknyomok a paca után (csak látvány)
+  Sounds.luau          hangok lejátszása
+tools/generate_sounds.py  a hangok előállítása kódból (assets/sounds/*.ogg)
 ```
 
 ## Ismert korlátok (prototípus)
 
 - A paca csak látvány: a mozgást és az ütközést a láthatatlan Roblox-avatar végzi, ezért a paca picit belelóghat a falakba.
-- A grafika egyszerű dobozokból áll, nincs hang és zene.
+- A grafika egyszerű dobozokból áll, zene még nincs.
 - Nincs PvP, mentés és bolt. Ezek a [ROADMAP.md](ROADMAP.md) szerint jönnek.

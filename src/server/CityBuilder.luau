@@ -1,4 +1,5 @@
--- A szürke város felépítése: aszfalt, háztömbök járdával, épületek, festéktartályok a kereszteződésekben.
+-- A szürke város felépítése: aszfalt, háztömbök járdával, épületek (ablakokkal, ajtóval, tetőperemmel),
+-- festéktartályok a kereszteződésekben.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -24,6 +25,64 @@ local function greyShade(rng: Random): Color3
 		math.clamp(c.GREY.R + offset, 0, 1),
 		math.clamp(c.GREY.G + offset, 0, 1),
 		math.clamp(c.GREY.B + offset, 0, 1)
+	)
+end
+
+local function darker(color: Color3, amount: number): Color3
+	return color:Lerp(Color3.new(0, 0, 0), amount)
+end
+
+-- Egy épületrészlet: nem ütközik, nem festhető közvetlenül, a festéskor a PaintService színezi át.
+local function makeDetail(building: BasePart, role: string, size: Vector3, offset: Vector3, color: Color3)
+	local detail = makePart({
+		Name = role,
+		Size = size,
+		CFrame = building.CFrame * CFrame.new(offset),
+		Color = color,
+		Material = Enum.Material.SmoothPlastic,
+		CanCollide = role == "Trim", -- a tetőperemre rá lehet állni
+		CanQuery = false,
+		CanTouch = false,
+	})
+	detail:SetAttribute("Role", role)
+	detail:SetAttribute("BaseColor", color)
+	detail.Parent = building
+end
+
+-- Ablaksávok emeletenként mind a négy oldalon, egy ajtó a földszinten, perem a tetőn.
+local function addDetails(building: BasePart, rng: Random)
+	local c = Config.CITY
+	local size = building.Size
+	local half = size / 2
+	local grey = building.Color
+
+	-- A földszint az ajtóé, onnan felfelé emeletenként egy ablaksáv, a tető alatt kis hellyel.
+	local bandY = -half.Y + c.FLOOR_HEIGHT + c.WINDOW_BAND_HEIGHT / 2 + 1
+	while bandY + c.WINDOW_BAND_HEIGHT / 2 < half.Y - 1.5 do
+		for _, dir in { Vector3.xAxis, -Vector3.xAxis, Vector3.zAxis, -Vector3.zAxis } do
+			local bandSize = if dir.X ~= 0
+				then Vector3.new(0.2, c.WINDOW_BAND_HEIGHT, size.Z - 2)
+				else Vector3.new(size.X - 2, c.WINDOW_BAND_HEIGHT, 0.2)
+			local offset = Vector3.new(dir.X * (half.X + 0.1), bandY, dir.Z * (half.Z + 0.1))
+			makeDetail(building, "Window", bandSize, offset, darker(grey, 0.3))
+		end
+		bandY += c.FLOOR_HEIGHT
+	end
+
+	local doorDir = ({ Vector3.xAxis, -Vector3.xAxis, Vector3.zAxis, -Vector3.zAxis })[rng:NextInteger(1, 4)]
+	local doorSize = if doorDir.X ~= 0
+		then Vector3.new(0.3, c.DOOR_SIZE.Y, c.DOOR_SIZE.X)
+		else Vector3.new(c.DOOR_SIZE.X, c.DOOR_SIZE.Y, 0.3)
+	local doorOffset =
+		Vector3.new(doorDir.X * (half.X + 0.15), -half.Y + c.DOOR_SIZE.Y / 2, doorDir.Z * (half.Z + 0.15))
+	makeDetail(building, "Door", doorSize, doorOffset, darker(grey, 0.45))
+
+	makeDetail(
+		building,
+		"Trim",
+		Vector3.new(size.X + 0.6, 0.8, size.Z + 0.6),
+		Vector3.new(0, half.Y + 0.4, 0),
+		darker(grey, 0.15)
 	)
 end
 
@@ -114,6 +173,7 @@ function CityBuilder.build(seed: number?): (Folder, Folder, Vector3)
 					})
 					building:SetAttribute("BaseColor", grey) -- ide áll vissza a város újrakezdésekor
 					building:SetAttribute("ColorName", "") -- "" = még festetlen
+					addDetails(building, rng)
 					building.Parent = buildings
 				end
 			end

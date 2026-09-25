@@ -26,6 +26,26 @@ local function updateCityStats()
 	workspace:SetAttribute("BuildingCount", #buildingsFolder:GetChildren())
 end
 
+-- Az épület és a részletei színe. color = nil: vissza a festetlen szürkére.
+local function colorBuilding(building: BasePart, color: Color3?)
+	building.Color = color or building:GetAttribute("BaseColor")
+	for _, detail in building:GetChildren() do
+		if not detail:IsA("BasePart") then
+			continue
+		end
+		local role = detail:GetAttribute("Role")
+		if not color then
+			detail.Color = detail:GetAttribute("BaseColor")
+		elseif role == "Window" then
+			detail.Color = Config.CITY.WINDOW_LIT_COLOR
+		elseif role == "Door" then
+			detail.Color = color:Lerp(Color3.new(0, 0, 0), 0.45)
+		elseif role == "Trim" then
+			detail.Color = color:Lerp(Color3.new(0, 0, 0), 0.25)
+		end
+	end
+end
+
 local function refill(player: Player, tank: BasePart)
 	local colorName = tank:GetAttribute("ColorName")
 	if player:GetAttribute("PaintColor") == colorName and player:GetAttribute("Paint") == Config.PAINT_MAX then
@@ -48,7 +68,7 @@ local function tryPaint(player: Player, building: BasePart)
 		return
 	end
 
-	building.Color = color
+	colorBuilding(building, color)
 	building:SetAttribute("ColorName", colorName)
 	player:SetAttribute("Paint", paint - 1)
 	BlobCharacter.update(player)
@@ -147,7 +167,7 @@ end
 -- Minden épület újra szürke lesz (a pontok megmaradnak).
 function PaintService.resetCity()
 	for _, building in buildingsFolder:GetChildren() do
-		building.Color = building:GetAttribute("BaseColor")
+		colorBuilding(building, nil)
 		building:SetAttribute("ColorName", "")
 	end
 	paintedCount = 0

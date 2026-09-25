@@ -1,10 +1,11 @@
--- Festés-effektek: fröccsenő festékcseppek és egy rövid felvillanás a befestett épületen.
+-- Festés-effektek: fröccsenő festékcseppek, egy rövid felvillanás a befestett épületen, placcs hang.
 
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+local Sounds = require(script.Parent.Sounds)
 
 local PaintedRemote = ReplicatedStorage.Remotes.Painted
 
@@ -55,6 +56,10 @@ function Effects.start()
 		local color = Config.PAINT_COLOR_BY_NAME[colorName]
 		if building and building.Parent and color then
 			splash(building, color, painter)
+			local root = painter
+				and painter.Character
+				and painter.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+			Sounds.play("Splat", if root then root.Position else building.Position)
 		end
 	end)
 end

@@ -19,9 +19,11 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Lapulás-nyúlás: ugráskor megnyúlik, földet éréskor ellapul, mozgás közben rezeg (`BlobAnimator`)
 - [ ] Gurulásérzet: fényes csík vagy minta, ami forog a mozgás irányában
 - [ ] Faltól visszapattanás, falra felgurulás
-- [ ] Festéknyomok az úton (a paca útja színes marad egy ideig)
-- [ ] Festés közben színes minta az épületen (ablakok, ajtók, díszek jelennek meg), nem csak átszíneződés
-- [ ] Hangok: fröccsenés, pattanás, festékfelvétel
+- [x] Festéknyomok az úton: a paca színes foltokat hagy, amelyek elhalványulnak (`Trails`)
+- [x] Épületrészletek: ablaksávok, ajtó, tetőperem; befestéskor az ablakok kivilágosodnak, a perem és az ajtó a festék sötétebb árnyalatát kapja
+- [ ] Díszek a befestett épületen (virágládák, napellenzők, cégérek)
+- [x] Hangok: placcs, festékfelvétel, ugrás, földet érés, a város elkészülte (`Sounds`, `tools/generate_sounds.py`)
+- [ ] A hangok feltöltése a Robloxra, az azonosítók beírása a `Config.SOUNDS`-ba
 - [ ] Zenei rétegek: minél színesebb a város, annál több hangszer szól
 - [ ] Színkeverés: két szín egymás után keverve új színt ad (pl. piros + kék = lila)
 

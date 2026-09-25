@@ -16,6 +16,12 @@ local Config = {
 		GREY_VARIANCE = 12, -- ennyivel térhet el véletlenszerűen a szürke árnyalata
 		ASPHALT = Color3.fromRGB(58, 58, 62),
 		SIDEWALK_COLOR = Color3.fromRGB(170, 170, 170),
+		-- Épületrészletek: ablaksávok emeletenként, ajtó, tetőperem. Festetlenül a szürke sötétebb árnyalatai,
+		-- befestve az ablakok kivilágosodnak, a perem és az ajtó a festék sötétebb árnyalatát kapja.
+		FLOOR_HEIGHT = 6, -- ennyi stud egy emelet
+		WINDOW_BAND_HEIGHT = 2.5,
+		WINDOW_LIT_COLOR = Color3.fromRGB(255, 244, 210),
+		DOOR_SIZE = Vector2.new(3, 5), -- szélesség, magasság
 	},
 
 	-- Festékek. A festéktartályok ezekből a színekből kapnak, sorban.
@@ -44,6 +50,24 @@ local Config = {
 	-- Mozgás: a paca gyors és pattogós
 	WALK_SPEED = 24,
 	JUMP_POWER = 60,
+
+	-- Festéknyomok az úton (csak látvány, a klienseken)
+	TRAIL = {
+		SPACING = 0.6, -- a paca átmérőjének ekkora része után tesz új foltot
+		SIZE = 0.8, -- a folt átmérője a paca átmérőjéhez képest
+		LIFETIME = 8, -- ennyi mp alatt tűnik el egy folt
+		MAX_MARKS = 400, -- ennél több folt esetén a legrégebbi eltűnik
+	},
+
+	-- Hangok (assets/sounds/*.ogg, a tools/generate_sounds.py készíti). Feltöltés után ide kell beírni
+	-- az azonosítót "rbxassetid://SZÁM" formában. Üres = nincs hang.
+	SOUNDS = {
+		Splat = { id = "", volume = 0.6, vary = true }, -- épület befestése
+		Refill = { id = "", volume = 0.5 }, -- festék felvétele
+		Jump = { id = "", volume = 0.35, vary = true },
+		Land = { id = "", volume = 0.45, vary = true },
+		CityDone = { id = "", volume = 0.7 }, -- az egész város színes
+	},
 
 	-- Kör
 	RESET_DELAY = 10, -- ennyi mp után lesz újra szürke a város, ha minden be van festve
