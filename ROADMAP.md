@@ -21,7 +21,11 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [ ] Faltól visszapattanás, falra felgurulás
 - [x] Festékcsík: folytonos, hullámzó szélességű csík apró fröccsenésekkel, földet éréskor nagyobb fröccs; felszáradva elvékonyodik (`Trails`)
 - [x] Épületrészletek: ablaksávok, ajtó, tetőperem; befestéskor az ablakok kivilágosodnak, a perem és az ajtó a festék sötétebb árnyalatát kapja
-- [ ] Díszek a befestett épületen (virágládák, napellenzők, cégérek)
+- [x] Élethűbb, rajzfilmes épületek: családi ház nyeregtetővel és kéménnyel, üzlet kirakattal és csíkos napellenzővel, lakóház erkélyekkel, toronyház antennával; lábazat, párkány; a belváros magasabb (`BuildingFactory`)
+- [x] Rajzolt ablaktextúrák (szürke és kivilágított), `tools/generate_textures.py`
+- [ ] Az ablaktextúrák feltöltése, az azonosítók beírása (`Config.CITY.FACADE`)
+- [ ] Kézzel épített pályák a generált város helyett (részletesebb, változatosabb)
+- [ ] Díszek a befestett épületen (virágládák, cégérek)
 - [x] Hangok: placcs, festékfelvétel, ugrás, földet érés, a város elkészülte (`Sounds`, `tools/generate_sounds.py`)
 - [x] A hangok feltöltése a Robloxra, az azonosítók beírása a `Config.SOUNDS`-ba
 - [x] Nedvesebb hangok: szaftos gurulás (sebességfüggő, ismétlődő), cuppanós ugrás és földet érés, 4 finomabb festéshang véletlenszerűen; a Roblox lépéshangjai kikapcsolva

@@ -9,19 +9,50 @@ local Config = {
 		SIDEWALK = 3, -- a járda szélessége a tömb szélén
 		LOTS = 2, -- egy tömbben ennyiszer ennyi épület áll
 		LOT_GAP = 3, -- rés az épületek között (a játékos átfér rajta)
-		MIN_HEIGHT = 10,
-		MAX_HEIGHT = 36,
 		MARGIN = 40, -- aszfalt a város körül
 		GREY = Color3.fromRGB(128, 128, 132), -- a festetlen épületek színe
 		GREY_VARIANCE = 12, -- ennyivel térhet el véletlenszerűen a szürke árnyalata
 		ASPHALT = Color3.fromRGB(58, 58, 62),
 		SIDEWALK_COLOR = Color3.fromRGB(170, 170, 170),
-		-- Épületrészletek: ablaksávok emeletenként, ajtó, tetőperem. Festetlenül a szürke sötétebb árnyalatai,
-		-- befestve az ablakok kivilágosodnak, a perem és az ajtó a festék sötétebb árnyalatát kapja.
+		-- Épületek (BuildingFactory). A magasság mindig egész számú emelet.
 		FLOOR_HEIGHT = 6, -- ennyi stud egy emelet
-		WINDOW_BAND_HEIGHT = 2.5,
-		WINDOW_LIT_COLOR = Color3.fromRGB(255, 244, 210),
+		BAY_WIDTH = 4.5, -- nagyjából ilyen széles egy ablakos falszakasz
+		BUILDING_TYPES = {
+			House = { floors = { 2, 2 } }, -- nyeregtető, kémény
+			Shop = { floors = { 2, 3 } }, -- kirakat, csíkos napellenző
+			Apartment = { floors = { 3, 5 } }, -- erkélyek, klímadobozok
+			Tower = { floors = { 5, 7 } }, -- felső emelet, antenna
+		},
+		-- A város közepe felé magasabb házak: a típusok súlya a belváros, a köztes gyűrű és a széle szerint.
+		ZONES = {
+			{ upTo = 0.35, weights = { Tower = 4, Apartment = 3, Shop = 1 } },
+			{ upTo = 0.7, weights = { Apartment = 3, Shop = 3, House = 1, Tower = 1 } },
+			{ upTo = 1, weights = { House = 5, Shop = 2, Apartment = 1 } },
+		},
+		-- Ablaktextúrák (assets/textures, a tools/generate_textures.py készíti). Feltöltés után ide kell beírni
+		-- az azonosítót "rbxassetid://SZÁM" formában. Amíg üres, egyszerű ablaksávok helyettesítik.
+		FACADE = {
+			GREY = "", -- window_grey.png: festetlen ház
+			LIT = "", -- window_lit.png: befestett ház, meleg fényű ablakok
+		},
 		DOOR_SIZE = Vector2.new(3, 5), -- szélesség, magasság
+		-- Befestve fix színű részletek (a többi a festék színéből számolódik, lásd PaintService)
+		WINDOW_LIT_COLOR = Color3.fromRGB(255, 226, 140),
+		ROOF_COLORS = {
+			Color3.fromRGB(184, 78, 60), -- cserép
+			Color3.fromRGB(88, 100, 124), -- pala
+			Color3.fromRGB(72, 124, 92), -- zöld
+			Color3.fromRGB(126, 76, 58), -- barna
+		},
+		DOOR_COLORS = {
+			Color3.fromRGB(124, 82, 50), -- fa
+			Color3.fromRGB(42, 88, 64),
+			Color3.fromRGB(44, 60, 104),
+			Color3.fromRGB(156, 44, 44),
+		},
+		CHIMNEY_COLOR = Color3.fromRGB(168, 84, 64),
+		RAILING_COLOR = Color3.fromRGB(58, 58, 68),
+		METAL_COLOR = Color3.fromRGB(150, 154, 160),
 	},
 
 	-- Festékek. A festéktartályok ezekből a színekből kapnak, sorban.

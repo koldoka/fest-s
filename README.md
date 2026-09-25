@@ -49,6 +49,12 @@ Amíg nincsenek feltöltve, a játék néma, de minden más működik.
 
 A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` üres szkript kapcsolja ki.
 
+## Ablaktextúrák feltöltése (egyszer)
+
+Az `assets/textures/window_grey.png` és `window_lit.png` (a `tools/generate_textures.py` készíti) az ablakok képe.
+Studio: **Asset Manager** → **Import** → a két kép → jobb klikk → **Copy ID** → a `src/shared/Config.luau`
+`CITY.FACADE` részébe (`GREY` és `LIT`). Amíg üres, egyszerű ablaksávok látszanak.
+
 ## Játékmenet
 
 - Ugorj bele egy **festéktartályba** (a kereszteződésekben álló színes hengerek): felveszed a színét, és teli lesz a festéked.
@@ -67,6 +73,7 @@ src/shared/
 src/server/
   Main.server.luau     indítás, a város újrakezdése
   CityBuilder.luau     a szürke város felépítése, festéktartályok
+  BuildingFactory.luau épülettípusok: ház, üzlet, lakóház, toronyház
   PaintService.luau    festés: mihez ér a játékos, festék, pontok (erről mindig a szerver dönt)
   BlobCharacter.luau   a paca figura: elrejti az avatart, szín és méret a festék szerint
 src/client/
@@ -76,7 +83,8 @@ src/client/
   BlobAnimator.luau    a pacák lapulása és nyúlása (csak látvány)
   Trails.luau          festéknyomok a paca után (csak látvány)
   Sounds.luau          hangok lejátszása
-tools/generate_sounds.py  a hangok előállítása kódból (assets/sounds/*.ogg)
+tools/generate_sounds.py    a hangok előállítása kódból (assets/sounds/*.ogg)
+tools/generate_textures.py  az ablaktextúrák előállítása (assets/textures/*.png)
 ```
 
 ## Ismert korlátok (prototípus)

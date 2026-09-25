@@ -26,24 +26,63 @@ local function updateCityStats()
 	workspace:SetAttribute("BuildingCount", #buildingsFolder:GetChildren())
 end
 
+local WHITE = Color3.new(1, 1, 1)
+local BLACK = Color3.new(0, 0, 0)
+
+-- Befestéskor a részletek színe a festék színéből (ha a részletnek nincs fix PaintedColor-ja).
+local ROLE_COLORS: { [string]: (Color3) -> Color3 } = {
+	Tier = function(c)
+		return c
+	end,
+	Plinth = function(c)
+		return c:Lerp(BLACK, 0.35)
+	end,
+	Trim = function(c)
+		return c:Lerp(WHITE, 0.6)
+	end,
+	Balcony = function(c)
+		return c:Lerp(WHITE, 0.6)
+	end,
+	AwningA = function(c)
+		return c:Lerp(BLACK, 0.1)
+	end,
+	AwningB = function()
+		return Color3.fromRGB(250, 247, 238)
+	end,
+	Window = function()
+		return Config.CITY.WINDOW_LIT_COLOR
+	end,
+	ShopWindow = function()
+		return Config.CITY.WINDOW_LIT_COLOR
+	end,
+}
+
 -- Az épület és a részletei színe. color = nil: vissza a festetlen szürkére.
 local function colorBuilding(building: BasePart, color: Color3?)
 	building.Color = color or building:GetAttribute("BaseColor")
-	for _, detail in building:GetChildren() do
-		if not detail:IsA("BasePart") then
-			continue
-		end
+	for _, detail in building:GetDescendants() do
 		local role = detail:GetAttribute("Role")
-		if not color then
-			detail.Color = detail:GetAttribute("BaseColor")
-		elseif role == "Window" then
-			detail.Color = Config.CITY.WINDOW_LIT_COLOR
-		elseif role == "Door" then
-			detail.Color = color:Lerp(Color3.new(0, 0, 0), 0.45)
-		elseif role == "Trim" then
-			detail.Color = color:Lerp(Color3.new(0, 0, 0), 0.25)
+		if detail:IsA("Texture") and role == "Facade" then
+			detail.Texture = if color then Config.CITY.FACADE.LIT else Config.CITY.FACADE.GREY
+		elseif detail:IsA("BasePart") and role then
+			if not color then
+				detail.Color = detail:GetAttribute("BaseColor")
+			else
+				local fixed = detail:GetAttribute("PaintedColor")
+				local rule = ROLE_COLORS[role]
+				detail.Color = fixed or (rule and rule(color)) or detail.Color
+			end
 		end
 	end
+end
+
+-- A találat melyik épülethez tartozik (a részletek az épület testének gyerekei).
+local function owningBuilding(part: Instance): BasePart?
+	local current: Instance? = part
+	while current and current.Parent ~= buildingsFolder do
+		current = current.Parent
+	end
+	return current :: BasePart?
 end
 
 local function refill(player: Player, tank: BasePart)
@@ -103,8 +142,11 @@ local function checkPlayer(player: Player)
 	for _, part in workspace:GetPartBoundsInRadius(center, radius, overlap) do
 		if part.Parent == tanksFolder then
 			refill(player, part)
-		elseif part.Parent == buildingsFolder then
-			tryPaint(player, part)
+		else
+			local building = owningBuilding(part)
+			if building then
+				tryPaint(player, building)
+			end
 		end
 	end
 end
