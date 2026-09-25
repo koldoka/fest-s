@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config)
 local LevelLoader = require(script.Parent.LevelLoader)
 local PaintService = require(script.Parent.PaintService)
+local TankService = require(script.Parent.TankService)
 
 -- Ha a Rojo valamiért nem hozta volna létre a hálózati csatornákat, itt pótoljuk.
 local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
@@ -36,6 +37,7 @@ Players.CharacterAutoLoads = true
 
 local level = LevelLoader.load(Config.LEVEL)
 PaintService.setLevel(level.buildings, level.props, level.tanks)
+TankService.start(level.tanks, level.tankSpots, PaintService.refill)
 
 local resetting = false
 PaintService.start(function()

@@ -34,6 +34,11 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Tárgyak a festék színében: lomb, ülőke, lámpaoszlop, kerítés, napernyő, ponyva, pavilontető; át is festhetők
 - [x] Nagyobb pálya: folyó három híddal, szélmalmos domb tanyával és virágfölddel, folyóparti negyed rakparttal, városháza tér szoborral (83 ház)
 - [x] Pálya-előnézet a Studio nélkül (`tools/preview`)
+- [x] Városfal a pálya szélén (lőrések, festhető tornyok, bezárt kapuk, láthatatlan magas fal), kívül erdő
+- [x] Organikus elrendezés: kanyargó utcák, sikátorok, a házak az utcák mentén (`Kit.path`, `Kit.streetRow`)
+- [x] Nincs üres terület: telkenkénti témák (gyümölcsös, veteményeskert fészerrel, vadvirágos rét, liget, termőföld, udvar) (`Kit.fill`)
+- [x] Kevesebb ablak (szélesebb falszakaszok, az oldalfalakon ritkábban)
+- [x] Festéktartályok véletlen helyen és színnel, használat után máshol jelennek meg (`TankService`)
 - [ ] 1. pálya finomítása a Studio-teszt alapján
 - [ ] A szélmalom lapátjai forogjanak
 - [ ] További pályák

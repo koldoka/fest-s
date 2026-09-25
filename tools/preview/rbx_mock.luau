@@ -19,7 +19,17 @@ V3mt.__index = function(v, k)
 	error("Vector3." .. tostring(k))
 end
 Vector3 = { new = V, zero = V(0, 0, 0), one = V(1, 1, 1), xAxis = V(1, 0, 0), yAxis = V(0, 1, 0), zAxis = V(0, 0, 1) }
-Vector2 = { new = function(x, y) return { X = x, Y = y } end }
+local V2mt = {}
+local function V2(x, y) return setmetatable({ X = x or 0, Y = y or 0 }, V2mt) end
+V2mt.__add = function(a, b) return V2(a.X + b.X, a.Y + b.Y) end
+V2mt.__sub = function(a, b) return V2(a.X - b.X, a.Y - b.Y) end
+V2mt.__mul = function(a, b) if type(a) == "number" then return V2(b.X * a, b.Y * a) end return V2(a.X * b, a.Y * b) end
+V2mt.__index = function(v, k)
+	if k == "Dot" then return function(a, b) return a.X * b.X + a.Y * b.Y end end
+	if k == "Magnitude" then return math.sqrt(v.X * v.X + v.Y * v.Y) end
+	error("Vector2." .. tostring(k))
+end
+Vector2 = { new = V2 }
 
 local C3mt = {}
 local function C3(r, g, b) return setmetatable({ R = r, G = g, B = b }, C3mt) end
@@ -86,6 +96,7 @@ function methods:GetDescendants()
 	local function walk(i) for _, c in rawget(i, "_children") do table.insert(out, c) walk(c) end end
 	walk(self) return out
 end
+function methods:ClearAllChildren() rawset(self, "_children", {}) end
 function methods:IsA(c)
 	local cls = rawget(self, "ClassName")
 	if c == "BasePart" then return cls == "Part" or cls == "SpawnLocation" end
@@ -97,7 +108,7 @@ function methods:Destroy() end
 Imt.__index = function(t, k)
 	if methods[k] then return methods[k] end
 	if k == "Parent" then return rawget(t, "_parent") end
-	if k == "Position" then return rawget(t, "CFrame").p end
+	if k == "Position" then return rawget(t, "_props").CFrame.p end
 	return rawget(t, "_props")[k]
 end
 Imt.__newindex = function(t, k, v)

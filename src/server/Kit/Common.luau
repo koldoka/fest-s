@@ -92,4 +92,76 @@ function Common.faceSize(dir: Vector3, w: number, h: number, t: number): Vector3
 	return if dir.X ~= 0 then Vector3.new(t, h, w) else Vector3.new(w, h, t)
 end
 
+---------------------------------------------------------------------------------------------------
+-- Foglaltsági térkép: minden elhelyezett dolog (ház, utca, tárgy, fal) alaprajza egy elforgatott téglalap.
+-- Ez alapján rakja a Kit a házakat az utcák mentén és tölti ki az üres helyeket úgy, hogy semmi ne kerüljön
+-- egymásra. A felszínek (dombok, teraszok) megadják, milyen magasan van a talaj egy adott helyen.
+
+export type Rect = { cx: number, cz: number, ux: Vector2, uz: Vector2, hx: number, hz: number }
+
+Common.footprints = {} :: { Rect }
+Common.surfaces = {} :: { { rect: Rect, top: number } }
+
+-- Téglalap a vízszintes síkon: középpont, fél méretek, elforgatás (fokban, mint a Kit.building rot-ja).
+function Common.rect(cx: number, cz: number, hx: number, hz: number, rotDeg: number?): Rect
+	local a = math.rad(rotDeg or 0)
+	-- CFrame.Angles(0, a, 0): a helyi X a világban (cos a, -sin a), a helyi Z (sin a, cos a)
+	return {
+		cx = cx,
+		cz = cz,
+		ux = Vector2.new(math.cos(a), -math.sin(a)),
+		uz = Vector2.new(math.sin(a), math.cos(a)),
+		hx = hx,
+		hz = hz,
+	}
+end
+
+-- Két elforgatott téglalap átfedése (elválasztó tengelyek tétele).
+function Common.overlaps(a: Rect, b: Rect): boolean
+	local d = Vector2.new(b.cx - a.cx, b.cz - a.cz)
+	for _, axis in { a.ux, a.uz, b.ux, b.uz } do
+		local ra = a.hx * math.abs(a.ux:Dot(axis)) + a.hz * math.abs(a.uz:Dot(axis))
+		local rb = b.hx * math.abs(b.ux:Dot(axis)) + b.hz * math.abs(b.uz:Dot(axis))
+		if math.abs(d:Dot(axis)) > ra + rb then
+			return false
+		end
+	end
+	return true
+end
+
+function Common.isFree(r: Rect): boolean
+	for _, f in Common.footprints do
+		if Common.overlaps(r, f) then
+			return false
+		end
+	end
+	return true
+end
+
+function Common.occupy(r: Rect)
+	table.insert(Common.footprints, r)
+end
+
+-- Egy pont benne van-e a téglalapban (margóval).
+function Common.contains(r: Rect, x: number, z: number, margin: number?): boolean
+	local d = Vector2.new(x - r.cx, z - r.cz)
+	local m = margin or 0
+	return math.abs(d:Dot(r.ux)) <= r.hx - m and math.abs(d:Dot(r.uz)) <= r.hz - m
+end
+
+-- A talaj magassága egy pontban: a legmagasabb felszín, amely teljesen lefedi a pont körüli "radius" sugarú
+-- területet; ha csak részben fedi (a domb széle), nil (oda nem teszünk semmit).
+function Common.groundAt(x: number, z: number, radius: number): number?
+	local best = 0
+	for _, s in Common.surfaces do
+		local r = s.rect
+		if Common.contains(r, x, z, radius) then
+			best = math.max(best, s.top)
+		elseif Common.contains(r, x, z, -radius) then
+			return nil
+		end
+	end
+	return best
+end
+
 return Common

@@ -13,6 +13,11 @@ local pick = Common.pick
 
 local Props = {}
 
+-- A tárgy alaprajzának feljegyzése a foglaltsági térképbe (hogy a kitöltés ne tegyen rá semmit).
+local function occupy(at: Vector3, hx: number, hz: number, rot: number?)
+	Common.occupy(Common.rect(at.X, at.Z, hx, hz, rot))
+end
+
 local function newProp(name: string): Model
 	local model = Instance.new("Model")
 	model.Name = name
@@ -53,6 +58,7 @@ local STONE = Color3.fromRGB(214, 200, 176)
 
 -- Fa: törzs és több gömbből álló lombkorona. A lomb a festék színét kapja, árnyalatokkal.
 function Props.tree(at: Vector3, scale: number?)
+	occupy(at, 3, 3)
 	local rng = Common.rng
 	local s = (scale or 1) * rng:NextNumber(0.85, 1.15)
 	local model = newProp("Tree")
@@ -78,6 +84,7 @@ end
 
 -- Bokor: pár gömb a földön.
 function Props.bush(at: Vector3, scale: number?)
+	occupy(at, 2, 2)
 	local s = scale or 1
 	local model = newProp("Bush")
 	for _, c in
@@ -98,6 +105,7 @@ end
 
 -- Pad: ülőlap, háttámla, két vasláb. rot: merre néz az ülő (mint az épületeknél).
 function Props.bench(at: Vector3, rot: number)
+	occupy(at, 3, 1.5, rot)
 	local model = newProp("Bench")
 	local base = CFrame.new(at) * CFrame.Angles(0, math.rad(rot), 0)
 	propPart(model, WOOD, { Size = Vector3.new(5, 0.3, 1.5), CFrame = base * CFrame.new(0, 1.3, 0) }, "paint")
@@ -113,6 +121,7 @@ end
 
 -- Utcai lámpa: talapzat, oszlop, lámpafej üveggel és tetővel. Az oszlop a festék sötétebb árnyalatát kapja.
 function Props.lamp(at: Vector3)
+	occupy(at, 1, 1)
 	local model = newProp("Lamp")
 	propPart(model, IRON, cylinderUp(at + Vector3.new(0, 0.5, 0), 1, 1.3), "dark")
 	propPart(model, IRON, cylinderUp(at + Vector3.new(0, 4.5, 0), 8, 0.45), "dark")
@@ -133,6 +142,7 @@ end
 
 -- Virágláda: a láda a festék színét kapja, a virágok tarkák.
 function Props.planter(at: Vector3, rot: number, length: number?)
+	occupy(at, (length or 4) / 2 + 0.5, 1, rot)
 	local len = length or 4
 	local model = newProp("Planter")
 	local base = CFrame.new(at) * CFrame.Angles(0, math.rad(rot), 0)
@@ -168,6 +178,7 @@ end
 
 -- Kávézóasztal napernyővel és két székkel.
 function Props.cafeTable(at: Vector3)
+	occupy(at, 3.5, 3.5)
 	local model = newProp("CafeTable")
 	propPart(model, Color3.fromRGB(240, 238, 230), cylinderUp(at + Vector3.new(0, 2.2, 0), 0.25, 3))
 	propPart(model, IRON, cylinderUp(at + Vector3.new(0, 1.1, 0), 2.2, 0.35))
@@ -192,6 +203,7 @@ end
 
 -- Piaci stand: pult, négy oszlop, lejtős ponyvatető, áru a pulton.
 function Props.stall(at: Vector3, rot: number)
+	occupy(at, 4, 3, rot)
 	local model = newProp("Stall")
 	local base = CFrame.new(at) * CFrame.Angles(0, math.rad(rot), 0)
 	propPart(model, WOOD, { Size = Vector3.new(6, 2.4, 2.2), CFrame = base * CFrame.new(0, 1.2, -0.8) }, "dark")
@@ -223,6 +235,7 @@ end
 
 -- Szökőkút: kerek medence vízzel, középen oszlop és felső tál. A kőszegélyek a festék világos árnyalatát kapják.
 function Props.fountain(at: Vector3, radius: number)
+	occupy(at, radius + 1, radius + 1)
 	local model = newProp("Fountain")
 	local water = Color3.fromRGB(80, 170, 230)
 	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 0.8, 0), 1.6, radius * 2), "light")
@@ -243,6 +256,7 @@ end
 
 -- Tavacska: lapos víztükör kőszegéllyel.
 function Props.pond(at: Vector3, size: Vector2)
+	occupy(at, size.X / 2 + 1.5, size.Y / 2 + 1.5)
 	local model = newProp("Pond")
 	propPart(
 		model,
@@ -261,6 +275,10 @@ end
 -- Sövény két pont között.
 function Props.hedge(from: Vector3, to: Vector3, height: number?)
 	local h = height or 2.2
+	local mid0 = (from + to) / 2
+	Common.occupy(
+		Common.rect(mid0.X, mid0.Z, 1, (to - from).Magnitude / 2, math.deg(math.atan2(to.X - from.X, to.Z - from.Z)))
+	)
 	local model = newProp("Hedge")
 	local mid = (from + to) / 2 + Vector3.new(0, h / 2, 0)
 	local length = (to - from).Magnitude
@@ -275,6 +293,10 @@ end
 
 -- Léckerítés két pont között: oszlopok gombbal, két léc. A festék világos árnyalatát kapja.
 function Props.fence(from: Vector3, to: Vector3)
+	local mid0 = (from + to) / 2
+	Common.occupy(
+		Common.rect(mid0.X, mid0.Z, 0.5, (to - from).Magnitude / 2, math.deg(math.atan2(to.X - from.X, to.Z - from.Z)))
+	)
 	local model = newProp("Fence")
 	local white = Color3.fromRGB(246, 244, 236)
 	local length = (to - from).Magnitude
@@ -303,6 +325,7 @@ end
 
 -- Kőív két oszloppal (városkapu, átjáró); a tetején festhető sáv.
 function Props.arch(at: Vector3, rot: number, width: number, height: number)
+	occupy(at, width / 2 + 3, 2, rot)
 	local model = newProp("Arch")
 	local base = CFrame.new(at) * CFrame.Angles(0, math.rad(rot), 0)
 	for _, x in { -1, 1 } do
@@ -327,6 +350,7 @@ end
 
 -- Kerti pavilon: padló, oszlopok, kereszt-nyeregtető a festék színében.
 function Props.gazebo(at: Vector3, size: number)
+	occupy(at, size / 2 + 1, size / 2 + 1)
 	local model = newProp("Gazebo")
 	local white = Color3.fromRGB(246, 244, 236)
 	propPart(model, WOOD, { Size = Vector3.new(size, 0.6, size), Position = at + Vector3.new(0, 0.3, 0) })
@@ -358,6 +382,7 @@ end
 
 -- Kikötőbak / terelőoszlop.
 function Props.bollard(at: Vector3)
+	occupy(at, 0.6, 0.6)
 	local model = newProp("Bollard")
 	propPart(model, IRON, cylinderUp(at + Vector3.new(0, 0.9, 0), 1.8, 0.7), "dark")
 	propPart(
@@ -387,6 +412,7 @@ end
 
 -- Szobor talapzaton: a talapzat kő, a figura a festék színét kapja.
 function Props.statue(at: Vector3, rot: number)
+	occupy(at, 3, 3, rot)
 	local model = newProp("Statue")
 	local base = CFrame.new(at) * CFrame.Angles(0, math.rad(rot), 0)
 	propPart(model, STONE, { Size = Vector3.new(4, 3, 4), CFrame = base * CFrame.new(0, 1.5, 0) })
@@ -404,6 +430,207 @@ function Props.statue(at: Vector3, rot: number)
 		CFrame = base * CFrame.new(1.2, 6.9, 0) * CFrame.Angles(0, 0, math.rad(-25)),
 	}, "paint")
 	propPart(model, bronze, { Size = Vector3.new(0.5, 2.2, 0.5), CFrame = base * CFrame.new(-1.15, 4.9, 0) }, "paint")
+end
+
+---------------------------------------------------------------------------------------------------
+-- Kitöltő tárgyak (a Kit.fill teszi le őket az üres helyekre). A foglaltságot a Kit.fill jegyzi fel.
+
+local SOIL = Color3.fromRGB(120, 86, 60)
+
+-- Veteményes: földágyás növénysorokkal, néha madárijesztővel. A növények a festék színét kapják.
+function Props.vegetablePatch(at: Vector3, rot: number, size: number)
+	local model = newProp("VegetablePatch")
+	local base = CFrame.new(at) * CFrame.Angles(0, math.rad(rot), 0)
+	propPart(
+		model,
+		SOIL,
+		{ Size = Vector3.new(size, 0.5, size), CFrame = base * CFrame.new(0, 0.25, 0), Material = Enum.Material.Ground }
+	)
+	local rows = 3
+	for i = 1, rows do
+		local x = ((i - 0.5) / rows - 0.5) * size * 0.8
+		propPart(model, LEAF, {
+			Size = Vector3.new(size * 0.18, 0.9, size * 0.85),
+			CFrame = base * CFrame.new(x, 0.9, 0),
+			Material = Enum.Material.Grass,
+		}, if i == 2 then "light" else "paint")
+	end
+	if Common.rng:NextNumber() < 0.3 then
+		propPart(
+			model,
+			WOOD,
+			{ Size = Vector3.new(0.3, 4, 0.3), CFrame = base * CFrame.new(size * 0.4, 2, size * 0.4) }
+		)
+		propPart(
+			model,
+			Color3.fromRGB(200, 60, 50),
+			{ Size = Vector3.new(2.4, 0.3, 0.3), CFrame = base * CFrame.new(size * 0.4, 3, size * 0.4) },
+			"paint"
+		)
+		propPart(model, Color3.fromRGB(220, 190, 120), {
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * 1,
+			CFrame = base * CFrame.new(size * 0.4, 4.2, size * 0.4),
+		})
+	end
+end
+
+-- Virágágyás: kerek földágyás tarka virágokkal.
+function Props.flowerBed(at: Vector3, radius: number)
+	local model = newProp("FlowerBed")
+	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 0.3, 0), 0.6, radius * 2), "light")
+	propPart(model, LEAF, cylinderUp(at + Vector3.new(0, 0.5, 0), 0.5, radius * 2 - 0.8))
+	local flowers = {
+		Color3.fromRGB(236, 84, 120),
+		Color3.fromRGB(252, 206, 70),
+		Color3.fromRGB(240, 120, 60),
+		Color3.fromRGB(250, 250, 250),
+	}
+	for i = 1, 5 do
+		local a = i / 5 * math.pi * 2
+		local r = radius * 0.5
+		propPart(model, flowers[i % #flowers + 1], {
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * 1.2,
+			Position = at + Vector3.new(math.cos(a) * r, 1.1, math.sin(a) * r),
+		}, if i % 2 == 0 then "paint" else nil)
+	end
+end
+
+-- Gyümölcsfa: kisebb fa, a lombban gyümölcsökkel.
+function Props.fruitTree(at: Vector3)
+	local model = newProp("FruitTree")
+	propPart(model, Color3.fromRGB(120, 84, 56), cylinderUp(at + Vector3.new(0, 2, 0), 4, 0.9))
+	propPart(
+		model,
+		LEAF,
+		{ Shape = Enum.PartType.Ball, Size = Vector3.one * 5.5, Position = at + Vector3.new(0, 5.5, 0) },
+		"paint"
+	)
+	propPart(
+		model,
+		LEAF,
+		{ Shape = Enum.PartType.Ball, Size = Vector3.one * 3.5, Position = at + Vector3.new(1.3, 4.6, 0.8) },
+		"dark"
+	)
+	local fruit = pick({ Color3.fromRGB(220, 50, 50), Color3.fromRGB(250, 170, 40), Color3.fromRGB(240, 220, 70) })
+	for _, o in { Vector3.new(2.2, 5, -1), Vector3.new(-1.8, 6, 1.4), Vector3.new(0.4, 4.2, 2.4) } do
+		propPart(model, fruit, { Shape = Enum.PartType.Ball, Size = Vector3.one * 0.8, Position = at + o })
+	end
+end
+
+-- Ládarakás (udvarra, piacra).
+function Props.crates(at: Vector3, rot: number)
+	local model = newProp("Crates")
+	local base = CFrame.new(at) * CFrame.Angles(0, math.rad(rot), 0)
+	propPart(model, WOOD, { Size = Vector3.new(2, 2, 2), CFrame = base * CFrame.new(-1.1, 1, 0) }, "paint")
+	propPart(model, WOOD, { Size = Vector3.new(2, 2, 2), CFrame = base * CFrame.new(1.1, 1, 0.3) }, "dark")
+	propPart(
+		model,
+		WOOD,
+		{ Size = Vector3.new(1.8, 1.8, 1.8), CFrame = base * CFrame.new(0, 2.9, 0.1) * CFrame.Angles(0, 0.3, 0) },
+		"light"
+	)
+end
+
+-- Kút: kerek kőkáva, két oszlop, kis tető.
+function Props.well(at: Vector3)
+	local model = newProp("Well")
+	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 1, 0), 2, 4))
+	propPart(model, Color3.fromRGB(60, 110, 160), cylinderUp(at + Vector3.new(0, 1.9, 0), 0.3, 3))
+	for _, x in { -1.7, 1.7 } do
+		propPart(model, WOOD, { Size = Vector3.new(0.4, 3.4, 0.4), Position = at + Vector3.new(x, 3.4, 0) })
+	end
+	propPart(
+		model,
+		Color3.fromRGB(180, 70, 60),
+		{ Size = Vector3.new(4.6, 0.4, 3), Position = at + Vector3.new(0, 5.2, 0) },
+		"paint"
+	)
+end
+
+-- Kerti fészer: deszkafal, nyeregtető, ajtó. A fal és a tető a festék árnyalatait kapja.
+function Props.shed(at: Vector3, rot: number)
+	local model = newProp("Shed")
+	local base = CFrame.new(at) * CFrame.Angles(0, math.rad(rot), 0)
+	local w, d, h = 6, 5, 4
+	local walls =
+		propPart(model, WOOD, { Size = Vector3.new(w, h, d), CFrame = base * CFrame.new(0, h / 2, 0) }, "paint")
+	walls.Material = Enum.Material.WoodPlanks
+	-- Oromfal: 45 fokkal elforgatott hasáb, az alsó fele a falban
+	local side = d / math.sqrt(2)
+	propPart(model, WOOD, {
+		Size = Vector3.new(w, side, side),
+		CFrame = base * CFrame.new(0, h, 0) * CFrame.Angles(math.rad(45), 0, 0),
+		Material = Enum.Material.WoodPlanks,
+	}, "paint")
+	for _, sign in { 1, -1 } do
+		local half = d / 2 + 0.5
+		propPart(model, Color3.fromRGB(150, 70, 56), {
+			Size = Vector3.new(w + 0.8, 0.3, half * math.sqrt(2)),
+			CFrame = base
+				* CFrame.new(0, h + (d / 2 - 0.5) / 2, sign * half / 2)
+				* CFrame.Angles(sign * math.rad(45), 0, 0)
+				* CFrame.new(0, 0.15, 0),
+		}, "dark")
+	end
+	propPart(
+		model,
+		Color3.fromRGB(90, 62, 44),
+		{ Size = Vector3.new(1.8, 3, 0.2), CFrame = base * CFrame.new(0, 1.5, -d / 2 - 0.1) }
+	)
+end
+
+-- Vadvirágok: pár apró, tarka virág a fűben (rétekre).
+function Props.wildflowers(at: Vector3)
+	local model = newProp("Wildflowers")
+	local rng = Common.rng
+	local flowers = {
+		Color3.fromRGB(236, 84, 120),
+		Color3.fromRGB(252, 206, 70),
+		Color3.fromRGB(250, 250, 250),
+		Color3.fromRGB(180, 100, 220),
+	}
+	for i = 1, 4 do
+		local o = Vector3.new(rng:NextNumber(-2.5, 2.5), 0, rng:NextNumber(-2.5, 2.5))
+		propPart(model, LEAF, { Size = Vector3.new(0.25, 1, 0.25), Position = at + o + Vector3.new(0, 0.5, 0) }, "dark")
+		propPart(
+			model,
+			flowers[i],
+			{ Shape = Enum.PartType.Ball, Size = Vector3.one * 0.8, Position = at + o + Vector3.new(0, 1.1, 0) },
+			if i == 1 then "paint" else nil
+		)
+	end
+end
+
+-- Szénaboglya.
+function Props.haystack(at: Vector3)
+	local model = newProp("Haystack")
+	local hay = Color3.fromRGB(226, 192, 100)
+	propPart(model, hay, cylinderUp(at + Vector3.new(0, 1.2, 0), 2.4, 4.4), "light")
+	propPart(
+		model,
+		hay,
+		{ Shape = Enum.PartType.Ball, Size = Vector3.new(4.4, 4.4, 4.4), Position = at + Vector3.new(0, 2.4, 0) },
+		"light"
+	)
+end
+
+-- Egyszerű erdei fa a városfalon kívülre (csak díszlet: nem festhető, nem kerül a Props mappába).
+function Props.forestTree(parent: Instance, at: Vector3, scale: number)
+	local trunk = Common.newPart(cylinderUp(at + Vector3.new(0, 4 * scale, 0), 8 * scale, 1.4 * scale))
+	trunk.Color = Color3.fromRGB(96, 80, 66)
+	trunk.Parent = parent
+	for i, o in { Vector3.new(0, 10, 0), Vector3.new(1.5, 7.5, 1) } do
+		local crown = Common.newPart({
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * (if i == 1 then 8 else 6) * scale,
+			Position = at + o * scale,
+		})
+		crown.Color = Color3.fromRGB(84, 108, 84)
+		crown.Material = Enum.Material.Grass
+		crown.Parent = parent
+	end
 end
 
 return Props

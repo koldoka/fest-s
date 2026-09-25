@@ -33,6 +33,8 @@ end
 for _, w in folders.world:GetChildren() do
 	if w.ClassName == "Part" then dump(w, 0, "W") parts += 1 end
 end
-for _, t in folders.tanks:GetChildren() do dump(t, 0, "T") parts += 1 end
+for _, spot in Kit.tankSpots do
+	table.insert(lines, table.concat({ "T", 0, "TankSpot", "", num(spot.X), num(spot.Y + 1.5), num(spot.Z), "1", "0", "0", "0", "1", "0", "0", "0", "1", "4", "3", "4", "1", "0", "1", "0" }, "|"))
+end
 print("PARTS " .. parts .. " buildings " .. #folders.buildings:GetChildren() .. " props " .. #folders.props:GetChildren())
 print(table.concat(lines, "\n"))

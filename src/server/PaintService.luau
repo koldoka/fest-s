@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local BlobCharacter = require(script.Parent.BlobCharacter)
+local TankService = require(script.Parent.TankService)
 
 local PaintedRemote = ReplicatedStorage.Remotes.Painted
 
@@ -139,6 +140,9 @@ local function tryColorProp(player: Player, prop: Model)
 end
 
 local function refill(player: Player, tank: BasePart)
+	if tank:GetAttribute("Used") then
+		return
+	end
 	local colorName = tank:GetAttribute("ColorName")
 	if player:GetAttribute("PaintColor") == colorName and player:GetAttribute("Paint") == Config.PAINT_MAX then
 		return
@@ -146,7 +150,9 @@ local function refill(player: Player, tank: BasePart)
 	player:SetAttribute("PaintColor", colorName)
 	player:SetAttribute("Paint", Config.PAINT_MAX)
 	BlobCharacter.update(player)
+	TankService.consume(tank)
 end
+PaintService.refill = refill
 
 local function tryPaint(player: Player, building: BasePart)
 	local colorName = player:GetAttribute("PaintColor")
@@ -252,15 +258,6 @@ function PaintService.setLevel(buildings: Folder, props: Folder, tanks: Folder)
 	propsFolder = props
 	tanksFolder = tanks
 	overlap.FilterDescendantsInstances = { buildings, props, tanks }
-	-- Tartalék a körzetfigyelés mellé: a tartály érintése is feltölt.
-	for _, tank in tanks:GetChildren() do
-		(tank :: BasePart).Touched:Connect(function(hit)
-			local player = Players:GetPlayerFromCharacter(hit.Parent)
-			if player then
-				refill(player, tank :: BasePart)
-			end
-		end)
-	end
 	paintedCount = 0
 	updateCityStats()
 end

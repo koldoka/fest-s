@@ -8,7 +8,7 @@ local Kit = require(script.Parent.Kit)
 
 local LevelLoader = {}
 
-export type LevelFolders = { world: Folder, buildings: Folder, props: Folder, tanks: Folder }
+export type LevelFolders = { world: Folder, buildings: Folder, props: Folder, tanks: Folder, tankSpots: { Vector3 } }
 
 function LevelLoader.load(name: string): LevelFolders
 	local old = workspace:FindFirstChild("Level")
@@ -38,6 +38,7 @@ function LevelLoader.load(name: string): LevelFolders
 	end
 
 	root.Parent = workspace
+	folders.tankSpots = Kit.tankSpots
 	return folders :: any
 end
 

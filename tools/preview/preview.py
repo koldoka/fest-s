@@ -79,13 +79,15 @@ def parse(lines):
     return parts
 
 
-def render(parts, out, center, radius, az, el, scale, W=1200, H=900):
+def render(parts, out, center, radius, az, el, scale, W=1200, H=900, topdown=False):
     """Egyszerű z-pufferes rajzoló: minden alkatrész téglatest (a gömb és a henger is)."""
     a, e = math.radians(az), math.radians(el)
     fwd = np.array([math.cos(e) * math.sin(a), -math.sin(e), math.cos(e) * math.cos(a)])
     right = np.array([math.cos(a), 0, -math.sin(a)])
     up = np.cross(right, fwd)
     up = up if up[1] > 0 else -up
+    if topdown:  # felülnézet: észak (-Z) felül, kelet (+X) jobbra
+        fwd, right, up = np.array([0, -1.0, 0]), np.array([1.0, 0, 0]), np.array([0, 0, -1.0])
     center = np.array(center, float)
     light = np.array([0.4, 0.8, 0.3])
     light /= np.linalg.norm(light)
@@ -142,7 +144,7 @@ def main():
     print(lines[0])
     parts = parse(lines)
     # Felülnézet az egész pályáról
-    render(parts, out_dir / "top.png", (0, 0, 0), 320, 0, 89.9, 1.8, W=1200, H=1100)
+    render(parts, out_dir / "top.png", (0, 0, 0), 320, 0, 90, 1.8, W=1200, H=1100, topdown=True)
     for spec in sys.argv[3:]:
         name, cx, cy, cz, rad, az, el, sc = spec.split(",")
         render(parts, out_dir / f"{name}.png", (float(cx), float(cy), float(cz)), float(rad), float(az), float(el), float(sc))

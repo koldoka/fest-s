@@ -3,9 +3,9 @@
 Színes festős platformjáték **Robloxra**: egy festékpacával ugrálsz végig egy szürke városon,
 és minden épületet kifestesz, amihez hozzáérsz.
 
-**Első pálya:** kézzel tervezett kisváros főtérrel, templommal, piac utcával, lakóutcával, folyóval és
-hidakkal, lépcsős terasszal, parkkal, szélmalmos dombbal, folyóparti negyeddel és városháza térrel
-(83 festhető ház). Minden szürke, a festékes paca adja vissza a színeket.
+**Első pálya:** kézzel tervezett kisváros városfallal körülvéve: kanyargó utcák és sikátorok, főtér
+templommal és városházával, folyó három híddal, terasz kilátótoronnyal, szélmalmos domb, keleti park,
+kertek, gyümölcsösök, rétek, termőföldek. Minden szürke, a festékes paca adja vissza a színeket.
 
 ## Indítás (Windows)
 
@@ -49,7 +49,8 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
 
 ## Játékmenet
 
-- Ugorj bele egy **festéktartályba** (a kereszteződésekben álló színes hengerek): felveszed a színét, és teli lesz a festéked.
+- Ugorj bele egy **festéktartályba** (színes, világító henger): felveszed a színét, és teli lesz a festéked.
+  A tartály ezután eltűnik, és kis idő múlva máshol, más színnel jelenik meg (egyszerre 12 van a pályán).
 - **Érj hozzá egy épülethez** (neki is ugorhatsz, vagy ráugorhatsz a tetejére): befested, és elfogy egy adag festék.
 - Szürke épületért pont jár. Már befestett épületet más színre át lehet festeni, de azért nincs pont.
 - A fák, padok, lámpák, kerítések és más tárgyak érintésre színesek lesznek (ez nem fogyaszt festéket).
@@ -67,13 +68,14 @@ src/server/
   Main.server.luau     indítás, a pálya újrakezdése
   LevelLoader.luau     a pálya betöltése (Config.LEVEL)
   Kit/                 építőkészlet a pályákhoz
-    init.luau          talaj, lépcső, víz, híd, festéktartály, kezdőpont
+    init.luau          talaj, utcák, házsorok, kitöltés, városfal, lépcső, víz, híd, tartályhelyek
     Buildings.luau     épületek: tetők, ablakok, ajtók, kirakatok, erkélyek, óra…
     Props.luau         tárgyak: fa, pad, lámpa, kerítés, szökőkút, szobor, szélmalom…
     Common.luau        közös segédek
   Levels/
     SmallTown.luau     1. pálya: kisváros főtérrel (kézzel tervezve)
   PaintService.luau    festés: mihez ér a játékos, festék, pontok (erről mindig a szerver dönt)
+  TankService.luau     festéktartályok: véletlen helyen és színnel, használat után máshol jelennek meg
   BlobCharacter.luau   a paca figura: elrejti az avatart, szín és méret a festék szerint
 src/client/
   Main.client.luau     indítás
@@ -90,7 +92,10 @@ tools/preview/              pálya-előnézet a Studio nélkül (lásd lent)
 
 ## Új pálya készítése
 
-A pályák kézzel, kódból vannak megtervezve a `src/server/Levels/` mappában. Egy pálya a `Kit` függvényeit
+A pályák kézzel, kódból vannak megtervezve a `src/server/Levels/` mappában. Az utcák, terek és a különleges
+helyek (templom, terasz, domb…) kézzel vannak elhelyezve; a házak az utcák mentén sorakoznak (`Kit.streetRow`),
+és ami üres hely marad, azt a `Kit.fill` tölti ki telkenként egy-egy témával (gyümölcsös, veteményeskert, rét,
+liget, termőföld, udvar). Egy foglaltsági térkép gondoskodik róla, hogy semmi ne kerüljön egymásra. Egy pálya a `Kit` függvényeit
 hívja (épület, fa, pad, lámpa, szökőkút, lépcső, festéktartály…), a leírásuk a `Kit.luau` elején és
 a `Kit.building` fölött van. A betöltendő pályát a `Config.LEVEL` adja meg.
 

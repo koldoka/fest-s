@@ -7,7 +7,8 @@ local Config = {
 	-- Épületek (a Kit építi fel őket a pályaleírás alapján). A magasság mindig egész számú emelet.
 	BUILDINGS = {
 		FLOOR_HEIGHT = 6, -- ennyi stud egy emelet
-		BAY_WIDTH = 4.5, -- nagyjából ilyen széles egy ablakos falszakasz
+		BAY_WIDTH = 6, -- nagyjából ilyen széles egy ablakos falszakasz (elöl és hátul)
+		SIDE_BAY_FACTOR = 1.7, -- az oldalfalakon ennyiszer szélesebb (ritkábbak az ablakok)
 		GREY = Color3.fromRGB(128, 128, 132), -- a festetlen épületek színe
 		GREY_VARIANCE = 12, -- ennyivel térhet el véletlenszerűen a szürke árnyalata
 		-- Ablakok: "decal" = ablakonként egy lap a rajzolt ablakképpel (alap);
@@ -47,6 +48,13 @@ local Config = {
 		{ name = "Green", color = Color3.fromRGB(70, 200, 96) },
 		{ name = "Purple", color = Color3.fromRGB(164, 92, 224) },
 		{ name = "Orange", color = Color3.fromRGB(250, 140, 40) },
+	},
+
+	-- Festéktartályok: egyszerre ennyi van a pályán, véletlen helyen és színnel; egy használat után eltűnik,
+	-- és RESPAWN mp múlva máshol jelenik meg egy új.
+	TANKS = {
+		ACTIVE = 12,
+		RESPAWN = 6,
 	},
 
 	-- Festés

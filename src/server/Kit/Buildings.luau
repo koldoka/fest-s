@@ -165,7 +165,9 @@ local function addWindows(
 	end
 	for _, face in FACES do
 		local width = faceWidth(part.Size, face.dir)
-		local bays = math.max(1, math.round(width / b.BAY_WIDTH))
+		-- Az oldalfalakon (helyi X irány) ritkábbak az ablakok, mint elöl és hátul.
+		local bayWidth0 = if face.dir.X ~= 0 then b.BAY_WIDTH * b.SIDE_BAY_FACTOR else b.BAY_WIDTH
+		local bays = math.max(1, math.round(width / bayWidth0))
 		local bayWidth = width / bays
 		for floor = 1, floors do
 			local y = (floor - 1) * b.FLOOR_HEIGHT + b.FLOOR_HEIGHT * (if style == "tall" then 0.5 else 0.55)
@@ -604,6 +606,9 @@ function Buildings.building(spec: { [string]: any }): BasePart
 
 	body.Parent = Common.folders.buildings
 	table.insert(bodies, body)
+	-- Alaprajz a foglaltsági térképbe (elöl-hátul nagyobb ráhagyással az ajtó, lépcső, erkély miatt)
+	local pos = body.Position
+	Common.occupy(Common.rect(pos.X, pos.Z, body.Size.X / 2 + 0.5, body.Size.Z / 2 + 1.8, spec.rot or 0))
 	return body
 end
 
