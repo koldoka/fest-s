@@ -3,8 +3,9 @@
 Színes festős platformjáték **Robloxra**: egy festékpacával ugrálsz végig egy szürke városon,
 és minden épületet kifestesz, amihez hozzáérsz.
 
-**Első pálya:** kézzel tervezett kisváros főtérrel, templommal, piac utcával, lakóutcával,
-lépcsős terasszal és parkkal. Minden szürke, a festékes paca adja vissza a színeket.
+**Első pálya:** kézzel tervezett kisváros főtérrel, templommal, piac utcával, lakóutcával, folyóval és
+hidakkal, lépcsős terasszal, parkkal, szélmalmos dombbal, folyóparti negyeddel és városháza térrel
+(83 festhető ház). Minden szürke, a festékes paca adja vissza a színeket.
 
 ## Indítás (Windows)
 
@@ -29,38 +30,29 @@ lépcsős terasszal és parkkal. Minden szürke, a festékes paca adja vissza a 
   (pl. a `Players.CharacterAutoLoads`) és szkriptjei összekeveredhetnek.
 - Egyszerre csak **egy** `rojo serve` fusson.
 
-## Hangok feltöltése (egyszer)
+## Hangok és képek
 
-A hangokat a `tools/generate_sounds.py` állítja elő kódból, ezek az `assets/sounds/` mappában vannak.
-Amíg nincsenek feltöltve, a játék néma, de minden más működik.
-
-1. Studio: **Asset Manager** → **Import** → válaszd ki az `assets/sounds/` `.ogg` fájljait.
-2. Mindegyiken jobb klikk → **Copy ID to Clipboard**.
-3. Az azonosítót írd be a `src/shared/Config.luau` fájl `SOUNDS` részébe, pl. `ids = { "rbxassetid://1234567890" }`.
+A hangokat a `tools/generate_sounds.py`, az ablakképeket a `tools/generate_textures.py` állítja elő
+(`assets/sounds/`, `assets/textures/`). Feltöltés: Studio → **Asset Manager** → **Import** → jobb klikk →
+**Copy ID**, majd az azonosító a `src/shared/Config.luau`-ba (`SOUNDS`, illetve `BUILDINGS.FACADE`).
+Mind fel van töltve és be van írva. Ha egy hangot vagy képet újragenerálunk, újra fel kell tölteni.
 
 | Fájl | Config-név | Mikor szól |
 |---|---|---|
-| `paint_1.ogg` … `paint_4.ogg` | `Paint` (mind a négy azonosító a listába) | épület befestése, véletlenszerűen |
+| `paint_1.ogg` … `paint_4.ogg` | `Paint` | épület befestése, véletlenszerűen |
 | `roll_loop.ogg` | `Roll` | gurulás (ismétlődik, a sebességgel hangosodik) |
-| `jump.ogg` | `Jump` | ugrás |
-| `land.ogg` | `Land` | földet érés |
+| `jump.ogg`, `land.ogg` | `Jump`, `Land` | ugrás, földet érés |
 | `refill.ogg` | `Refill` | festék felvétele tartályból |
-| `city_done.ogg` | `CityDone` | az egész város színes |
+| `city_done.ogg` | `CityDone` | minden ház színes |
 
 A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` üres szkript kapcsolja ki.
-
-## Ablaktextúrák feltöltése (egyszer)
-
-Az `assets/textures/window_grey.png` és `window_lit.png` (a `tools/generate_textures.py` készíti) az ablakok képe.
-Studio: **Asset Manager** → **Import** → a két kép → jobb klikk → **Copy ID** → a `src/shared/Config.luau`
-`CITY.FACADE` részébe (`GREY` és `LIT`). Amíg üres, egyszerű ablaksávok látszanak.
 
 ## Játékmenet
 
 - Ugorj bele egy **festéktartályba** (a kereszteződésekben álló színes hengerek): felveszed a színét, és teli lesz a festéked.
 - **Érj hozzá egy épülethez** (neki is ugorhatsz, vagy ráugorhatsz a tetejére): befested, és elfogy egy adag festék.
 - Szürke épületért pont jár. Már befestett épületet más színre át lehet festeni, de azért nincs pont.
-- A fák, padok, lámpák és más tárgyak érintésre visszakapják a színüket (ez nem fogyaszt festéket).
+- A fák, padok, lámpák, kerítések és más tárgyak érintésre színesek lesznek (ez nem fogyaszt festéket).
 - Ha az összes ház színes, 10 másodperc múlva minden újra szürke lesz.
 
 Irányítás: a Roblox alap irányítása (WASD + Space, mobilon joystick + ugrás gomb).
@@ -74,7 +66,11 @@ src/shared/
 src/server/
   Main.server.luau     indítás, a pálya újrakezdése
   LevelLoader.luau     a pálya betöltése (Config.LEVEL)
-  Kit.luau             építőkészlet: épületek, tárgyak, lépcsők, talaj, festéktartályok
+  Kit/                 építőkészlet a pályákhoz
+    init.luau          talaj, lépcső, víz, híd, festéktartály, kezdőpont
+    Buildings.luau     épületek: tetők, ablakok, ajtók, kirakatok, erkélyek, óra…
+    Props.luau         tárgyak: fa, pad, lámpa, kerítés, szökőkút, szobor, szélmalom…
+    Common.luau        közös segédek
   Levels/
     SmallTown.luau     1. pálya: kisváros főtérrel (kézzel tervezve)
   PaintService.luau    festés: mihez ér a játékos, festék, pontok (erről mindig a szerver dönt)
@@ -88,7 +84,8 @@ src/client/
   Sounds.luau          hangok, gurulás
 src/overrides/         a Roblox alapszkriptjeinek felülírása (lépéshangok ki)
 tools/generate_sounds.py    a hangok előállítása kódból (assets/sounds/*.ogg)
-tools/generate_textures.py  az ablaktextúrák előállítása (assets/textures/*.png)
+tools/generate_textures.py  az ablakképek előállítása (assets/textures/*.png)
+tools/preview/              pálya-előnézet a Studio nélkül (lásd lent)
 ```
 
 ## Új pálya készítése
@@ -98,8 +95,19 @@ hívja (épület, fa, pad, lámpa, szökőkút, lépcső, festéktartály…), a
 a `Kit.building` fölött van. A betöltendő pályát a `Config.LEVEL` adja meg.
 
 - **Épületek**: a játékos befesti őket a saját színével, ezekért jár pont. Ha mind színes, a pálya újraindul.
-- **Tárgyak** (fák, padok, lámpák, szökőkút, standok…): érintésre visszakapják a természetes színüket.
-  Ehhez festék kell, de nem fogy, és pont sem jár érte.
+- **Tárgyak** (fák, padok, lámpák, kerítések, szökőkút, standok…): érintésre színesek lesznek; a festhető
+  részeik (lomb, ülőke, lámpaoszlop, napernyő…) a festék színét kapják, a többi a természetes színét.
+  Át is festhetők. Ehhez festék kell, de nem fogy, és pont sem jár érte.
+
+### Pálya-előnézet a Studio nélkül
+
+A `tools/preview/preview.py` a pályakódot egy Roblox-utánzattal lefuttatja, kiírja az alkatrészek számát,
+és képeket rajzol (felülnézet és tetszőleges nézetek). Így a Studio nélkül is kiderül, ha a pálya hibára fut,
+vagy valami rosszul áll. Kell hozzá a `luau` parancssori program és a Pythonhoz a `numpy` és a `pillow`.
+
+```
+python tools/preview/preview.py SmallTown preview_out "square,0,8,-20,70,200,28,6.5"
+```
 
 ## Ismert korlátok (prototípus)
 

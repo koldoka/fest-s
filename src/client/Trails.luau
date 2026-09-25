@@ -17,7 +17,7 @@ local THICKNESS = 0.05
 local folder: Folder
 local marks: { BasePart } = {}
 -- Játékosonként: az utolsó csíkpont a talajon, és a levegőben volt-e az előző lépésben.
-local states: { [Player]: { last: Vector3?, wasAir: boolean } } = {}
+local states: { [Player]: { last: Vector3?, wasAir: boolean, travel: number, phase: number } } = {}
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
 local rng = Random.new()
@@ -113,7 +113,7 @@ local function update()
 	for _, player in Players:GetPlayers() do
 		local state = states[player]
 		if not state then
-			state = { last = nil, wasAir = false }
+			state = { last = nil, wasAir = false, travel = 0, phase = rng:NextNumber(0, 10) }
 			states[player] = state
 		end
 		local character = player.Character
@@ -127,7 +127,8 @@ local function update()
 		end
 		local airborne = humanoid.FloorMaterial == Enum.Material.Air
 		local diameter = blob.Size.Y
-		local color = blob.Color
+		-- A nedves festék a földön kicsit sötétebb, mint a paca.
+		local color = blob.Color:Lerp(Color3.new(0, 0, 0), 0.08)
 		if airborne then
 			state.last = nil -- a levegőben megszakad a csík
 			state.wasAir = true
@@ -139,7 +140,10 @@ local function update()
 			continue
 		end
 		local point, normal = hit.Position, hit.Normal
-		local width = diameter * t.WIDTH * rng:NextNumber(0.85, 1.1)
+		-- A szélesség lassan hullámzik a megtett úttal (nem ugrál darabonként).
+		local wave = math.sin(state.travel * 0.35 + state.phase) * 0.6
+			+ math.sin(state.travel * 0.9 + state.phase * 2) * 0.4
+		local width = diameter * t.WIDTH * (1 + 0.14 * wave)
 
 		if state.wasAir then
 			-- Földet érés: nagyobb folt és körben fröccsenés.
@@ -161,8 +165,18 @@ local function update()
 			continue
 		end
 		-- Nagy ugrás (járdaszél, teleport): nem húzunk át rajta csíkot, új csík kezdődik.
+		state.travel += distance
 		if math.abs(point.Y - last.Y) < 0.6 and distance < t.SEGMENT_LENGTH * 4 then
 			stroke(last, point, normal, width, color)
+			-- Néha egy nagyobb csepp a csíkban
+			if rng:NextNumber() < t.BLOB_CHANCE then
+				blot(
+					point + (point - last).Unit:Cross(normal) * rng:NextNumber(-0.3, 0.3) * width,
+					normal,
+					width * rng:NextNumber(1.2, 1.45),
+					color
+				)
+			end
 			if rng:NextNumber() < t.SPLATTER_CHANCE then
 				splatter(
 					(last + point) / 2,

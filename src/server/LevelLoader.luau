@@ -31,6 +31,7 @@ function LevelLoader.load(name: string): LevelFolders
 	local level = require(module) :: any
 	Kit.begin(folders :: any, level.seed or 1)
 	level.build(Kit)
+	Kit.finish()
 
 	for property, value in level.lighting or {} do
 		(Lighting :: any)[property] = value

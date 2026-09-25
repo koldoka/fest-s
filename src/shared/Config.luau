@@ -10,11 +10,14 @@ local Config = {
 		BAY_WIDTH = 4.5, -- nagyjából ilyen széles egy ablakos falszakasz
 		GREY = Color3.fromRGB(128, 128, 132), -- a festetlen épületek színe
 		GREY_VARIANCE = 12, -- ennyivel térhet el véletlenszerűen a szürke árnyalata
-		-- Ablaktextúrák (assets/textures, a tools/generate_textures.py készíti). Feltöltés után ide kell beírni
-		-- az azonosítót "rbxassetid://SZÁM" formában. Amíg üres, egyszerű ablaksávok helyettesítik.
+		-- Ablakok: "decal" = ablakonként egy lap a rajzolt ablakképpel (alap);
+		-- "3d" = keret, üveg, párkány külön alkatrészekből (háromszor annyi alkatrész);
+		-- "texture" = az egész falra feszített kép (a legkevesebb alkatrész, de az ajtók mögött is van ablak).
+		WINDOW_MODE = "decal",
+		-- Ablakképek (assets/textures, a tools/generate_textures.py készíti).
 		FACADE = {
-			GREY = "", -- window_grey.png: festetlen ház
-			LIT = "", -- window_lit.png: befestett ház, meleg fényű ablakok
+			GREY = "rbxassetid://115620819300161", -- window_grey.png: festetlen ház
+			LIT = "rbxassetid://75949786836220", -- window_lit.png: befestett ház, meleg fényű ablakok
 		},
 		DOOR_SIZE = Vector2.new(3, 5), -- szélesség, magasság
 		-- Befestve fix színű részletek (a többi a festék színéből számolódik, lásd PaintService)
@@ -65,25 +68,34 @@ local Config = {
 
 	-- Festékcsík a paca után (csak látvány, a klienseken)
 	TRAIL = {
-		WIDTH = 0.55, -- a csík szélessége a paca átmérőjéhez képest
-		SEGMENT_LENGTH = 1.2, -- ennyi stud után tesz le új csíkdarabot
-		SPLATTER_CHANCE = 0.35, -- ekkora eséllyel fröccsen pár apró csepp egy csíkdarab mellé
+		WIDTH = 0.5, -- a csík szélessége a paca átmérőjéhez képest
+		SEGMENT_LENGTH = 0.8, -- ennyi stud után tesz le új csíkdarabot (kisebb = simább kanyarok)
+		SPLATTER_CHANCE = 0.25, -- ekkora eséllyel fröccsen pár apró csepp egy csíkdarab mellé
+		BLOB_CHANCE = 0.08, -- ekkora eséllyel kerül egy nagyobb csepp a csíkba
 		LIFETIME = 8, -- ennyi mp alatt szárad fel (vékonyodik el és tűnik el) a csík
-		MAX_MARKS = 700, -- ennél több darab esetén a legrégebbi eltűnik
+		MAX_MARKS = 900, -- ennél több darab esetén a legrégebbi eltűnik
 	},
 
 	-- Hangok (assets/sounds/*.ogg, a tools/generate_sounds.py készíti). Feltöltés után ide kell beírni
 	-- az azonosítókat "rbxassetid://SZÁM" formában. Több azonosító esetén lejátszáskor véletlenszerűen választ.
 	-- Üres lista = nincs hang.
 	SOUNDS = {
-		-- Épület befestése: paint_1..4.ogg. Amíg nincsenek feltöltve, a régi splat szól.
-		Paint = { ids = { "rbxassetid://115543090630588" }, volume = 0.45, vary = true },
+		-- Épület befestése: paint_1..4.ogg, véletlenszerűen
+		Paint = {
+			ids = {
+				"rbxassetid://90741859902412",
+				"rbxassetid://84857459118539",
+				"rbxassetid://96482009124283",
+				"rbxassetid://131710288937929",
+			},
+			volume = 0.45,
+			vary = true,
+		},
 		Refill = { ids = { "rbxassetid://124300779326945" }, volume = 0.5 }, -- festék felvétele
-		-- Ugrás és földet érés: az új jump.ogg és land.ogg azonosítóit ide kell beírni a régiek helyére.
-		Jump = { ids = { "rbxassetid://115722313654094" }, volume = 0.35, vary = true },
-		Land = { ids = { "rbxassetid://104543177045415" }, volume = 0.45, vary = true },
+		Jump = { ids = { "rbxassetid://108980992543334" }, volume = 0.35, vary = true },
+		Land = { ids = { "rbxassetid://129774262633784" }, volume = 0.45, vary = true },
 		CityDone = { ids = { "rbxassetid://125442387668911" }, volume = 0.7 }, -- az egész város színes
-		Roll = { ids = {}, volume = 0.5 }, -- roll_loop.ogg: ismétlődő gurulás, a sebességgel hangosodik
+		Roll = { ids = { "rbxassetid://75367702913623" }, volume = 0.5 }, -- roll_loop.ogg: ismétlődő gurulás, a sebességgel hangosodik
 	},
 
 	-- Kör

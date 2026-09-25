@@ -7,3 +7,6 @@ sourcemap.json
 .DS_Store
 Thumbs.db
 *.exe
+tools/preview/_bundle.luau
+preview_out/
+__pycache__/

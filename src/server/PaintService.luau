@@ -31,31 +31,48 @@ local WHITE = Color3.new(1, 1, 1)
 local BLACK = Color3.new(0, 0, 0)
 
 -- Befestéskor a részletek színe a festék színéből (ha a részletnek nincs fix PaintedColor-ja).
+local function light(amount: number): (Color3) -> Color3
+	return function(c)
+		return c:Lerp(WHITE, amount)
+	end
+end
+local function dark(amount: number): (Color3) -> Color3
+	return function(c)
+		return c:Lerp(BLACK, amount)
+	end
+end
+local function same(c: Color3): Color3
+	return c
+end
+local function lit(): Color3
+	return Config.BUILDINGS.WINDOW_LIT_COLOR
+end
+
 local ROLE_COLORS: { [string]: (Color3) -> Color3 } = {
-	Tier = function(c)
-		return c
-	end,
-	Plinth = function(c)
-		return c:Lerp(BLACK, 0.35)
-	end,
-	Trim = function(c)
-		return c:Lerp(WHITE, 0.6)
-	end,
-	Balcony = function(c)
-		return c:Lerp(WHITE, 0.6)
-	end,
-	AwningA = function(c)
-		return c:Lerp(BLACK, 0.1)
-	end,
+	Tier = same,
+	Gable = same,
+	Plinth = dark(0.35),
+	Trim = light(0.6),
+	Band = light(0.55),
+	Corner = light(0.5),
+	Balcony = light(0.6),
+	WindowFrame = light(0.75),
+	Sign = light(0.85),
+	Shutter = dark(0.3),
+	Canopy = dark(0.15),
+	AwningA = dark(0.1),
 	AwningB = function()
 		return Color3.fromRGB(250, 247, 238)
 	end,
-	Window = function()
-		return Config.BUILDINGS.WINDOW_LIT_COLOR
-	end,
-	ShopWindow = function()
-		return Config.BUILDINGS.WINDOW_LIT_COLOR
-	end,
+	Window = lit,
+	ShopWindow = lit,
+}
+
+-- A tárgyak festhető részei (PaintRole) a festék színéből.
+local PROP_COLORS: { [string]: (Color3) -> Color3 } = {
+	paint = same,
+	light = light(0.45),
+	dark = dark(0.3),
 }
 
 -- Az épület és a részletei színe. color = nil: vissza a festetlen szürkére.
@@ -63,7 +80,7 @@ local function colorBuilding(building: BasePart, color: Color3?)
 	building.Color = color or building:GetAttribute("BaseColor")
 	for _, detail in building:GetDescendants() do
 		local role = detail:GetAttribute("Role")
-		if detail:IsA("Texture") and role == "Facade" then
+		if detail:IsA("Decal") and role == "Facade" then
 			detail.Texture = if color then Config.BUILDINGS.FACADE.LIT else Config.BUILDINGS.FACADE.GREY
 		elseif detail:IsA("BasePart") and role then
 			if not color then
@@ -95,20 +112,25 @@ local function owningProp(part: Instance): Model?
 	return current :: Model?
 end
 
--- Tárgy: érintésre visszakapja a természetes színét. Festék kell hozzá, de nem fogy, és pont sem jár érte.
+-- Tárgy: érintésre színes lesz; a festhető részei a festék színét kapják, a többi a természetes színét.
+-- Festék kell hozzá, de nem fogy, és pont sem jár érte. Más színnel át lehet festeni.
 local function tryColorProp(player: Player, prop: Model)
-	if prop:GetAttribute("Colored") then
-		return
-	end
 	local colorName = player:GetAttribute("PaintColor")
-	if not Config.PAINT_COLOR_BY_NAME[colorName] or (player:GetAttribute("Paint") or 0) <= 0 then
+	local paintColor = Config.PAINT_COLOR_BY_NAME[colorName]
+	if not paintColor or (player:GetAttribute("Paint") or 0) <= 0 or prop:GetAttribute("ColorName") == colorName then
 		return
 	end
-	prop:SetAttribute("Colored", true)
+	prop:SetAttribute("ColorName", colorName)
 	for _, part in prop:GetDescendants() do
-		local color = part:GetAttribute("PaintedColor")
-		if color and part:IsA("BasePart") then
-			part.Color = color
+		if not part:IsA("BasePart") then
+			continue
+		end
+		local rule = PROP_COLORS[part:GetAttribute("PaintRole")]
+		local natural = part:GetAttribute("PaintedColor")
+		if rule then
+			part.Color = rule(paintColor)
+		elseif natural then
+			part.Color = natural
 		end
 	end
 	if prop.PrimaryPart then
@@ -250,7 +272,7 @@ function PaintService.resetLevel()
 		building:SetAttribute("ColorName", "")
 	end
 	for _, prop in propsFolder:GetChildren() do
-		prop:SetAttribute("Colored", nil)
+		prop:SetAttribute("ColorName", "")
 		for _, part in prop:GetDescendants() do
 			local color = part:GetAttribute("BaseColor")
 			if color and part:IsA("BasePart") then
