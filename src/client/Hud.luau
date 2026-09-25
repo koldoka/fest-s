@@ -66,7 +66,7 @@ function Hud.start()
 		local total = workspace:GetAttribute("BuildingCount") or 0
 		local ratio = if total > 0 then painted / total else 0
 		cityFill.Size = UDim2.fromScale(ratio, 1)
-		cityText.Text = `City painted: {math.floor(ratio * 100)}%`
+		cityText.Text = `Town painted: {math.floor(ratio * 100)}%`
 	end
 	workspace:GetAttributeChangedSignal("PaintedCount"):Connect(updateCity)
 	workspace:GetAttributeChangedSignal("BuildingCount"):Connect(updateCity)
@@ -106,8 +106,8 @@ function Hud.start()
 			paintFill.BackgroundColor3 = color
 			paintText.Text = `{colorName} paint`
 		else
-			swatch.BackgroundColor3 = Config.CITY.GREY
-			paintFill.BackgroundColor3 = Config.CITY.GREY
+			swatch.BackgroundColor3 = Config.BUILDINGS.GREY
+			paintFill.BackgroundColor3 = Config.BUILDINGS.GREY
 			paintText.Text = "Find a paint tank!"
 		end
 		paintFill.Size = UDim2.fromScale(paint / Config.PAINT_MAX, 1)

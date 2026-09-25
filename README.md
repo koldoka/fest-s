@@ -3,8 +3,8 @@
 Színes festős platformjáték **Robloxra**: egy festékpacával ugrálsz végig egy szürke városon,
 és minden épületet kifestesz, amihez hozzáérsz.
 
-**1. mérföldkő (prototípus):** generált szürke város, festéktartályok, festés érintéssel,
-pontok, a város festettségének kijelzése, újrakezdés, ha minden színes.
+**Első pálya:** kézzel tervezett kisváros főtérrel, templommal, piac utcával, lakóutcával,
+lépcsős terasszal és parkkal. Minden szürke, a festékes paca adja vissza a színeket.
 
 ## Indítás (Windows)
 
@@ -60,7 +60,8 @@ Studio: **Asset Manager** → **Import** → a két kép → jobb klikk → **Co
 - Ugorj bele egy **festéktartályba** (a kereszteződésekben álló színes hengerek): felveszed a színét, és teli lesz a festéked.
 - **Érj hozzá egy épülethez** (neki is ugorhatsz, vagy ráugorhatsz a tetejére): befested, és elfogy egy adag festék.
 - Szürke épületért pont jár. Már befestett épületet más színre át lehet festeni, de azért nincs pont.
-- Ha az egész város színes, 10 másodperc múlva újra szürke lesz.
+- A fák, padok, lámpák és más tárgyak érintésre visszakapják a színüket (ez nem fogyaszt festéket).
+- Ha az összes ház színes, 10 másodperc múlva minden újra szürke lesz.
 
 Irányítás: a Roblox alap irányítása (WASD + Space, mobilon joystick + ugrás gomb).
 
@@ -69,23 +70,36 @@ Irányítás: a Roblox alap irányítása (WASD + Space, mobilon joystick + ugr�
 ```
 default.project.json   Rojo: melyik mappa hová kerül a Studióban
 src/shared/
-  Config.luau          minden beállítás: város, színek, festék, mozgás
+  Config.luau          minden beállítás: pálya, épületek, színek, festék, mozgás, hangok
 src/server/
-  Main.server.luau     indítás, a város újrakezdése
-  CityBuilder.luau     a szürke város felépítése, festéktartályok
-  BuildingFactory.luau épülettípusok: ház, üzlet, lakóház, toronyház
+  Main.server.luau     indítás, a pálya újrakezdése
+  LevelLoader.luau     a pálya betöltése (Config.LEVEL)
+  Kit.luau             építőkészlet: épületek, tárgyak, lépcsők, talaj, festéktartályok
+  Levels/
+    SmallTown.luau     1. pálya: kisváros főtérrel (kézzel tervezve)
   PaintService.luau    festés: mihez ér a játékos, festék, pontok (erről mindig a szerver dönt)
   BlobCharacter.luau   a paca figura: elrejti az avatart, szín és méret a festék szerint
 src/client/
   Main.client.luau     indítás
-  Hud.luau             a város festettsége, saját festék, üzenetek
+  Hud.luau             a pálya festettsége, saját festék, üzenetek
   Effects.luau         fröccsenő festék és felvillanás festéskor
   BlobAnimator.luau    a pacák lapulása és nyúlása (csak látvány)
-  Trails.luau          festéknyomok a paca után (csak látvány)
-  Sounds.luau          hangok lejátszása
+  Trails.luau          festékcsík a paca után (csak látvány)
+  Sounds.luau          hangok, gurulás
+src/overrides/         a Roblox alapszkriptjeinek felülírása (lépéshangok ki)
 tools/generate_sounds.py    a hangok előállítása kódból (assets/sounds/*.ogg)
 tools/generate_textures.py  az ablaktextúrák előállítása (assets/textures/*.png)
 ```
+
+## Új pálya készítése
+
+A pályák kézzel, kódból vannak megtervezve a `src/server/Levels/` mappában. Egy pálya a `Kit` függvényeit
+hívja (épület, fa, pad, lámpa, szökőkút, lépcső, festéktartály…), a leírásuk a `Kit.luau` elején és
+a `Kit.building` fölött van. A betöltendő pályát a `Config.LEVEL` adja meg.
+
+- **Épületek**: a játékos befesti őket a saját színével, ezekért jár pont. Ha mind színes, a pálya újraindul.
+- **Tárgyak** (fák, padok, lámpák, szökőkút, standok…): érintésre visszakapják a természetes színüket.
+  Ehhez festék kell, de nem fogy, és pont sem jár érte.
 
 ## Ismert korlátok (prototípus)
 

@@ -14,6 +14,7 @@ local PaintedRemote = ReplicatedStorage.Remotes.Painted
 local PaintService = {}
 
 local buildingsFolder: Folder
+local propsFolder: Folder
 local tanksFolder: Folder
 local paintedCount = 0
 local onCityComplete: (() -> ())? = nil
@@ -50,10 +51,10 @@ local ROLE_COLORS: { [string]: (Color3) -> Color3 } = {
 		return Color3.fromRGB(250, 247, 238)
 	end,
 	Window = function()
-		return Config.CITY.WINDOW_LIT_COLOR
+		return Config.BUILDINGS.WINDOW_LIT_COLOR
 	end,
 	ShopWindow = function()
-		return Config.CITY.WINDOW_LIT_COLOR
+		return Config.BUILDINGS.WINDOW_LIT_COLOR
 	end,
 }
 
@@ -63,7 +64,7 @@ local function colorBuilding(building: BasePart, color: Color3?)
 	for _, detail in building:GetDescendants() do
 		local role = detail:GetAttribute("Role")
 		if detail:IsA("Texture") and role == "Facade" then
-			detail.Texture = if color then Config.CITY.FACADE.LIT else Config.CITY.FACADE.GREY
+			detail.Texture = if color then Config.BUILDINGS.FACADE.LIT else Config.BUILDINGS.FACADE.GREY
 		elseif detail:IsA("BasePart") and role then
 			if not color then
 				detail.Color = detail:GetAttribute("BaseColor")
@@ -83,6 +84,36 @@ local function owningBuilding(part: Instance): BasePart?
 		current = current.Parent
 	end
 	return current :: BasePart?
+end
+
+-- A találat melyik tárgyhoz (Model a Props mappában) tartozik.
+local function owningProp(part: Instance): Model?
+	local current: Instance? = part
+	while current and current.Parent ~= propsFolder do
+		current = current.Parent
+	end
+	return current :: Model?
+end
+
+-- Tárgy: érintésre visszakapja a természetes színét. Festék kell hozzá, de nem fogy, és pont sem jár érte.
+local function tryColorProp(player: Player, prop: Model)
+	if prop:GetAttribute("Colored") then
+		return
+	end
+	local colorName = player:GetAttribute("PaintColor")
+	if not Config.PAINT_COLOR_BY_NAME[colorName] or (player:GetAttribute("Paint") or 0) <= 0 then
+		return
+	end
+	prop:SetAttribute("Colored", true)
+	for _, part in prop:GetDescendants() do
+		local color = part:GetAttribute("PaintedColor")
+		if color and part:IsA("BasePart") then
+			part.Color = color
+		end
+	end
+	if prop.PrimaryPart then
+		PaintedRemote:FireAllClients(prop.PrimaryPart, colorName, player)
+	end
 end
 
 local function refill(player: Player, tank: BasePart)
@@ -142,10 +173,15 @@ local function checkPlayer(player: Player)
 	for _, part in workspace:GetPartBoundsInRadius(center, radius, overlap) do
 		if part.Parent == tanksFolder then
 			refill(player, part)
-		else
+		elseif part:IsDescendantOf(buildingsFolder) then
 			local building = owningBuilding(part)
 			if building then
 				tryPaint(player, building)
+			end
+		elseif part:IsDescendantOf(propsFolder) then
+			local prop = owningProp(part)
+			if prop then
+				tryColorProp(player, prop)
 			end
 		end
 	end
@@ -188,11 +224,12 @@ local function setupPlayer(player: Player)
 	end
 end
 
--- Új város esetén újra meg kell hívni.
-function PaintService.setCity(buildings: Folder, tanks: Folder)
+-- Új pálya esetén újra meg kell hívni.
+function PaintService.setLevel(buildings: Folder, props: Folder, tanks: Folder)
 	buildingsFolder = buildings
+	propsFolder = props
 	tanksFolder = tanks
-	overlap.FilterDescendantsInstances = { buildings, tanks }
+	overlap.FilterDescendantsInstances = { buildings, props, tanks }
 	-- Tartalék a körzetfigyelés mellé: a tartály érintése is feltölt.
 	for _, tank in tanks:GetChildren() do
 		(tank :: BasePart).Touched:Connect(function(hit)
@@ -206,11 +243,20 @@ function PaintService.setCity(buildings: Folder, tanks: Folder)
 	updateCityStats()
 end
 
--- Minden épület újra szürke lesz (a pontok megmaradnak).
-function PaintService.resetCity()
+-- Minden épület és tárgy újra szürke lesz (a pontok megmaradnak).
+function PaintService.resetLevel()
 	for _, building in buildingsFolder:GetChildren() do
 		colorBuilding(building, nil)
 		building:SetAttribute("ColorName", "")
+	end
+	for _, prop in propsFolder:GetChildren() do
+		prop:SetAttribute("Colored", nil)
+		for _, part in prop:GetDescendants() do
+			local color = part:GetAttribute("BaseColor")
+			if color and part:IsA("BasePart") then
+				part.Color = color
+			end
+		end
 	end
 	paintedCount = 0
 	updateCityStats()

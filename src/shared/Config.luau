@@ -1,34 +1,15 @@
 -- Minden játékbeállítás egy helyen. Itt érdemes hangolni a játékérzetet.
 
 local Config = {
-	-- Város (a CityBuilder építi fel)
-	CITY = {
-		GRID = 6, -- ennyi háztömb van egy sorban és egy oszlopban
-		BLOCK_SIZE = 40, -- egy háztömb oldalhossza (stud)
-		STREET_WIDTH = 16,
-		SIDEWALK = 3, -- a járda szélessége a tömb szélén
-		LOTS = 2, -- egy tömbben ennyiszer ennyi épület áll
-		LOT_GAP = 3, -- rés az épületek között (a játékos átfér rajta)
-		MARGIN = 40, -- aszfalt a város körül
-		GREY = Color3.fromRGB(128, 128, 132), -- a festetlen épületek színe
-		GREY_VARIANCE = 12, -- ennyivel térhet el véletlenszerűen a szürke árnyalata
-		ASPHALT = Color3.fromRGB(58, 58, 62),
-		SIDEWALK_COLOR = Color3.fromRGB(170, 170, 170),
-		-- Épületek (BuildingFactory). A magasság mindig egész számú emelet.
+	-- Melyik pálya töltődjön be (src/server/Levels/<név>.luau)
+	LEVEL = "SmallTown",
+
+	-- Épületek (a Kit építi fel őket a pályaleírás alapján). A magasság mindig egész számú emelet.
+	BUILDINGS = {
 		FLOOR_HEIGHT = 6, -- ennyi stud egy emelet
 		BAY_WIDTH = 4.5, -- nagyjából ilyen széles egy ablakos falszakasz
-		BUILDING_TYPES = {
-			House = { floors = { 2, 2 } }, -- nyeregtető, kémény
-			Shop = { floors = { 2, 3 } }, -- kirakat, csíkos napellenző
-			Apartment = { floors = { 3, 5 } }, -- erkélyek, klímadobozok
-			Tower = { floors = { 5, 7 } }, -- felső emelet, antenna
-		},
-		-- A város közepe felé magasabb házak: a típusok súlya a belváros, a köztes gyűrű és a széle szerint.
-		ZONES = {
-			{ upTo = 0.35, weights = { Tower = 4, Apartment = 3, Shop = 1 } },
-			{ upTo = 0.7, weights = { Apartment = 3, Shop = 3, House = 1, Tower = 1 } },
-			{ upTo = 1, weights = { House = 5, Shop = 2, Apartment = 1 } },
-		},
+		GREY = Color3.fromRGB(128, 128, 132), -- a festetlen épületek színe
+		GREY_VARIANCE = 12, -- ennyivel térhet el véletlenszerűen a szürke árnyalata
 		-- Ablaktextúrák (assets/textures, a tools/generate_textures.py készíti). Feltöltés után ide kell beírni
 		-- az azonosítót "rbxassetid://SZÁM" formában. Amíg üres, egyszerű ablaksávok helyettesítik.
 		FACADE = {

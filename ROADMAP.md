@@ -4,7 +4,7 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 
 ## 1. mérföldkő: prototípus
 - [x] Projektváz: Rojo, StyLua, Config
-- [x] Generált szürke város: háztömbök, járdák, különböző magasságú épületek
+- [x] Generált szürke város (később kézzel tervezett pályák váltották fel)
 - [x] Festéktartályok a kereszteződésekben (6 szín)
 - [x] Festés érintéssel, fogyó festék; a szerver dönt
 - [x] Pontok (ranglista), a város festettsége a képernyő tetején
@@ -21,10 +21,14 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [ ] Faltól visszapattanás, falra felgurulás
 - [x] Festékcsík: folytonos, hullámzó szélességű csík apró fröccsenésekkel, földet éréskor nagyobb fröccs; felszáradva elvékonyodik (`Trails`)
 - [x] Épületrészletek: ablaksávok, ajtó, tetőperem; befestéskor az ablakok kivilágosodnak, a perem és az ajtó a festék sötétebb árnyalatát kapja
-- [x] Élethűbb, rajzfilmes épületek: családi ház nyeregtetővel és kéménnyel, üzlet kirakattal és csíkos napellenzővel, lakóház erkélyekkel, toronyház antennával; lábazat, párkány; a belváros magasabb (`BuildingFactory`)
+- [x] Élethűbb, rajzfilmes épületek: nyeregtető kéménnyel, kirakat csíkos napellenzővel, erkélyek, felső emelet kereszttetővel, óra; lábazat, párkány (`Kit.building`)
 - [x] Rajzolt ablaktextúrák (szürke és kivilágított), `tools/generate_textures.py`
 - [ ] Az ablaktextúrák feltöltése, az azonosítók beírása (`Config.CITY.FACADE`)
-- [ ] Kézzel épített pályák a generált város helyett (részletesebb, változatosabb)
+- [x] Kézzel tervezett pályák a generált város helyett: építőkészlet (`Kit`), pályabetöltő (`LevelLoader`)
+- [x] 1. pálya: Kisváros főtérrel (templom óratoronnyal, kávézók, piac utca városkapuval, kertes lakóutca, lépcsős terasz kilátótoronnyal, park tavacskával és pavilonnal)
+- [x] Tárgyak (fák, padok, lámpák, szökőkút, standok, kerítések…): érintésre visszakapják a színüket
+- [ ] 1. pálya finomítása a Studio-teszt alapján
+- [ ] További pályák
 - [ ] Díszek a befestett épületen (virágládák, cégérek)
 - [x] Hangok: placcs, festékfelvétel, ugrás, földet érés, a város elkészülte (`Sounds`, `tools/generate_sounds.py`)
 - [x] A hangok feltöltése a Robloxra, az azonosítók beírása a `Config.SOUNDS`-ba

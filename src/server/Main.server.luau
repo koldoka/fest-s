@@ -1,11 +1,10 @@
--- A szerver belépési pontja: felépíti a várost, elindítja a festést, és újrakezdi, ha minden színes.
+-- A szerver belépési pontja: betölti a pályát, elindítja a festést, és újrakezdi, ha minden ház színes.
 
-local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
-local CityBuilder = require(script.Parent.CityBuilder)
+local LevelLoader = require(script.Parent.LevelLoader)
 local PaintService = require(script.Parent.PaintService)
 
 -- Ha a Rojo valamiért nem hozta volna létre a hálózati csatornákat, itt pótoljuk.
@@ -35,13 +34,8 @@ end
 -- és akkor a játékosnak nem lenne karaktere.
 Players.CharacterAutoLoads = true
 
--- Napos délután, hogy a színek jól látsszanak.
-Lighting.ClockTime = 14
-Lighting.Brightness = 2
-Lighting.OutdoorAmbient = Color3.fromRGB(140, 140, 150)
-
-local buildings, tanks = CityBuilder.build()
-PaintService.setCity(buildings, tanks)
+local level = LevelLoader.load(Config.LEVEL)
+PaintService.setLevel(level.buildings, level.props, level.tanks)
 
 local resetting = false
 PaintService.start(function()
@@ -51,16 +45,16 @@ PaintService.start(function()
 	resetting = true
 	task.spawn(function()
 		for remaining = Config.RESET_DELAY, 1, -1 do
-			workspace:SetAttribute("Message", `City painted! It turns grey again in {remaining}...`)
+			workspace:SetAttribute("Message", `Town painted! It turns grey again in {remaining}...`)
 			task.wait(1)
 		end
 		workspace:SetAttribute("Message", "")
-		PaintService.resetCity()
+		PaintService.resetLevel()
 		resetting = false
 	end)
 end)
 
--- Aki a város felépülése előtt belépett és karakter nélkül maradt, kap egyet.
+-- Aki a pálya felépülése előtt belépett és karakter nélkül maradt, kap egyet.
 -- Kis várakozás után nézzük, hogy ne akadjunk össze a Roblox saját karakterbetöltésével.
 task.delay(1, function()
 	for _, player in Players:GetPlayers() do
