@@ -99,7 +99,11 @@ local function checkPlayer(player: Player)
 end
 
 local function setupCharacter(player: Player, character: Model)
-	local humanoid = character:WaitForChild("Humanoid") :: Humanoid
+	-- Időkorláttal: ha a karaktert közben lecserélték, ne akadjon el itt örökre.
+	local humanoid = character:WaitForChild("Humanoid", 10) :: Humanoid?
+	if not humanoid or character.Parent == nil then
+		return
+	end
 	humanoid.WalkSpeed = Config.WALK_SPEED
 	humanoid.UseJumpPower = true
 	humanoid.JumpPower = Config.JUMP_POWER
@@ -115,6 +119,9 @@ local function setupCharacter(player: Player, character: Model)
 end
 
 local function setupPlayer(player: Player)
+	if player:FindFirstChild("leaderstats") then
+		return -- már be van állítva
+	end
 	local leaderstats = Instance.new("Folder")
 	leaderstats.Name = "leaderstats"
 	local score = Instance.new("IntValue")
@@ -125,11 +132,12 @@ local function setupPlayer(player: Player)
 	player:SetAttribute("PaintColor", "")
 	player:SetAttribute("Paint", 0)
 
+	-- Külön szálon, hogy a karakterre várás ne tartsa fel a többit.
 	player.CharacterAdded:Connect(function(character)
-		setupCharacter(player, character)
+		task.spawn(setupCharacter, player, character)
 	end)
 	if player.Character then
-		setupCharacter(player, player.Character)
+		task.spawn(setupCharacter, player, player.Character)
 	end
 end
 
@@ -138,6 +146,15 @@ function PaintService.setCity(buildings: Folder, tanks: Folder)
 	buildingsFolder = buildings
 	tanksFolder = tanks
 	overlap.FilterDescendantsInstances = { buildings, tanks }
+	-- Tartalék a körzetfigyelés mellé: a tartály érintése is feltölt.
+	for _, tank in tanks:GetChildren() do
+		(tank :: BasePart).Touched:Connect(function(hit)
+			local player = Players:GetPlayerFromCharacter(hit.Parent)
+			if player then
+				refill(player, tank :: BasePart)
+			end
+		end)
+	end
 	paintedCount = 0
 	updateCityStats()
 end
@@ -155,11 +172,6 @@ end
 function PaintService.start(cityComplete: () -> ())
 	onCityComplete = cityComplete
 
-	Players.PlayerAdded:Connect(setupPlayer)
-	for _, player in Players:GetPlayers() do
-		setupPlayer(player)
-	end
-
 	local elapsed = 0
 	RunService.Heartbeat:Connect(function(dt)
 		elapsed += dt
@@ -171,6 +183,11 @@ function PaintService.start(cityComplete: () -> ())
 			checkPlayer(player)
 		end
 	end)
+
+	Players.PlayerAdded:Connect(setupPlayer)
+	for _, player in Players:GetPlayers() do
+		setupPlayer(player)
+	end
 end
 
 return PaintService

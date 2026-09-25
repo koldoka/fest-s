@@ -43,13 +43,6 @@ Lighting.OutdoorAmbient = Color3.fromRGB(140, 140, 150)
 local buildings, tanks = CityBuilder.build()
 PaintService.setCity(buildings, tanks)
 
--- Aki a város felépülése előtt belépett és karakter nélkül maradt, most kap egyet.
-for _, player in Players:GetPlayers() do
-	if not player.Character then
-		player:LoadCharacter()
-	end
-end
-
 local resetting = false
 PaintService.start(function()
 	if resetting then
@@ -65,4 +58,14 @@ PaintService.start(function()
 		PaintService.resetCity()
 		resetting = false
 	end)
+end)
+
+-- Aki a város felépülése előtt belépett és karakter nélkül maradt, kap egyet.
+-- Kis várakozás után nézzük, hogy ne akadjunk össze a Roblox saját karakterbetöltésével.
+task.delay(1, function()
+	for _, player in Players:GetPlayers() do
+		if not player.Character then
+			player:LoadCharacter()
+		end
+	end
 end)
