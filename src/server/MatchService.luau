@@ -74,7 +74,13 @@ local function loop()
 		TeamService.shuffle()
 		setPhase("Playing", m.LENGTH)
 		MatchService.announce("Paint the town! Capture districts for your team!", nil)
-		task.wait(m.LENGTH)
+		if m.LENGTH > 60 then
+			task.wait(m.LENGTH - 60)
+			MatchService.announce("1 minute left!", nil)
+			task.wait(60)
+		else
+			task.wait(m.LENGTH)
+		end
 
 		publishScores()
 		local winner, best, tie = "", -1, false
@@ -90,10 +96,7 @@ local function loop()
 		end
 		workspace:SetAttribute("Winner", winner)
 		setPhase("Ended", m.RESULTS)
-		MatchService.announce(
-			if winner ~= "" then `{winner} team wins!` else "It's a draw!",
-			if winner ~= "" then winner else nil
-		)
+		-- A győztest a kliens eredménytáblája mutatja (Results)
 		task.wait(m.RESULTS)
 	end
 end

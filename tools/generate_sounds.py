@@ -191,21 +191,134 @@ def refill():
     return out
 
 
+def tone(freq, duration, attack=0.005, decay=0.3, bright=0.35):
+    """Egyszerű, csilingelő hang: alaphang + oktáv felhang, lecsengő burokkal."""
+    time = t(duration)
+    wave = np.sin(2 * np.pi * freq * time) + bright * np.sin(2 * np.pi * freq * 2 * time)
+    return wave * envelope(duration, attack, decay)
+
+
+def brass(freq, duration, attack=0.02, decay=0.5):
+    """Rézfúvósszerű hang: sok felhang, lassabb felfutás, kis vibrato."""
+    time = t(duration)
+    vibrato = 1 + 0.004 * np.sin(2 * np.pi * 5.5 * time)
+    phase = 2 * np.pi * np.cumsum(freq * vibrato) / RATE
+    wave = sum(np.sin(k * phase) / k**0.9 for k in range(1, 8))
+    return lowpass(wave, 3200) * envelope(duration, attack, decay)
+
+
+def steal():
+    # Festéklopás (a lopónak): szívó "szlurp" felfelé nyíló szűrővel + felfelé csúszó buborékok
+    rng = np.random.default_rng(51)
+    d = 0.55
+    n = len(t(d))
+    suction = sweeping_lowpass(rng.uniform(-1, 1, n), 250, 3200) * envelope(d, 0.04, 0.18)
+    suction *= flutter(rng, n, 35, 0.6)
+    out = suction * 1.6
+    for i, (f0, f1) in enumerate([(260, 620), (330, 780), (420, 980)]):
+        bd = 0.13
+        add(out, sweep(f0, f1, bd, curve=3) * envelope(bd, 0.004, 0.05) * 0.8, 0.05 + i * 0.11)
+    return out
+
+
+def stolen():
+    # Meglopták (az áldozatnak): lefelé csúszó, leeresztő "blörp" és egy nedves placcs
+    rng = np.random.default_rng(61)
+    d = 0.6
+    out = sweep(520, 140, d, curve=2.5) * envelope(d, 0.005, 0.2) * 0.8
+    n = len(out)
+    splat = sweeping_lowpass(rng.uniform(-1, 1, n), 2400, 300) * envelope(d, 0.002, 0.07)
+    out += splat * 1.5
+    bubbles(rng, out, 5, 0.05, 0.25, (250, 600), (0.01, 0.02), (0.1, 0.25))
+    return out
+
+
+def capture():
+    # Kerület elfoglalva: rövid rézfúvós fanfár (G-C-E, majd hosszú G)
+    d = 1.5
+    out = np.zeros(len(t(d)))
+    notes = [(0.0, 392.0, 0.14), (0.14, 523.25, 0.14), (0.28, 659.25, 0.14), (0.42, 783.99, 1.0)]
+    for start, freq, length in notes:
+        add(out, brass(freq, length + 0.1, decay=0.12 if length < 0.5 else 0.45), start)
+        add(out, brass(freq / 2, length + 0.1, decay=0.12 if length < 0.5 else 0.45) * 0.4, start)
+    return out
+
+
+def unlock():
+    # A kerület újra nyitott: két lefelé lépő, puha csengőhang
+    d = 0.8
+    out = np.zeros(len(t(d)))
+    add(out, tone(880.0, 0.6, decay=0.18), 0)
+    add(out, tone(659.25, 0.6, decay=0.22), 0.16)
+    return out
+
+
+def tick():
+    # Visszaszámlálás: rövid, fa-kocogásszerű pittyenés
+    return tone(1046.5, 0.12, attack=0.002, decay=0.03, bright=0.6)
+
+
+def go():
+    # Rajt: magasabb, hosszabb, fényes hang két oktávval
+    d = 0.7
+    out = tone(1567.98, d, attack=0.004, decay=0.25, bright=0.5)
+    out += tone(783.99, d, attack=0.004, decay=0.3) * 0.6
+    return out
+
+
+def win():
+    # Győzelem: dúr futam és egy kitartott dúr hármashangzat rézfúvóssal
+    d = 2.4
+    out = np.zeros(len(t(d)))
+    for i, freq in enumerate([523.25, 659.25, 783.99]):
+        add(out, brass(freq, 0.2, decay=0.1), i * 0.13)
+    for freq in [523.25, 659.25, 783.99, 1046.5]:
+        add(out, brass(freq, 1.9, attack=0.03, decay=0.8) * 0.6, 0.42)
+    return out
+
+
+def lose():
+    # Vereség: lefelé lépő, tompa, kicsit szomorkás (de nem bántó) dallam
+    d = 1.6
+    out = np.zeros(len(t(d)))
+    for i, freq in enumerate([392.0, 349.23, 311.13]):
+        add(out, lowpass(brass(freq, 0.5, decay=0.25), 1500), i * 0.25)
+    add(out, lowpass(brass(261.63, 0.9, decay=0.45), 1200), 0.75)
+    return out
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     for old in ["splat.ogg"]:  # a régi, túl erős festéshang helyett a paint_1..4 van
         (OUT / old).unlink(missing_ok=True)
-    save("roll_loop", roll(), peak_db=-6, loop=True)
+    # A már feltöltött hangok csak akkor készülnek újra, ha hiányoznak (a kódolás minden futáskor picit más
+    # fájlt ad, és az újrafeltöltés felesleges lenne). Egy hang újrakészítéséhez töröld a fájlját.
+    if not (OUT / "roll_loop.ogg").exists():
+        save("roll_loop", roll(), peak_db=-6, loop=True)
     for i in range(1, 5):
-        save(f"paint_{i}", paint(100 + i), peak_db=-7)
-    save("jump", jump(), peak_db=-7)
-    save("land", land(), peak_db=-6)
-    # Ezek már fel vannak töltve; csak akkor készülnek újra, ha hiányoznak (a kódolás minden futáskor
-    # picit más fájlt ad, és az újrafeltöltés felesleges lenne).
+        if not (OUT / f"paint_{i}.ogg").exists():
+            save(f"paint_{i}", paint(100 + i), peak_db=-7)
+    if not (OUT / "jump.ogg").exists():
+        save("jump", jump(), peak_db=-7)
+    if not (OUT / "land.ogg").exists():
+        save("land", land(), peak_db=-6)
     if not (OUT / "refill.ogg").exists():
         save("refill", refill(), peak_db=-5)
     if not (OUT / "city_done.ogg").exists():
         save("city_done", city_done(), peak_db=-4)
+    # PvP hangok (ugyanígy: csak ha még nincsenek meg)
+    for name, make, peak in [
+        ("steal", steal, -5),
+        ("stolen", stolen, -5),
+        ("capture", capture, -4),
+        ("unlock", unlock, -6),
+        ("tick", tick, -8),
+        ("go", go, -5),
+        ("win", win, -4),
+        ("lose", lose, -5),
+    ]:
+        if not (OUT / f"{name}.ogg").exists():
+            save(name, make(), peak_db=peak)
 
 
 if __name__ == "__main__":

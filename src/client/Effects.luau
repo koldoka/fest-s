@@ -51,8 +51,8 @@ local function splash(building: BasePart, color: Color3, painter: Player?)
 	Debris:AddItem(flash, 0.4)
 end
 
--- Felugró "-N" felirat: mennyi festék fogyott (csak a festőnek).
-local function costPopup(position: Vector3, cost: number, color: Color3)
+-- Felugró felirat a világban (pl. "-3": mennyi festék fogyott; "+6": mennyit loptál).
+local function popup(position: Vector3, message: string, color: Color3)
 	local anchor = Instance.new("Part")
 	anchor.Anchored = true
 	anchor.CanCollide = false
@@ -72,7 +72,7 @@ local function costPopup(position: Vector3, cost: number, color: Color3)
 	text.TextScaled = true
 	text.TextColor3 = color
 	text.TextStrokeTransparency = 0.2
-	text.Text = `-{cost}`
+	text.Text = message
 	text.Parent = gui
 	anchor.Parent = workspace
 	TweenService:Create(anchor, TweenInfo.new(1.1), { Position = position + Vector3.new(0, 4, 0) }):Play()
@@ -83,6 +83,8 @@ local function costPopup(position: Vector3, cost: number, color: Color3)
 	Debris:AddItem(anchor, 1.2)
 end
 
+Effects.popup = popup
+
 function Effects.start()
 	local localPlayer = game:GetService("Players").LocalPlayer
 	PaintedRemote.OnClientEvent:Connect(function(building: BasePart, colorName: string, painter: Player?, cost: number?)
@@ -92,7 +94,7 @@ function Effects.start()
 			if painter == localPlayer and cost then
 				local root = localPlayer.Character
 					and localPlayer.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
-				costPopup((if root then root.Position else building.Position) + Vector3.new(0, 4, 0), cost, color)
+				popup((if root then root.Position else building.Position) + Vector3.new(0, 4, 0), `-{cost}`, color)
 			end
 			local root = painter
 				and painter.Character

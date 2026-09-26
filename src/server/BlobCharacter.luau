@@ -53,6 +53,7 @@ function BlobCharacter.setup(character: Model, humanoid: Humanoid)
 	end
 
 	humanoid.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+	humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None -- saját névcímke van (kliens: Pvp)
 	for _, descendant in character:GetDescendants() do
 		hide(descendant)
 	end

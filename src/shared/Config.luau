@@ -130,6 +130,15 @@ local Config = {
 		Land = { ids = { "rbxassetid://129774262633784" }, volume = 0.45, vary = true },
 		CityDone = { ids = { "rbxassetid://125442387668911" }, volume = 0.7 }, -- a meccs vége (győztes)
 		Roll = { ids = { "rbxassetid://75367702913623" }, volume = 0.5 }, -- roll_loop.ogg: ismétlődő gurulás, a sebességgel hangosodik
+		-- PvP (még feltöltendők; amíg üresek, nem szólnak, a győzelemnél a CityDone szól helyettük)
+		Steal = { ids = {}, volume = 0.6 }, -- steal.ogg: te loptál festéket
+		Stolen = { ids = {}, volume = 0.6 }, -- stolen.ogg: tőled loptak
+		Capture = { ids = {}, volume = 0.6 }, -- capture.ogg: egy kerület lezárult (teljes elfoglalás)
+		Unlock = { ids = {}, volume = 0.45 }, -- unlock.ogg: a kerület újra nyitott
+		Tick = { ids = {}, volume = 0.5 }, -- tick.ogg: visszaszámlálás
+		Go = { ids = {}, volume = 0.6 }, -- go.ogg: a meccs indul
+		Win = { ids = {}, volume = 0.7 }, -- win.ogg: a csapatod nyert
+		Lose = { ids = {}, volume = 0.6 }, -- lose.ogg: a csapatod vesztett
 	},
 
 	-- Kerületek (PvP, a pálya Level.districts listája alapján)

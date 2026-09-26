@@ -35,7 +35,7 @@ kertek, gyümölcsösök, rétek, termőföldek. Minden szürke, a festékes pac
 A hangokat a `tools/generate_sounds.py`, az ablakképeket a `tools/generate_textures.py` állítja elő
 (`assets/sounds/`, `assets/textures/`). Feltöltés: Studio → **Asset Manager** → **Import** → jobb klikk →
 **Copy ID**, majd az azonosító a `src/shared/Config.luau`-ba (`SOUNDS`, illetve `BUILDINGS.FACADE`).
-Mind fel van töltve és be van írva. Ha egy hangot vagy képet újragenerálunk, újra fel kell tölteni.
+A már feltöltött hangokat a szkript nem írja felül (egy hang újrakészítéséhez töröld a fájlját, és töltsd fel újra).
 
 | Fájl | Config-név | Mikor szól |
 |---|---|---|
@@ -43,7 +43,14 @@ Mind fel van töltve és be van írva. Ha egy hangot vagy képet újragenerálun
 | `roll_loop.ogg` | `Roll` | gurulás (ismétlődik, a sebességgel hangosodik) |
 | `jump.ogg`, `land.ogg` | `Jump`, `Land` | ugrás, földet érés |
 | `refill.ogg` | `Refill` | festék felvétele tartályból |
-| `city_done.ogg` | `CityDone` | a meccs vége |
+| `city_done.ogg` | `CityDone` | döntetlen (és győzelem/vereség, amíg azok nincsenek feltöltve) |
+| `steal.ogg` | `Steal` | te loptál festéket (**feltöltendő**) |
+| `stolen.ogg` | `Stolen` | tőled loptak (**feltöltendő**) |
+| `capture.ogg` | `Capture` | egy kerület teljesen elfoglalva, lezárul (**feltöltendő**) |
+| `unlock.ogg` | `Unlock` | a kerület újra nyitott (**feltöltendő**) |
+| `tick.ogg` | `Tick` | visszaszámlálás (**feltöltendő**) |
+| `go.ogg` | `Go` | a meccs indul (**feltöltendő**) |
+| `win.ogg`, `lose.ogg` | `Win`, `Lose` | a csapatod nyert / vesztett (**feltöltendő**) |
 
 A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` üres szkript kapcsolja ki.
 
@@ -74,6 +81,12 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
   ha felülről ráugrasz, 50%-át. A lopott festék a lopó csapatának színére vált. Akitől loptak, hátrapattan,
   és 3 mp-ig nem lehet újra meglopni.
 - Felül a meccs ideje és a csapatok pontjai, bal alul a csapatod és a festéked, középen a bejelentések.
+  Rajt előtt 3-2-1-GO, a meccs utolsó 10 mp-ében nagy visszaszámlálás, a végén eredménytábla (csapatpontok,
+  a legjobb 3 festő) konfettivel, győzelmi vagy vesztes dallammal; 1 perccel a vége előtt figyelmeztetés.
+- A pályán minden kerület fölött tábla lebeg (név, a csapatok házai, a gazda színe, lezárva a hátralévő idő).
+  Lezárt kerület határán csapatszínű, csillogó erőtér-fal áll; elfoglaláskor a házakból konfetti pattan ki.
+- A többi paca fölött a neve a csapata színében, alatta a festéke (kit érdemes meglopni). Lopáskor a lopónak
+  "+N", a meglopottnak piros villanás és rázkódó kamera.
 
 Irányítás: a Roblox alap irányítása (WASD + Space, mobilon joystick + ugrás gomb).
 **M**: térkép (mobilon a „Map” gomb, kontrolleren a Select): a házak a színükkel, a kerületek a vezető csapat
@@ -106,7 +119,9 @@ src/server/
 src/client/
   Main.client.luau     indítás
   Hud.luau             meccsidő, csapatpontok, saját csapat és festék, bejelentések
-  Pvp.luau             hátrapattanás és a festéklopás látványa
+  Pvp.luau             hátrapattanás, a festéklopás látványa és hangja, névcímkék
+  Districts.luau       kerülettáblák a pályán, lezárt kerület fala, elfoglalási konfetti
+  Results.luau         visszaszámlálás, rajt, eredménytábla
   Effects.luau         fröccsenő festék és felvillanás festéskor
   BlobAnimator.luau    a pacák lapulása és nyúlása (csak látvány)
   Trails.luau          festékcsík a paca után (csak látvány)

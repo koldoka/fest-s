@@ -23,6 +23,12 @@ local function pickId(name: string): (string?, any)
 	return info.ids[rng:NextInteger(1, #info.ids)], info
 end
 
+-- Van-e feltöltött hang ezen a néven.
+function Sounds.has(name: string): boolean
+	local info = Config.SOUNDS[name]
+	return info ~= nil and #info.ids > 0
+end
+
 function Sounds.play(name: string, position: Vector3?)
 	local id, info = pickId(name)
 	if not id then
@@ -89,7 +95,7 @@ local function updateRolling()
 	end
 end
 
--- A saját paca hangjai: ugrás, földet érés, festékfelvétel; és a meccs vége.
+-- A saját paca hangjai: ugrás, földet érés, festékfelvétel.
 function Sounds.start()
 	local player = Players.LocalPlayer
 
@@ -132,13 +138,6 @@ function Sounds.start()
 	if player.Character then
 		task.spawn(onCharacter, player.Character)
 	end
-
-	-- A meccs vége: fanfár
-	workspace:GetAttributeChangedSignal("MatchState"):Connect(function()
-		if workspace:GetAttribute("MatchState") == "Ended" then
-			Sounds.play("CityDone")
-		end
-	end)
 
 	RunService.Heartbeat:Connect(updateRolling)
 end
