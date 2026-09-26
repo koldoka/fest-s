@@ -57,7 +57,8 @@ A már feltöltött hangokat a szkript nem írja felül (egy hang újrakészít�
 | `tick.ogg` | `Tick` | visszaszámlálás |
 | `go.ogg` | `Go` | a meccs indul |
 | `win.ogg`, `lose.ogg` | `Win`, `Lose` | a csapatod nyert / vesztett |
-| `music_pad.ogg`, `music_bass.ogg`, `music_drums.ogg`, `music_melody.ogg` | `MUSIC.LAYERS` (`id`) | zenei rétegek: minél színesebb a város, annál több szól (amíg bármelyik üres, nincs zene) |
+| `music2_pad`, `_bass`, `_hats`, `_kick`, `_clap`, `_arp`, `_lead`, `_hype` (.ogg) | `MUSIC.LAYERS` (`id`) | zene, 2. változat (124 BPM, 8 réteg): 0/5/12/20/30/42/55/70%-os festettségnél lépnek be; **feltöltendő** |
+| `music_pad.ogg`, `music_bass.ogg`, `music_drums.ogg`, `music_melody.ogg` | `MUSIC.FALLBACK` | zene, 1. változat (4 réteg): amíg a 2. nincs mind feltöltve |
 
 A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` üres szkript kapcsolja ki.
 
@@ -98,7 +99,7 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
   Lezárt kerület határán csapatszínű, csillogó erőtér-fal áll; elfoglaláskor a házakból konfetti pattan ki.
 - **Élő város**: a szélmalom forog (befestve gyorsabban), a fák ringanak, a víz csillog és fodrozódik, a szökőkút
   spriccel; a befestett házak ablakai alá virágláda kerül, a boltok falán lengő cégér a bolt nevével.
-- **Zene**: négy réteg; az alap mindig szól, a basszus 10%, a dob 30%, a dallam 55% festett háznál erősödik fel.
+- **Zene**: nyolc réteg (124 BPM); a festettség szerint 5–10%-onként lép be egy-egy újabb hangszer, az utolsó percben még egy lépcsővel feljebb.
 - **Csalásvédelem**: a szerver visszahúzza, aki túl gyorsan mozog, teleportál vagy lebeg; sok szabálysértésnél kirúgja
   (`Config.ANTICHEAT`).
 - A többi paca fölött a neve a csapata színében, alatta a festéke (kit érdemes meglopni). Lopáskor a lopónak

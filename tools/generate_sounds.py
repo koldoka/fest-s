@@ -395,6 +395,194 @@ def music_melody():
     return loop_mix(events)
 
 
+# ---------------------------------------------------------------------------------------------------
+# Zene, 2. változat: pörgősebb, 124 BPM, A-moll (Am F C G), 8 ütem, 8 réteg. A rétegek a festettség szerint
+# lépcsőzetesen erősödnek fel (Config.MUSIC.LAYERS), így a meccs vége felé egyre intenzívebb.
+
+BPM2 = 124
+BEAT2 = 60 / BPM2
+LOOP2 = 8 * 4 * BEAT2
+# Akkordok ütemenként (A-moll: Am F C G, a 8. ütemben E a visszavezetéshez)
+CHORDS2 = [[57, 60, 64], [53, 57, 60], [48, 52, 55], [55, 59, 62], [57, 60, 64], [53, 57, 60], [48, 52, 55], [52, 56, 59]]
+
+
+def saw(freq, time, harmonics=30, detune=1.0):
+    """Sávkorlátozott fűrészhullám (felhangokból), nincs benne torzító magas zaj."""
+    top = max(1, min(harmonics, int(RATE / 2 / (freq * detune))))
+    return sum(np.sin(2 * np.pi * k * freq * detune * time) / k for k in range(1, top + 1)) * 0.6
+
+
+def square(freq, time, harmonics=15):
+    top = max(1, min(harmonics, int(RATE / 2 / freq)))
+    return sum(np.sin(2 * np.pi * k * freq * time) / k for k in range(1, top + 1, 2)) * 0.8
+
+
+def loop2(events):
+    out = np.zeros(len(t(LOOP2)))
+    for start, wave in events:
+        add(out, wave, start, wrap=True)
+    return out
+
+
+def pump(n):
+    """Negyedenként "lélegző" hangerő (a lábdob ütemére behúzódik), a feszesebb érzethez."""
+    time = np.arange(n) / RATE
+    phase = (time % BEAT2) / BEAT2
+    return 0.55 + 0.45 * np.minimum(1, phase / 0.45)
+
+
+def m2_pad():
+    # 1. Alap: széles, szűrt fűrész-akkordok (3 elhangolt hang), negyedenként lélegző hangerővel
+    events = []
+    for bar, chord in enumerate(CHORDS2):
+        d = 4 * BEAT2 + 0.3
+        time = t(d)
+        env = np.minimum(1, time / 0.08) * np.exp(-np.maximum(0, time - 4 * BEAT2) / 0.12)
+        for note in chord + [chord[0] + 12]:
+            f = midi(note)
+            wave = sum(saw(f, time, 20, det) for det in (0.994, 1.0, 1.006)) / 3
+            events.append((bar * 4 * BEAT2, lowpass(wave, 2200) * env * 0.3))
+    out = loop2(events)
+    return out * pump(len(out))
+
+
+def m2_bass():
+    # 2. Basszus: lüktető nyolcadok az alaphangon, az ütem végén oktávugrás
+    events = []
+    for bar, chord in enumerate(CHORDS2):
+        root = chord[0] - 24 if chord[0] >= 52 else chord[0] - 12
+        for i in range(8):
+            note = root + (12 if i == 7 else 0)
+            d = BEAT2 / 2 * 0.9
+            time = t(d)
+            wave = lowpass(saw(midi(note), time, 25) + 0.6 * np.sin(2 * np.pi * midi(note) * time), 700)
+            env = envelope(d, 0.004, d * 0.7)
+            events.append((bar * 4 * BEAT2 + i * BEAT2 / 2, wave * env * (1.0 if i % 2 == 0 else 0.8)))
+    return loop2(events)
+
+
+def m2_hats():
+    # 3. Lábcin tizenhatodokon hangsúlyokkal, nyitott cin a nyolcad-ütésközökön, shaker
+    rng = np.random.default_rng(91)
+    events = []
+    for i in range(8 * 16):
+        d = 0.05
+        hat = bandpass(rng.uniform(-1, 1, len(t(d))), 7000, 14000) * envelope(d, 0.001, 0.012)
+        accent = 0.9 if i % 4 == 2 else (0.5 if i % 2 == 0 else 0.3)
+        events.append((i * BEAT2 / 4, hat * accent))
+        if i % 4 == 2:
+            d = 0.22
+            open_hat = bandpass(rng.uniform(-1, 1, len(t(d))), 6000, 13000) * envelope(d, 0.002, 0.08)
+            events.append((i * BEAT2 / 4, open_hat * 0.45))
+    return loop2(events)
+
+
+def m2_kick():
+    # 4. Lábdob négy negyeden ("four on the floor"), feszes, mély
+    events = []
+    for i in range(8 * 4):
+        d = 0.4
+        freq = np.geomspace(150, 42, len(t(d)))
+        body = np.sin(2 * np.pi * np.cumsum(freq) / RATE) * envelope(d, 0.001, 0.13)
+        click = np.random.default_rng(i).uniform(-1, 1, len(t(d))) * envelope(d, 0.0005, 0.004) * 0.4
+        events.append((i * BEAT2, body + click))
+    return loop2(events)
+
+
+def m2_clap():
+    # 5. Taps a 2. és 4. negyeden, a 8. ütem végén pergő-felvezetés
+    rng = np.random.default_rng(101)
+    events = []
+    for bar in range(8):
+        for beat in (1, 3):
+            d = 0.3
+            n = len(t(d))
+            noise = bandpass(rng.uniform(-1, 1, n), 1000, 5000)
+            env = np.zeros(n)
+            for k, delay in enumerate((0, 0.012, 0.024)):  # a taps több kis csattanásból áll
+                env += np.roll(envelope(d, 0.001, 0.01 if k < 2 else 0.09), int(delay * RATE))
+            events.append((bar * 4 * BEAT2 + beat * BEAT2, noise * env * 0.8))
+    for i in range(8):  # pergő tizenhatodok a hurok végén, erősödve
+        d = 0.12
+        snare = bandpass(rng.uniform(-1, 1, len(t(d))), 1500, 7000) * envelope(d, 0.001, 0.04)
+        events.append((7 * 4 * BEAT2 + 2 * BEAT2 + i * BEAT2 / 4, snare * (0.3 + 0.08 * i)))
+    return loop2(events)
+
+
+def m2_arp():
+    # 6. Arpeggio: pengetős szinti tizenhatodokon, az akkord hangjain két oktávban fel-le
+    events = []
+    for bar, chord in enumerate(CHORDS2):
+        tones = [n + 12 for n in chord] + [chord[0] + 24, chord[1] + 24]
+        pattern = [0, 1, 2, 3, 4, 3, 2, 1] * 2
+        for i, idx in enumerate(pattern):
+            d = BEAT2 / 4 * 0.95
+            time = t(d + 0.08)
+            f = midi(tones[idx])
+            wave = lowpass(square(f, time, 9) * 0.6 + saw(f, time, 12) * 0.4, 3500)
+            events.append((bar * 4 * BEAT2 + i * BEAT2 / 4, wave * envelope(d + 0.08, 0.002, 0.07) * 0.5))
+    return loop2(events)
+
+
+LEAD2 = [
+    [(0, 76, 0.5), (0.5, 76, 0.5), (1, 79, 0.75), (1.75, 76, 0.75), (2.5, 74, 0.5), (3, 72, 1)],
+    [(0, 72, 0.5), (0.5, 74, 0.5), (1, 76, 1), (2, 77, 0.5), (2.5, 76, 0.5), (3, 72, 1)],
+    [(0, 79, 0.75), (0.75, 79, 0.75), (1.5, 81, 0.5), (2, 79, 1), (3, 76, 1)],
+    [(0, 74, 0.5), (0.5, 76, 0.5), (1, 79, 1), (2, 83, 1), (3, 81, 1)],
+    [(0, 81, 0.5), (0.5, 81, 0.5), (1, 84, 0.75), (1.75, 81, 0.75), (2.5, 79, 0.5), (3, 76, 1)],
+    [(0, 77, 0.5), (0.5, 79, 0.5), (1, 81, 1), (2, 84, 0.5), (2.5, 81, 0.5), (3, 77, 1)],
+    [(0, 76, 0.75), (0.75, 79, 0.75), (1.5, 84, 0.5), (2, 83, 0.5), (2.5, 79, 0.5), (3, 76, 1)],
+    [(0, 80, 1), (1, 83, 1), (2, 88, 1.5), (3.5, 83, 0.5)],
+]
+
+
+def saw_phase(phase, top):
+    """Fűrészhullám egy előre kiszámolt fázisból (így a frekvencia menet közben változhat: vibrato)."""
+    return sum(np.sin(k * phase) / k for k in range(1, top + 1)) * 0.6
+
+
+def m2_lead():
+    # 7. Dallam: két elhangolt fűrész + négyszög, késleltetett vibrato, fülbemászó motívum
+    events = []
+    for bar, notes in enumerate(LEAD2):
+        for beat, note, length in notes:
+            d = length * BEAT2 * 0.92
+            time = t(d + 0.1)
+            freq = midi(note)
+            vibrato = 1 + 0.005 * np.sin(2 * np.pi * 5.5 * time) * np.minimum(1, time / 0.25)
+            top = max(1, min(18, int(RATE / 2 / (freq * 1.01))))
+            wave = np.zeros(len(time))
+            for det in (0.996, 1.004):
+                phase = 2 * np.pi * np.cumsum(freq * det * vibrato) / RATE
+                wave += saw_phase(phase, top)
+            phase = 2 * np.pi * np.cumsum(freq * vibrato) / RATE
+            wave += 0.5 * sum(np.sin(k * phase) / k for k in range(1, min(top, 9) + 1, 2)) * 0.8
+            env = np.minimum(1, time / 0.01) * np.exp(-np.maximum(0, time - d) / 0.06) * (1 - 0.3 * time / (d + 0.1))
+            events.append((bar * 4 * BEAT2 + beat * BEAT2, lowpass(wave, 4200) * env * 0.35))
+    return loop2(events)
+
+
+def m2_hype():
+    # 8. Csúcs: rézfúvós-szerű akkord-stabok az ütésközökön, felfelé süvítő zaj az utolsó két ütemben,
+    # és egy cintányér-csapás a hurok elején (a körbefordulásnál)
+    rng = np.random.default_rng(111)
+    events = []
+    for bar, chord in enumerate(CHORDS2):
+        for beat in (0.5, 1.5, 2.5, 3.5):
+            d = 0.16
+            time = t(d)
+            stab = sum(saw(midi(n + 12), time, 14) for n in chord) / 3
+            events.append((bar * 4 * BEAT2 + beat * BEAT2, lowpass(stab, 3000) * envelope(d, 0.004, 0.06) * 0.6))
+    riser_d = 2 * 4 * BEAT2
+    riser = sweeping_lowpass(rng.uniform(-1, 1, len(t(riser_d))), 300, 9000)
+    riser *= np.linspace(0, 1, len(riser)) ** 2 * 0.5
+    events.append((6 * 4 * BEAT2, riser))
+    crash_d = 2.0
+    crash = bandpass(rng.uniform(-1, 1, len(t(crash_d))), 3000, 15000) * envelope(crash_d, 0.002, 0.6)
+    events.append((0, crash * 0.5))
+    return loop2(events)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     for old in ["splat.ogg"]:  # a régi, túl erős festéshang helyett a paint_1..4 van
@@ -433,6 +621,19 @@ def main():
         ("music_bass", music_bass, -8),
         ("music_drums", music_drums, -8),
         ("music_melody", music_melody, -9),
+    ]:
+        if not (OUT / f"{name}.ogg").exists():
+            save(name, make(), peak_db=peak, loop=True)
+    # Zene, 2. változat: 8 réteg
+    for name, make, peak in [
+        ("music2_pad", m2_pad, -9),
+        ("music2_bass", m2_bass, -8),
+        ("music2_hats", m2_hats, -12),
+        ("music2_kick", m2_kick, -8),
+        ("music2_clap", m2_clap, -10),
+        ("music2_arp", m2_arp, -11),
+        ("music2_lead", m2_lead, -10),
+        ("music2_hype", m2_hype, -11),
     ]:
         if not (OUT / f"{name}.ogg").exists():
             save(name, make(), peak_db=peak, loop=True)

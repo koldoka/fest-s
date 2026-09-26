@@ -1,5 +1,5 @@
 -- Zenei rétegek: minél színesebb a város, annál több hangszer szól.
--- A négy sáv (Config.MUSIC.LAYERS) egyforma hosszú és együtt indul; mindegyik mindig megy, csak a hangerejük
+-- A sávok (Config.MUSIC.LAYERS) egyforma hosszúak és együtt indulnak; mindegyik mindig megy, csak a hangerejük
 -- változik: az alap mindig hallható, a többi akkor erősödik fel, amikor a festett házak aránya eléri a
 -- réteg "from" értékét. A meccs végén (eredmény) minden réteg szól. A sávokat időnként összeigazítja,
 -- hogy ne csússzanak el egymástól.
@@ -24,7 +24,15 @@ end
 function Music.start()
 	local m = Config.MUSIC
 	local layers: { Layer } = {}
+	-- Az új sávok, ha mind fel van töltve; különben a régiek
+	local list = m.LAYERS
 	for _, info in m.LAYERS do
+		if info.id == "" then
+			list = m.FALLBACK
+			break
+		end
+	end
+	for _, info in list do
 		if info.id == "" then
 			return -- amíg nincs mind feltöltve, nincs zene (a sávok csak együtt szólnak jól)
 		end
@@ -56,6 +64,13 @@ function Music.start()
 		local syncTimer = 0
 		RunService.Heartbeat:Connect(function(dt)
 			local share = paintedShare()
+			-- Az utolsó percben feljebb kapcsol
+			if workspace:GetAttribute("MatchState") == "Playing" then
+				local left = (workspace:GetAttribute("PhaseEndsAt") or 0) - workspace:GetServerTimeNow()
+				if left <= 60 then
+					share += m.LAST_MINUTE_BOOST
+				end
+			end
 			local ended = workspace:GetAttribute("MatchState") == "Ended"
 			local step = dt / math.max(0.1, m.FADE)
 			for _, layer in layers do

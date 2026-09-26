@@ -145,16 +145,30 @@ local Config = {
 		Lose = { ids = { "rbxassetid://74527392621971" }, volume = 0.6 }, -- lose.ogg: a csapatod vesztett
 	},
 
-	-- Zene (Music, kliens): négy egymásra rakott, egyforma hosszú sáv (tools/generate_sounds.py). Az alap mindig
-	-- szól; a többi akkor erősödik fel, amikor a város ekkora része (0..1) már színes. A meccs végén mind szól.
+	-- Zene (Music, kliens): egymásra rakott, egyforma hosszú sávok (tools/generate_sounds.py). Az első mindig
+	-- szól; a többi akkor erősödik fel, amikor a város ekkora része (0..1) már színes, így a meccs vége felé
+	-- egyre intenzívebb. Az utolsó percben a festettséghez LAST_MINUTE_BOOST hozzáadódik; a meccs végén mind szól.
 	MUSIC = {
 		VOLUME = 0.45, -- a zene hangereje összesen
-		FADE = 2.5, -- ennyi mp alatt erősödik fel vagy halkul el egy réteg
+		FADE = 2, -- ennyi mp alatt erősödik fel vagy halkul el egy réteg
+		LAST_MINUTE_BOOST = 0.15,
+		-- 2. változat: 124 BPM, A-moll, 8 réteg (music2_*.ogg). Amíg bármelyik azonosító üres, a FALLBACK szól.
 		LAYERS = {
-			{ name = "Pad", id = "rbxassetid://126566749182611", from = 0, volume = 0.8 }, -- music_pad.ogg: akkordok, shaker
-			{ name = "Bass", id = "rbxassetid://93420938472924", from = 0.1, volume = 0.8 }, -- music_bass.ogg
-			{ name = "Drums", id = "rbxassetid://98625126403392", from = 0.3, volume = 0.9 }, -- music_drums.ogg
-			{ name = "Melody", id = "rbxassetid://124393429991818", from = 0.55, volume = 0.7 }, -- music_melody.ogg
+			{ name = "Pad", id = "", from = 0, volume = 0.8 }, -- music2_pad.ogg: szinti-akkordok
+			{ name = "Bass", id = "", from = 0.05, volume = 0.8 }, -- music2_bass.ogg: lüktető basszus
+			{ name = "Hats", id = "", from = 0.12, volume = 1 }, -- music2_hats.ogg: cinek
+			{ name = "Kick", id = "", from = 0.2, volume = 0.9 }, -- music2_kick.ogg: lábdob
+			{ name = "Clap", id = "", from = 0.3, volume = 0.9 }, -- music2_clap.ogg: taps, pergő-felvezetés
+			{ name = "Arp", id = "", from = 0.42, volume = 0.6 }, -- music2_arp.ogg: arpeggio
+			{ name = "Lead", id = "", from = 0.55, volume = 0.7 }, -- music2_lead.ogg: dallam
+			{ name = "Hype", id = "", from = 0.7, volume = 0.7 }, -- music2_hype.ogg: stabok, süvítés, cin
+		},
+		-- 1. változat (100 BPM, 4 réteg): amíg a 2. nincs feltöltve
+		FALLBACK = {
+			{ name = "Pad", id = "rbxassetid://126566749182611", from = 0, volume = 0.8 },
+			{ name = "Bass", id = "rbxassetid://93420938472924", from = 0.1, volume = 0.8 },
+			{ name = "Drums", id = "rbxassetid://98625126403392", from = 0.3, volume = 0.9 },
+			{ name = "Melody", id = "rbxassetid://124393429991818", from = 0.55, volume = 0.7 },
 		},
 	},
 

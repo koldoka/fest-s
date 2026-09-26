@@ -58,7 +58,8 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Az új hangok feltöltése (roll_loop, paint_1..4, jump, land), az azonosítók beírása
 - [x] Zenei rétegek: minél színesebb a város, annál több hangszer szól (`Music`, 4 generált sáv)
 - [x] A 4 zenei sáv feltöltése, az azonosítók beírása a `Config.MUSIC.LAYERS`-be
-- [ ] Pörgősebb, kevésbé gyerekes zene, több réteggel: 5–10%-onként erősödő intenzitás, a meccs vége felé a legerősebb
+- [x] Pörgősebb zene (124 BPM, A-moll, 8 réteg): 0/5/12/20/30/42/55/70%-nál lép be egy-egy réteg, az utolsó percben +15%
+- [ ] A 8 új zenei sáv feltöltése, az azonosítók beírása a `Config.MUSIC.LAYERS`-be
 - [ ] Színkeverés: két szín egymás után keverve új színt ad (pl. piros + kék = lila)
 
 ## 3. mérföldkő: PvP
