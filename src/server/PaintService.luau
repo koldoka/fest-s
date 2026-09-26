@@ -136,11 +136,14 @@ end
 
 -- Lezárt kerület: csak ennek a játékosnak szól (legfeljebb 2 mp-enként).
 local lastLockWarning: { [Player]: number } = {}
-local function warnLocked(player: Player, building: BasePart)
+local function warnPlayer(player: Player, text: string)
 	if os.clock() - (lastLockWarning[player] or 0) > 2 then
 		lastLockWarning[player] = os.clock()
-		AnnounceRemote:FireClient(player, `{building:GetAttribute("District")} is locked!`, nil)
+		AnnounceRemote:FireClient(player, text, nil)
 	end
+end
+local function warnLocked(player: Player, building: BasePart)
+	warnPlayer(player, `{building:GetAttribute("District")} is locked!`)
 end
 
 local function addScore(player: Player, points: number)
@@ -219,6 +222,12 @@ local function tryPaint(player: Player, building: BasePart)
 		warnLocked(player, building)
 		return
 	end
+	-- Friss festék: a befestés után Config.PAINT_PROTECT mp-ig más csapat nem festheti át
+	local protectedFor = (building:GetAttribute("ProtectedUntil") or 0) - workspace:GetServerTimeNow()
+	if protectedFor > 0 then
+		warnPlayer(player, `Fresh paint! Wait {math.ceil(protectedFor)}s.`)
+		return
+	end
 	local cost = building:GetAttribute("PaintCost") or Config.PAINT_COST.SMALL
 	if paint < cost then
 		warnNeedPaint(player, cost)
@@ -227,6 +236,7 @@ local function tryPaint(player: Player, building: BasePart)
 
 	colorBuilding(building, color)
 	building:SetAttribute("ColorName", colorName)
+	building:SetAttribute("ProtectedUntil", workspace:GetServerTimeNow() + Config.PAINT_PROTECT)
 	player:SetAttribute("Paint", paint - cost)
 	BlobCharacter.update(player)
 
@@ -363,6 +373,7 @@ function PaintService.resetLevel()
 	for _, building in buildingsFolder:GetChildren() do
 		colorBuilding(building, nil)
 		building:SetAttribute("ColorName", "")
+		building:SetAttribute("ProtectedUntil", nil)
 	end
 	for _, prop in propsFolder:GetChildren() do
 		prop:SetAttribute("ColorName", "")

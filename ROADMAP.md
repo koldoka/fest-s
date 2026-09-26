@@ -73,7 +73,8 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] PvP-teszt a Studióban: minden működik
 - [x] PvP játékérzet: kerülettáblák a pálya fölött, lezárt kerület csillogó fala, elfoglalási konfetti; rajt (3-2-1-GO), utolsó 10 mp visszaszámlálása, "1 minute left", eredménytábla konfettivel és a legjobb 3 festővel; névcímke festéksávval; lopáskor "+N", piros villanás, kamerarázás (`Districts`, `Results`, `Pvp`)
 - [x] Saját hangok (`tools/generate_sounds.py`): lopás, meglopva, elfoglalás, feloldás, visszaszámlálás, rajt, győzelem, vereség
-- [ ] Az új PvP-hangok feltöltése (8 fájl), az azonosítók beírása a `Config.SOUNDS`-ba
+- [x] Az új PvP-hangok feltöltése (8 fájl), az azonosítók beírása a `Config.SOUNDS`-ba
+- [x] Friss festék: befestés után 5 mp-ig nem festhető át (`Config.PAINT_PROTECT`)
 - [ ] Lobby és meccs közti szavazás a pályára
 - [ ] Csalás elleni alapvédelem (sebesség, teleportálás)
 

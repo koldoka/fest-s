@@ -79,6 +79,7 @@ local Config = {
 	-- Festés
 	PAINT_MAX = 20, -- egy teli tartály ennyi egység festék
 	PAINT_REACH = 1.5, -- a paca felszínétől ennyire lévő dolgokat festi be / tölti fel belőlük (stud)
+	PAINT_PROTECT = 5, -- befestés után ennyi mp-ig más csapat nem festheti át a házat (friss festék)
 	PAINT_CHECK_INTERVAL = 0.1, -- ilyen gyakran nézi a szerver, mihez ér hozzá a játékos (mp)
 	-- Festékár: földszintes ház SMALL, kétszintes MEDIUM, három- vagy többszintes LARGE, tárgy PROP.
 	PAINT_COST = {
@@ -130,15 +131,15 @@ local Config = {
 		Land = { ids = { "rbxassetid://129774262633784" }, volume = 0.45, vary = true },
 		CityDone = { ids = { "rbxassetid://125442387668911" }, volume = 0.7 }, -- a meccs vége (győztes)
 		Roll = { ids = { "rbxassetid://75367702913623" }, volume = 0.5 }, -- roll_loop.ogg: ismétlődő gurulás, a sebességgel hangosodik
-		-- PvP (még feltöltendők; amíg üresek, nem szólnak, a győzelemnél a CityDone szól helyettük)
-		Steal = { ids = {}, volume = 0.6 }, -- steal.ogg: te loptál festéket
-		Stolen = { ids = {}, volume = 0.6 }, -- stolen.ogg: tőled loptak
-		Capture = { ids = {}, volume = 0.6 }, -- capture.ogg: egy kerület lezárult (teljes elfoglalás)
-		Unlock = { ids = {}, volume = 0.45 }, -- unlock.ogg: a kerület újra nyitott
-		Tick = { ids = {}, volume = 0.5 }, -- tick.ogg: visszaszámlálás
-		Go = { ids = {}, volume = 0.6 }, -- go.ogg: a meccs indul
-		Win = { ids = {}, volume = 0.7 }, -- win.ogg: a csapatod nyert
-		Lose = { ids = {}, volume = 0.6 }, -- lose.ogg: a csapatod vesztett
+		-- PvP
+		Steal = { ids = { "rbxassetid://116148583301394" }, volume = 0.6 }, -- steal.ogg: te loptál festéket
+		Stolen = { ids = { "rbxassetid://73959400048175" }, volume = 0.6 }, -- stolen.ogg: tőled loptak
+		Capture = { ids = { "rbxassetid://135356805004270" }, volume = 0.6 }, -- capture.ogg: egy kerület lezárult (teljes elfoglalás)
+		Unlock = { ids = { "rbxassetid://77869124313182" }, volume = 0.45 }, -- unlock.ogg: a kerület újra nyitott
+		Tick = { ids = { "rbxassetid://131059209706725" }, volume = 0.5 }, -- tick.ogg: visszaszámlálás
+		Go = { ids = { "rbxassetid://132287258180915" }, volume = 0.6 }, -- go.ogg: a meccs indul
+		Win = { ids = { "rbxassetid://99102616948967" }, volume = 0.7 }, -- win.ogg: a csapatod nyert
+		Lose = { ids = { "rbxassetid://74527392621971" }, volume = 0.6 }, -- lose.ogg: a csapatod vesztett
 	},
 
 	-- Kerületek (PvP, a pálya Level.districts listája alapján)

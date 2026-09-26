@@ -43,14 +43,14 @@ A már feltöltött hangokat a szkript nem írja felül (egy hang újrakészít�
 | `roll_loop.ogg` | `Roll` | gurulás (ismétlődik, a sebességgel hangosodik) |
 | `jump.ogg`, `land.ogg` | `Jump`, `Land` | ugrás, földet érés |
 | `refill.ogg` | `Refill` | festék felvétele tartályból |
-| `city_done.ogg` | `CityDone` | döntetlen (és győzelem/vereség, amíg azok nincsenek feltöltve) |
-| `steal.ogg` | `Steal` | te loptál festéket (**feltöltendő**) |
-| `stolen.ogg` | `Stolen` | tőled loptak (**feltöltendő**) |
-| `capture.ogg` | `Capture` | egy kerület teljesen elfoglalva, lezárul (**feltöltendő**) |
-| `unlock.ogg` | `Unlock` | a kerület újra nyitott (**feltöltendő**) |
-| `tick.ogg` | `Tick` | visszaszámlálás (**feltöltendő**) |
-| `go.ogg` | `Go` | a meccs indul (**feltöltendő**) |
-| `win.ogg`, `lose.ogg` | `Win`, `Lose` | a csapatod nyert / vesztett (**feltöltendő**) |
+| `city_done.ogg` | `CityDone` | döntetlen |
+| `steal.ogg` | `Steal` | te loptál festéket |
+| `stolen.ogg` | `Stolen` | tőled loptak |
+| `capture.ogg` | `Capture` | egy kerület teljesen elfoglalva, lezárul |
+| `unlock.ogg` | `Unlock` | a kerület újra nyitott |
+| `tick.ogg` | `Tick` | visszaszámlálás |
+| `go.ogg` | `Go` | a meccs indul |
+| `win.ogg`, `lose.ogg` | `Win`, `Lose` | a csapatod nyert / vesztett |
 
 A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` üres szkript kapcsolja ki.
 
@@ -72,6 +72,7 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
   20 egység; egy földszintes ház 1, egy kétszintes 3, egy három- vagy többszintes 4 egységbe kerül, egy tárgy
   (fa, pad, veteményes…) 1-be. Festéskor egy felugró "-N" mutatja, mennyi fogyott; ha kevés a festéked, a játék kiírja,
   mennyi kellene. Minden elfestett egységért 5 saját pont jár (ranglista).
+- **Friss festék**: egy befestett házat 5 mp-ig más csapat nem festhet át.
 - **Kerületek** (a kisvárosban 11): amelyik csapatnak több háza van egy kerületben, azé a kerület. Ha egy csapat
   a kerület **minden** házát befestette, a kerület 60 mp-re **lezárul**: addig senki nem festhet benne.
 - **Csapatpont**: a csapat színében álló házak és tárgyak festékértéke (ház 1/3/4, tárgy 1), és minden kerület,
