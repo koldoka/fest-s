@@ -52,7 +52,6 @@ print(string.format("[Paint Pop] Level built in %.2f s (%d instances)", buildTim
 PaintService.setLevel(level.buildings, level.props, level.tanks)
 DistrictService.setup(level.buildings, level.districts)
 TankService.start(level.tanks, level.tankSpots, PaintService.refill)
-print(string.format("[Paint Pop] Server ready %.2f s after start", time()))
 PaintService.start(MatchService.isPlaying, MatchService.publishScores)
 StealService.start(MatchService.isPlaying)
 MatchService.start(PaintService.resetLevel)

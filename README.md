@@ -26,6 +26,12 @@ kertek, gyümölcsösök, rétek, termőföldek. Minden szürke, a festékes pac
 
 ## Ha valami furcsa (nincs karakter, régi elemek a pályán)
 
+- **Lassú indulás (~10 mp), az Outputban "Connection fell back to legacy networking"**: ez a Studio kapcsolódása,
+  nem a játék. A szerver 0,3 mp alatt felépíti a pályát, de a kliens csak a kapcsolat felépülése után indul
+  (az Outputban: `[Paint Pop] Client scripts started at 10.05 s`). A Studio először az új hálózati módot próbálja,
+  és ha az nem sikerül, kb. 10 mp után visszaáll a régire. Érdemes megnézni: a Windows tűzfal engedi-e a
+  Roblox Studiót (privát hálózaton is), nem fut-e VPN vagy más hálózati szűrő, és friss-e a Studio.
+
 - Mindig **új Baseplate helyen** teszteld, ne abban, amelyikben a Toybox Tanks fut. A két projekt beállításai
   (pl. a `Players.CharacterAutoLoads`) és szkriptjei összekeveredhetnek.
 - Egyszerre csak **egy** `rojo serve` fusson.
