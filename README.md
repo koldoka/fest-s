@@ -57,7 +57,7 @@ A már feltöltött hangokat a szkript nem írja felül (egy hang újrakészít�
 | `tick.ogg` | `Tick` | visszaszámlálás |
 | `go.ogg` | `Go` | a meccs indul |
 | `win.ogg`, `lose.ogg` | `Win`, `Lose` | a csapatod nyert / vesztett |
-| `music_pad.ogg`, `music_bass.ogg`, `music_drums.ogg`, `music_melody.ogg` | `MUSIC.LAYERS` (`id`) | zenei rétegek: minél színesebb a város, annál több szól (**feltöltendő**; amíg bármelyik üres, nincs zene) |
+| `music_pad.ogg`, `music_bass.ogg`, `music_drums.ogg`, `music_melody.ogg` | `MUSIC.LAYERS` (`id`) | zenei rétegek: minél színesebb a város, annál több szól (amíg bármelyik üres, nincs zene) |
 
 A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` üres szkript kapcsolja ki.
 

@@ -151,10 +151,10 @@ local Config = {
 		VOLUME = 0.45, -- a zene hangereje összesen
 		FADE = 2.5, -- ennyi mp alatt erősödik fel vagy halkul el egy réteg
 		LAYERS = {
-			{ name = "Pad", id = "", from = 0, volume = 0.8 }, -- music_pad.ogg: akkordok, shaker
-			{ name = "Bass", id = "", from = 0.1, volume = 0.8 }, -- music_bass.ogg
-			{ name = "Drums", id = "", from = 0.3, volume = 0.9 }, -- music_drums.ogg
-			{ name = "Melody", id = "", from = 0.55, volume = 0.7 }, -- music_melody.ogg
+			{ name = "Pad", id = "rbxassetid://126566749182611", from = 0, volume = 0.8 }, -- music_pad.ogg: akkordok, shaker
+			{ name = "Bass", id = "rbxassetid://93420938472924", from = 0.1, volume = 0.8 }, -- music_bass.ogg
+			{ name = "Drums", id = "rbxassetid://98625126403392", from = 0.3, volume = 0.9 }, -- music_drums.ogg
+			{ name = "Melody", id = "rbxassetid://124393429991818", from = 0.55, volume = 0.7 }, -- music_melody.ogg
 		},
 	},
 

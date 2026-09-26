@@ -57,7 +57,7 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Nedvesebb hangok: szaftos gurulás (sebességfüggő, ismétlődő), cuppanós ugrás és földet érés, 4 finomabb festéshang véletlenszerűen; a Roblox lépéshangjai kikapcsolva
 - [x] Az új hangok feltöltése (roll_loop, paint_1..4, jump, land), az azonosítók beírása
 - [x] Zenei rétegek: minél színesebb a város, annál több hangszer szól (`Music`, 4 generált sáv)
-- [ ] A 4 zenei sáv feltöltése, az azonosítók beírása a `Config.MUSIC.LAYERS`-be
+- [x] A 4 zenei sáv feltöltése, az azonosítók beírása a `Config.MUSIC.LAYERS`-be
 - [ ] Színkeverés: két szín egymás után keverve új színt ad (pl. piros + kék = lila)
 
 ## 3. mérföldkő: PvP
