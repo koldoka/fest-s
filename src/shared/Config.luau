@@ -97,6 +97,9 @@ local Config = {
 		EMPTY_COLOR = Color3.fromRGB(236, 236, 240), -- festék nélkül fehéres
 	},
 
+	AMBIENT = true, -- élő környezet: ringó fák, csillogó, fodrozódó víz, spriccelő szökőkút (csak látvány, kliens)
+	DECOR_FLOWER_BOXES = true, -- a befestett házak néhány ablaka alá virágláda kerül (csak látvány, kliens)
+
 	-- Mozgás: a paca gyors és pattogós
 	WALK_SPEED = 24,
 	JUMP_POWER = 60,
@@ -142,6 +145,19 @@ local Config = {
 		Lose = { ids = { "rbxassetid://74527392621971" }, volume = 0.6 }, -- lose.ogg: a csapatod vesztett
 	},
 
+	-- Zene (Music, kliens): négy egymásra rakott, egyforma hosszú sáv (tools/generate_sounds.py). Az alap mindig
+	-- szól; a többi akkor erősödik fel, amikor a város ekkora része (0..1) már színes. A meccs végén mind szól.
+	MUSIC = {
+		VOLUME = 0.45, -- a zene hangereje összesen
+		FADE = 2.5, -- ennyi mp alatt erősödik fel vagy halkul el egy réteg
+		LAYERS = {
+			{ name = "Pad", id = "", from = 0, volume = 0.8 }, -- music_pad.ogg: akkordok, shaker
+			{ name = "Bass", id = "", from = 0.1, volume = 0.8 }, -- music_bass.ogg
+			{ name = "Drums", id = "", from = 0.3, volume = 0.9 }, -- music_drums.ogg
+			{ name = "Melody", id = "", from = 0.55, volume = 0.7 }, -- music_melody.ogg
+		},
+	},
+
 	-- Kerületek (PvP, a pálya Level.districts listája alapján)
 	DISTRICTS = {
 		LOCK_TIME = 60, -- ha egy csapat a kerület minden házát befestette, ennyi mp-ig senki nem festhet benne
@@ -160,6 +176,19 @@ local Config = {
 		REACH = 0.5, -- a két paca felszíne között ennyi hézag még ütközésnek számít (stud)
 		MIN_SPEED = 8, -- nekiguruláshoz legalább ekkora sebességgel kell a másik felé menni
 		STOMP_FALL_SPEED = 5, -- ráugráshoz legalább ekkora sebességgel kell esni
+	},
+
+	-- Csalás elleni alapvédelem (AntiCheatService): a lehetetlen mozgást visszahúzza
+	ANTICHEAT = {
+		ENABLED = true,
+		INTERVAL = 0.25, -- ilyen gyakran nézi a mozgást (mp)
+		SPEED_FACTOR = 1.6, -- a megengedett vízszintes sebesség: WALK_SPEED ennyiszerese
+		MAX_RISE_SPEED = 80, -- felfelé legfeljebb ennyi stud/mp (az ugrás kb. 60)
+		TOLERANCE = 6, -- ennyi stud ráhagyás a hálózati késés miatt
+		MAX_AIR_TIME = 2.5, -- ennyi mp-nél tovább nem lehet magasan lebegni esés nélkül
+		STRIKE_WINDOW = 30, -- ennyi mp-en belüli szabálysértéseket számolja
+		KICK_STRIKES = 15, -- ennyi szabálysértés után kirúgja (0 = soha)
+		LOG = true, -- szabálysértéskor figyelmeztetés az Output ablakba
 	},
 
 	-- Meccs (PvP)

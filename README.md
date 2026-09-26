@@ -57,6 +57,7 @@ A már feltöltött hangokat a szkript nem írja felül (egy hang újrakészít�
 | `tick.ogg` | `Tick` | visszaszámlálás |
 | `go.ogg` | `Go` | a meccs indul |
 | `win.ogg`, `lose.ogg` | `Win`, `Lose` | a csapatod nyert / vesztett |
+| `music_pad.ogg`, `music_bass.ogg`, `music_drums.ogg`, `music_melody.ogg` | `MUSIC.LAYERS` (`id`) | zenei rétegek: minél színesebb a város, annál több szól (**feltöltendő**; amíg bármelyik üres, nincs zene) |
 
 A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` üres szkript kapcsolja ki.
 
@@ -95,6 +96,11 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
   kerül győzelmi pózban, arany plaketten a nevével és a pontjával; a következő meccs MVP-jéig ott áll.
 - A pályán minden kerület fölött tábla lebeg (név, a csapatok házai, a gazda színe, lezárva a hátralévő idő).
   Lezárt kerület határán csapatszínű, csillogó erőtér-fal áll; elfoglaláskor a házakból konfetti pattan ki.
+- **Élő város**: a szélmalom forog (befestve gyorsabban), a fák ringanak, a víz csillog és fodrozódik, a szökőkút
+  spriccel; a befestett házak ablakai alá virágláda kerül, a boltok falán lengő cégér a bolt nevével.
+- **Zene**: négy réteg; az alap mindig szól, a basszus 10%, a dob 30%, a dallam 55% festett háznál erősödik fel.
+- **Csalásvédelem**: a szerver visszahúzza, aki túl gyorsan mozog, teleportál vagy lebeg; sok szabálysértésnél kirúgja
+  (`Config.ANTICHEAT`).
 - A többi paca fölött a neve a csapata színében, alatta a festéke (kit érdemes meglopni). Lopáskor a lopónak
   "+N", a meglopottnak piros villanás és rázkódó kamera.
 
@@ -125,6 +131,7 @@ src/server/
   DistrictService.luau kerületek: gazda csapat, teljes elfoglalás és lezárás, csapatpontok
   StealService.luau    festéklopás ütközéskor (nekigurulás, ráugrás), hátrapattanás
   MatchService.luau    a meccsek menete: szünet, játék, eredmény, újrakezdés
+  AntiCheatService.luau csalásvédelem: lehetetlen mozgás visszahúzása, sok szabálysértésnél kirúgás
   StatueService.luau   MVP-szobor: a legjobb festő avatarja a főtéri talapzaton, plakett a nevével
   BlobCharacter.luau   a paca figura: elrejti az avatart, szín és méret a festék szerint
 src/client/
@@ -133,6 +140,9 @@ src/client/
   Pvp.luau             hátrapattanás, a festéklopás látványa és hangja, névcímkék
   Districts.luau       kerülettáblák a pályán, lezárt kerület fala, elfoglalási konfetti
   Results.luau         visszaszámlálás, rajt, eredménytábla
+  Decor.luau           forgó szélmalom, virágládák és cégérek a befestett házakon
+  Ambient.luau         ringó fák, csillogó és fodrozódó víz, szökőkút
+  Music.luau           zenei rétegek a festettség szerint
   Effects.luau         fröccsenő festék és felvillanás festéskor
   BlobAnimator.luau    a pacák lapulása és nyúlása (csak látvány)
   Trails.luau          festékcsík a paca után (csak látvány)

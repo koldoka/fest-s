@@ -5,6 +5,7 @@
 -- (nem a Props mappában van).
 
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local StatueService = {}
 
@@ -136,7 +137,6 @@ local function buildFigure(player: Player): Model?
 	if root then
 		root.Anchored = true -- a gyökér rögzített, a végtagokat az ízületek tartják (így a póz megmarad)
 	end
-	pose(model)
 	return model
 end
 
@@ -156,6 +156,18 @@ local function place(model: Model)
 	local box, size = model:GetBoundingBox()
 	local bottom = box.Position.Y - size.Y / 2
 	model:PivotTo(model:GetPivot() + Vector3.new(0, top.Y - bottom + 0.05, 0))
+
+	-- Póz: a méretezés újraépíti az ízületeket (és elvesztené a pózt), ezért csak utána állítjuk be.
+	-- Egy fizikai lépés után, amikor a végtagok már a helyükre kerültek, minden részt rögzítünk, így a pózt
+	-- semmi (animáció, ízület-újraépítés) nem írhatja felül.
+	pose(model)
+	RunService.Heartbeat:Wait()
+	RunService.Heartbeat:Wait()
+	for _, item in model:GetDescendants() do
+		if item:IsA("BasePart") then
+			item.Anchored = true
+		end
+	end
 
 	-- Aranyló csillogás körülötte
 	local root = model:FindFirstChild("HumanoidRootPart") :: BasePart?

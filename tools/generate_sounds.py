@@ -287,6 +287,114 @@ def lose():
     return out
 
 
+# ---------------------------------------------------------------------------------------------------
+# Zene: négy egymásra rakható, egyforma hosszú, hézag nélkül ismételhető sáv (a kliens a város
+# festettsége szerint hangosítja fel őket egymás után). 100 BPM, 8 ütem, C-dúr: C Am F G C Am F G.
+
+BPM = 100
+BEAT = 60 / BPM
+BARS = 8
+LOOP = BARS * 4 * BEAT
+CHORDS = [[60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62]] * 2
+
+
+def midi(note):
+    return 440.0 * 2 ** ((note - 69) / 12)
+
+
+def loop_mix(events):
+    """events: (kezdés mp, hanghullám) párok; a hurok végén túlnyúló rész az elejére fordul."""
+    out = np.zeros(len(t(LOOP)))
+    for start, wave in events:
+        add(out, wave, start, wrap=True)
+    return out
+
+
+def music_pad():
+    # Alap: puha, lassan nyíló akkordok (három enyhén elhangolt szinusz hangonként) és halk shaker
+    rng = np.random.default_rng(71)
+    events = []
+    for bar, chord in enumerate(CHORDS):
+        d = 4 * BEAT + 0.6
+        time = t(d)
+        env = np.minimum(1, time / 0.35) * np.exp(-np.maximum(0, time - 4 * BEAT) / 0.25)
+        for note in chord:
+            f = midi(note)
+            wave = sum(np.sin(2 * np.pi * f * k * time) for k in (0.997, 1.0, 1.003)) / 3
+            wave += 0.25 * np.sin(2 * np.pi * f * 2 * time)
+            events.append((bar * 4 * BEAT, wave * env * 0.35))
+    out = loop_mix(events)
+    # Shaker nyolcadokon
+    for i in range(BARS * 8):
+        d = 0.08
+        hit = bandpass(rng.uniform(-1, 1, len(t(d))), 4000, 9000) * envelope(d, 0.004, 0.02)
+        add(out, hit * (0.12 if i % 2 else 0.2), i * BEAT / 2, wrap=True)
+    return out
+
+
+def music_bass():
+    # Basszus: pengetős alaphangok az ütem 1. és 3. negyedén, közte egy nyolcad átvezetés
+    events = []
+    for bar, chord in enumerate(CHORDS):
+        root = chord[0] - 24 if chord[0] >= 57 else chord[0] - 12
+        for beat, note, length in [(0, root, 1.4), (2, root, 0.9), (3, root + 7, 0.45), (3.5, root + 12, 0.45)]:
+            d = length * BEAT
+            time = t(d + 0.1)
+            f = midi(note)
+            wave = np.sin(2 * np.pi * f * time) + 0.3 * np.sin(2 * np.pi * f * 2 * time)
+            wave += 0.15 * np.sign(np.sin(2 * np.pi * f * time))
+            env = envelope(d + 0.1, 0.005, d * 0.6)
+            events.append((bar * 4 * BEAT + beat * BEAT, lowpass(wave, 900) * env * 0.8))
+    return loop_mix(events)
+
+
+def music_drums():
+    # Dob: lábdob az 1. és 3., taps a 2. és 4. negyeden, lábcin nyolcadokon
+    rng = np.random.default_rng(81)
+    events = []
+    for bar in range(BARS):
+        base = bar * 4 * BEAT
+        for beat in (0, 2):
+            d = 0.35
+            freq = np.geomspace(120, 45, len(t(d)))
+            kick = np.sin(2 * np.pi * np.cumsum(freq) / RATE) * envelope(d, 0.002, 0.09)
+            events.append((base + beat * BEAT, kick * 1.0))
+        for beat in (1, 3):
+            d = 0.25
+            clap = bandpass(rng.uniform(-1, 1, len(t(d))), 900, 4000) * envelope(d, 0.003, 0.06)
+            events.append((base + beat * BEAT, clap * 0.6))
+        for i in range(8):
+            d = 0.06
+            hat = bandpass(rng.uniform(-1, 1, len(t(d))), 6000, 12000) * envelope(d, 0.002, 0.015)
+            events.append((base + i * BEAT / 2, hat * (0.25 if i % 2 else 0.35)))
+    return loop_mix(events)
+
+
+MELODY = [
+    [(0, 76, 1), (1, 79, 0.5), (1.5, 76, 0.5), (2, 74, 1), (3, 72, 1)],
+    [(0, 72, 0.5), (0.5, 74, 0.5), (1, 76, 1), (2, 81, 1), (3, 79, 1)],
+    [(0, 81, 1), (1, 79, 0.5), (1.5, 77, 0.5), (2, 76, 1), (3, 72, 1)],
+    [(0, 74, 1), (1, 76, 0.5), (1.5, 79, 1), (2.5, 74, 0.5), (3, 71, 1)],
+    [(0, 76, 0.5), (0.5, 79, 0.5), (1, 84, 1), (2, 83, 0.5), (2.5, 79, 0.5), (3, 76, 1)],
+    [(0, 81, 1), (1, 79, 0.5), (1.5, 76, 0.5), (2, 72, 1), (3, 76, 1)],
+    [(0, 77, 1), (1, 81, 1), (2, 84, 1), (3, 81, 1)],
+    [(0, 79, 1.5), (1.5, 77, 0.5), (2, 74, 1.5), (3.5, 71, 0.5)],
+]
+
+
+def music_melody():
+    # Dallam: marimbaszerű, csilingelő hang (alaphang + 4-szeres felhang, gyors lecsengés)
+    events = []
+    for bar, notes in enumerate(MELODY):
+        for beat, note, length in notes:
+            d = max(0.35, length * BEAT) + 0.3
+            time = t(d)
+            f = midi(note)
+            wave = np.sin(2 * np.pi * f * time) + 0.3 * np.sin(2 * np.pi * f * 4 * time) * np.exp(-time / 0.05)
+            events.append((bar * 4 * BEAT + beat * BEAT, wave * envelope(d, 0.003, 0.28) * 0.7))
+    return loop_mix(events)
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     for old in ["splat.ogg"]:  # a régi, túl erős festéshang helyett a paint_1..4 van
@@ -319,6 +427,15 @@ def main():
     ]:
         if not (OUT / f"{name}.ogg").exists():
             save(name, make(), peak_db=peak)
+    # Zenei rétegek (egyforma hosszúak, hurkolhatók)
+    for name, make, peak in [
+        ("music_pad", music_pad, -8),
+        ("music_bass", music_bass, -8),
+        ("music_drums", music_drums, -8),
+        ("music_melody", music_melody, -9),
+    ]:
+        if not (OUT / f"{name}.ogg").exists():
+            save(name, make(), peak_db=peak, loop=True)
 
 
 if __name__ == "__main__":

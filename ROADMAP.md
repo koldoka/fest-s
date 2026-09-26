@@ -48,14 +48,16 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Festékár csökkentve: 1 szint 1, 2 szint 3, 3+ szint 4, tárgy 1
 - [x] Térképen a játékosok az avatarjuk arcképével, valós idejű helyzettel; szélmalom tengellyel a falhoz rögzítve; a pad támlája hátradől
 - [ ] 1. pálya finomítása a Studio-teszt alapján
-- [ ] A szélmalom lapátjai forogjanak
+- [x] A szélmalom lapátjai forognak (befestve gyorsabban) (`Decor`)
 - [ ] További pályák
-- [ ] Díszek a befestett épületen (virágládák, cégérek)
+- [x] Díszek a befestett épületen: virágládák az ablakok alatt, lengő cégér a boltokon (`Decor`)
+- [x] Élő környezet: ringó fák és bokrok, csillogó, fodrozódó víz, hullámzó folyószín, spriccelő szökőkút (`Ambient`)
 - [x] Hangok: placcs, festékfelvétel, ugrás, földet érés, a város elkészülte (`Sounds`, `tools/generate_sounds.py`)
 - [x] A hangok feltöltése a Robloxra, az azonosítók beírása a `Config.SOUNDS`-ba
 - [x] Nedvesebb hangok: szaftos gurulás (sebességfüggő, ismétlődő), cuppanós ugrás és földet érés, 4 finomabb festéshang véletlenszerűen; a Roblox lépéshangjai kikapcsolva
 - [x] Az új hangok feltöltése (roll_loop, paint_1..4, jump, land), az azonosítók beírása
-- [ ] Zenei rétegek: minél színesebb a város, annál több hangszer szól
+- [x] Zenei rétegek: minél színesebb a város, annál több hangszer szól (`Music`, 4 generált sáv)
+- [ ] A 4 zenei sáv feltöltése, az azonosítók beírása a `Config.MUSIC.LAYERS`-be
 - [ ] Színkeverés: két szín egymás után keverve új színt ad (pl. piros + kék = lila)
 
 ## 3. mérföldkő: PvP
@@ -69,6 +71,7 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Valósághűbb vödör: színes címke „PAINT” felirattal (betűnként a palásthoz simulva), színes csorgások, lapos ecset foglalattal és rojtos, festékes heggyel; a térképen saját vödör-ikon (az emoji nem jelent meg)
 - [x] Vízbe lépve elvész a festék (folyó, tó, szökőkút)
 - [x] A tárgyak is adnak csapatpontot: a csapatpont a csapat színében álló házak és tárgyak festékértéke + 10 kerületenként
+- [x] Javítás: az MVP-szobor póza (a méretezés után áll be, utána minden rész rögzítve)
 - [x] MVP-szobor: az előző meccs legjobb festőjének avatarja győzelmi pózban a főtéri talapzaton, arany plakett a nevével (`StatueService`)
 - [ ] Hangolás hosszabb játék alapján: lopás, hátrapattanás, meccshossz, kerületbónusz
 - [x] PvP-teszt a Studióban: minden működik
@@ -80,7 +83,7 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] A friss festék látszik: "WET PAINT" tábla az ajtón fogyó sávval, lefolyó festékcseppek a falon, fényes fal, ami megszárad (`Effects`)
 - [x] Javítás: a bolt cégtáblája nem ütközik az erkéllyel (a bolt oldalán az erkély a 3. emelettől), a boltok legalább kétszintesek, földszintes házon nincs előtető (belelógott az ereszbe)
 - [ ] Lobby és meccs közti szavazás a pályára
-- [ ] Csalás elleni alapvédelem (sebesség, teleportálás)
+- [x] Csalás elleni alapvédelem: sebesség, teleportálás, lebegés; visszahúzás, sok szabálysértésnél kirúgás (`AntiCheatService`)
 
 ## 4. mérföldkő: PvE mód
 - [ ] "Szürke" ellenségek, amelyek visszaszürkítik az épületeket

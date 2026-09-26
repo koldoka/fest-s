@@ -407,7 +407,11 @@ function Props.windmillBlades(hub: Vector3, facing: Vector3, axle: number?)
 	local axleLength = axle or 3
 	local model = newProp("WindmillBlades")
 	local base = CFrame.lookAt(hub, hub + facing)
-	propPart(model, WOOD, { Shape = Enum.PartType.Ball, Size = Vector3.one * 1.6, CFrame = base }, "dark")
+	-- A lapátokat a kliens forgatja (Decor): a forgó részeket "Spin" jelöli, a tengely a SpinHub CFrame Z-je
+	model:SetAttribute("SpinHub", base)
+	local hubPart =
+		propPart(model, WOOD, { Shape = Enum.PartType.Ball, Size = Vector3.one * 1.6, CFrame = base }, "dark")
+	hubPart:SetAttribute("Spin", true)
 	-- Tengely az agytól vissza a toronyba (a hátsó fele a falban van)
 	propPart(model, IRON, {
 		Shape = Enum.PartType.Cylinder,
@@ -421,13 +425,16 @@ function Props.windmillBlades(hub: Vector3, facing: Vector3, axle: number?)
 	}, "light")
 	for i = 0, 3 do
 		local arm = base * CFrame.Angles(0, 0, math.rad(45 + i * 90))
-		propPart(model, WOOD, { Size = Vector3.new(0.4, 10, 0.4), CFrame = arm * CFrame.new(0, 5.2, -0.3) }, "dark")
-		propPart(
+		local spar =
+			propPart(model, WOOD, { Size = Vector3.new(0.4, 10, 0.4), CFrame = arm * CFrame.new(0, 5.2, -0.3) }, "dark")
+		local sail = propPart(
 			model,
 			Color3.fromRGB(240, 232, 214),
 			{ Size = Vector3.new(2, 8, 0.2), CFrame = arm * CFrame.new(1.1, 6, -0.2) },
 			"light"
 		)
+		spar:SetAttribute("Spin", true)
+		sail:SetAttribute("Spin", true)
 	end
 end
 

@@ -11,6 +11,7 @@ local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local BlobCharacter = require(script.Parent.BlobCharacter)
+local AntiCheatService = require(script.Parent.AntiCheatService)
 
 local StolenRemote = ReplicatedStorage.Remotes.Stolen
 local KnockbackRemote = ReplicatedStorage.Remotes.Knockback
@@ -61,6 +62,7 @@ local function steal(thief: Blob, victim: Blob, share: number, stomp: boolean)
 	local away = victim.center - thief.center
 	away = Vector3.new(away.X, 0, away.Z)
 	away = if away.Magnitude > 0.01 then away.Unit else Vector3.xAxis
+	AntiCheatService.allow(victim.player, 1.5) -- a hátrapattanás ne számítson csalásnak
 	KnockbackRemote:FireClient(victim.player, away * s.KNOCKBACK + Vector3.new(0, s.KNOCKBACK * 0.6, 0))
 	StolenRemote:FireAllClients(thief.player, victim.player, amount, stomp)
 end

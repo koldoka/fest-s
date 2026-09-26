@@ -29,6 +29,7 @@ local DistrictService = require(script.Parent.DistrictService)
 local StealService = require(script.Parent.StealService)
 local MatchService = require(script.Parent.MatchService)
 local StatueService = require(script.Parent.StatueService)
+local AntiCheatService = require(script.Parent.AntiCheatService)
 
 -- A "Baseplate" sablon alap elemei útban lennének.
 for _, name in { "Baseplate", "SpawnLocation" } do
@@ -56,6 +57,7 @@ StatueService.setup(level.props)
 TankService.start(level.tanks, level.tankSpots, PaintService.refill)
 PaintService.start(MatchService.isPlaying, MatchService.publishScores)
 StealService.start(MatchService.isPlaying)
+AntiCheatService.start()
 MatchService.start(PaintService.resetLevel)
 
 -- Aki a pálya felépülése előtt belépett és karakter nélkül maradt, kap egyet.
