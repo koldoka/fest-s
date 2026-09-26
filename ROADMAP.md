@@ -72,6 +72,9 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Valósághűbb vödör: színes címke „PAINT” felirattal (betűnként a palásthoz simulva), színes csorgások, lapos ecset foglalattal és rojtos, festékes heggyel; a térképen saját vödör-ikon (az emoji nem jelent meg)
 - [x] Vízbe lépve elvész a festék (folyó, tó, szökőkút)
 - [x] A tárgyak is adnak csapatpontot: a csapatpont a csapat színében álló házak és tárgyak festékértéke + 10 kerületenként
+- [x] Javítás: a kliens megvárja a teljes pályát (LevelReady), korábban a fák és a tó nagy része kimaradt a ringásból
+- [x] Benti fák, bokrok, gyümölcsfák a kinti erdő anyagaival (lombos Grass, fa törzs)
+- [x] Szökőkút felső tála peremmel, benne víz, a peremről körben lecsorgó víz
 - [x] Tó medencében (kőperem, mély meder, nem szilárd víz: el lehet merülni benne, mint a folyóban; tavirózsa, nád); a szökőkút medencéje is ilyen
 - [x] A park pavilonja rendes nyeregtetőt kapott (a két keresztbe fordított hasáb helyett)
 - [x] A kliens moduljai külön, védetten indulnak (egy hiba nem állítja le a többit), az Ambient kiírja, mit talált

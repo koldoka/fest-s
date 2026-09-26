@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+local LevelReady = require(script.Parent.LevelReady)
 
 local Ambient = {}
 
@@ -184,6 +185,40 @@ local function fountainSpray(model: Model)
 	spray.Acceleration = Vector3.new(0, -30, 0)
 	spray.Rate = 45
 	spray.Parent = attachment
+
+	-- A felső tál pereméről körben lecsorgó víz (a tál vízlapjának pereméről, kifelé és lefelé)
+	for _, p in model:GetDescendants() do
+		if p:IsA("BasePart") and p:GetAttribute("FountainBowl") then
+			-- A részecske-henger tengelye a szülő Y tengelye; a tál vízlapja fekvő henger (a tengelye X),
+			-- ezért egy álló, láthatatlan segédlapról csorog
+			local diameter = p.Size.Y
+			local ring = Instance.new("Part")
+			ring.Anchored = true
+			ring.CanCollide = false
+			ring.CanQuery = false
+			ring.CanTouch = false
+			ring.Transparency = 1
+			ring.Size = Vector3.new(diameter + 0.4, 0.05, diameter + 0.4)
+			ring.CFrame = CFrame.new(p.Position)
+			ring.Parent = folder
+			local curtain = Instance.new("ParticleEmitter")
+			curtain.Name = "Overflow"
+			curtain.Shape = Enum.ParticleEmitterShape.Cylinder
+			curtain.ShapeStyle = Enum.ParticleEmitterShapeStyle.Surface
+			curtain.ShapeInOut = Enum.ParticleEmitterShapeInOut.Outward
+			curtain.Color = ColorSequence.new(Color3.fromRGB(190, 225, 255))
+			curtain.LightEmission = 0.2
+			curtain.Transparency =
+				NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 0.9) })
+			curtain.Size =
+				NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.3), NumberSequenceKeypoint.new(1, 0.5) })
+			curtain.Lifetime = NumberRange.new(0.5, 0.7)
+			curtain.Speed = NumberRange.new(1.5, 2.5)
+			curtain.Acceleration = Vector3.new(0, -35, 0)
+			curtain.Rate = 70
+			curtain.Parent = ring
+		end
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -197,9 +232,8 @@ function Ambient.start()
 	folder.Parent = workspace
 
 	task.spawn(function()
-		local level = workspace:WaitForChild("Level")
+		local level = LevelReady.wait()
 		local props = level:WaitForChild("Props")
-		task.wait(1) -- a pálya teljes megérkezése
 		local fountains, failures = 0, 0
 		for _, model in props:GetChildren() do
 			local amplitude = SWAY_NAMES[model.Name]

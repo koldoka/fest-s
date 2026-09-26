@@ -52,6 +52,12 @@ local function cylinderUp(center: Vector3, height: number, diameter: number): { 
 end
 
 local WOOD = Color3.fromRGB(150, 98, 58)
+
+-- Fa anyag egy alkatrész-leíráshoz (a fák törzse).
+local function wood(props: { [string]: any }): { [string]: any }
+	props.Material = Enum.Material.Wood
+	return props
+end
 local IRON = Color3.fromRGB(46, 52, 58)
 local LEAF = Color3.fromRGB(96, 164, 76)
 local STONE = Color3.fromRGB(214, 200, 176)
@@ -62,8 +68,8 @@ function Props.tree(at: Vector3, scale: number?)
 	local rng = Common.rng
 	local s = (scale or 1) * rng:NextNumber(0.85, 1.15)
 	local model = newProp("Tree")
-	propPart(model, Color3.fromRGB(120, 84, 56), cylinderUp(at + Vector3.new(0, 3.2 * s, 0), 6.4 * s, 1.2 * s))
-	propPart(model, Color3.fromRGB(120, 84, 56), cylinderUp(at + Vector3.new(0, 0.4 * s, 0), 0.8 * s, 1.8 * s))
+	propPart(model, Color3.fromRGB(120, 84, 56), wood(cylinderUp(at + Vector3.new(0, 3.2 * s, 0), 6.4 * s, 1.2 * s)))
+	propPart(model, Color3.fromRGB(120, 84, 56), wood(cylinderUp(at + Vector3.new(0, 0.4 * s, 0), 0.8 * s, 1.8 * s)))
 	local crowns = {
 		{ Vector3.new(0, 8, 0), 6, "paint" },
 		{ Vector3.new(1.8, 6.6, 0.9), 4.4, "dark" },
@@ -73,12 +79,12 @@ function Props.tree(at: Vector3, scale: number?)
 	}
 	for _, c in crowns do
 		local jitter = Vector3.new(rng:NextNumber(-0.3, 0.3), 0, rng:NextNumber(-0.3, 0.3))
-		propPart(
-			model,
-			LEAF,
-			{ Shape = Enum.PartType.Ball, Size = Vector3.one * c[2] * s, Position = at + (c[1] + jitter) * s },
-			c[3]
-		)
+		propPart(model, LEAF, {
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * c[2] * s,
+			Position = at + (c[1] + jitter) * s,
+			Material = Enum.Material.Grass,
+		}, c[3])
 	end
 end
 
@@ -94,12 +100,12 @@ function Props.bush(at: Vector3, scale: number?)
 			{ Vector3.new(-1.2, 0.9, -0.3), 2.1, "light" },
 		}
 	do
-		propPart(
-			model,
-			LEAF,
-			{ Shape = Enum.PartType.Ball, Size = Vector3.one * c[2] * s, Position = at + c[1] * s },
-			c[3]
-		)
+		propPart(model, LEAF, {
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * c[2] * s,
+			Position = at + c[1] * s,
+			Material = Enum.Material.Grass,
+		}, c[3])
 	end
 end
 
@@ -265,13 +271,27 @@ function Props.fountain(at: Vector3, radius: number)
 	pool.Transparency = 0.25
 	pool:SetAttribute("Water", true)
 	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 3.2, 0), 4.2, 2.4))
-	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 5.4, 0), 0.8, radius * 0.8), "light")
-	local top = propPart(model, water, cylinderUp(at + Vector3.new(0, 5.75, 0), 0.2, radius * 0.8 - 0.8))
+	-- Felső tál: kő alj, körben alacsony perem, benne víz; középen a kifolyó gömb egy kis oszlopon
+	local bowlRadius = radius * 0.4
+	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 5.5, 0), 0.6, bowlRadius * 2), "light")
+	local bowlSegments = 10
+	local bowlRing = bowlRadius - 0.25
+	for i = 1, bowlSegments do
+		local angle = (i / bowlSegments) * math.pi * 2
+		propPart(model, STONE, {
+			Size = Vector3.new(2 * math.pi * bowlRing / bowlSegments + 0.25, 0.7, 0.5),
+			CFrame = CFrame.new(at) * CFrame.Angles(0, angle, 0) * CFrame.new(0, 6.15, -bowlRing),
+		}, "light")
+	end
+	local top = propPart(model, water, cylinderUp(at + Vector3.new(0, 6.1, 0), 0.2, (bowlRing - 0.25) * 2))
 	top.Material = Enum.Material.Glass
+	top.Transparency = 0.2
+	top:SetAttribute("FountainBowl", true)
+	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 6.6, 0), 1, 0.6))
 	propPart(
 		model,
 		STONE,
-		{ Shape = Enum.PartType.Ball, Size = Vector3.one * 1.6, Position = at + Vector3.new(0, 6.6, 0) },
+		{ Shape = Enum.PartType.Ball, Size = Vector3.one * 1.1, Position = at + Vector3.new(0, 7.4, 0) },
 		"paint"
 	)
 end
@@ -604,19 +624,19 @@ end
 -- Gyümölcsfa: kisebb fa, a lombban gyümölcsökkel.
 function Props.fruitTree(at: Vector3)
 	local model = newProp("FruitTree")
-	propPart(model, Color3.fromRGB(120, 84, 56), cylinderUp(at + Vector3.new(0, 2, 0), 4, 0.9))
-	propPart(
-		model,
-		LEAF,
-		{ Shape = Enum.PartType.Ball, Size = Vector3.one * 5.5, Position = at + Vector3.new(0, 5.5, 0) },
-		"paint"
-	)
-	propPart(
-		model,
-		LEAF,
-		{ Shape = Enum.PartType.Ball, Size = Vector3.one * 3.5, Position = at + Vector3.new(1.3, 4.6, 0.8) },
-		"dark"
-	)
+	propPart(model, Color3.fromRGB(120, 84, 56), wood(cylinderUp(at + Vector3.new(0, 2, 0), 4, 0.9)))
+	propPart(model, LEAF, {
+		Shape = Enum.PartType.Ball,
+		Size = Vector3.one * 5.5,
+		Position = at + Vector3.new(0, 5.5, 0),
+		Material = Enum.Material.Grass,
+	}, "paint")
+	propPart(model, LEAF, {
+		Shape = Enum.PartType.Ball,
+		Size = Vector3.one * 3.5,
+		Position = at + Vector3.new(1.3, 4.6, 0.8),
+		Material = Enum.Material.Grass,
+	}, "dark")
 	local fruit = pick({ Color3.fromRGB(220, 50, 50), Color3.fromRGB(250, 170, 40), Color3.fromRGB(240, 220, 70) })
 	for _, o in { Vector3.new(2.2, 5, -1), Vector3.new(-1.8, 6, 1.4), Vector3.new(0.4, 4.2, 2.4) } do
 		propPart(model, fruit, { Shape = Enum.PartType.Ball, Size = Vector3.one * 0.8, Position = at + o })

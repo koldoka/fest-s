@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
+local LevelReady = require(script.Parent.LevelReady)
 
 local Decor = {}
 
@@ -293,7 +294,7 @@ function Decor.start()
 	end
 
 	task.spawn(function()
-		local level = workspace:WaitForChild("Level")
+		local level = LevelReady.wait()
 		local props = level:WaitForChild("Props")
 		local buildings = level:WaitForChild("Buildings")
 		local function onProp(model: Instance)
