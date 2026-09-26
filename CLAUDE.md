@@ -1,7 +1,9 @@
 # Paint Pop (munkacím): projektjegyzet
 
 Színes festős platformjáték Robloxra (a de Blob ihletésére, de saját figurával, névvel és stílussal).
-Egy guruló, pattogó festékpaca szürke várost fest ki (kézzel, kódból tervezett pályák); később csapatos PvP (kerületfoglalás) és PvE mód.
+Egy guruló, pattogó festékpaca szürke várost fest ki (kézzel, kódból tervezett pályák). Csapatos PvP: meccsek,
+kerületfoglalás lezárással, festéklopás ütközéskor (`TeamService`, `DistrictService`, `StealService`, `MatchService`).
+Később PvE mód.
 
 - **A teendőlista és a haladás: [ROADMAP.md](ROADMAP.md).** Új munka előtt ezt nézd meg,
   és a kész pontokat pipáld ki ugyanabban a commitban.
@@ -15,6 +17,7 @@ Egy guruló, pattogó festékpaca szürke várost fest ki (kézzel, kódból ter
   (a Kit és a pálya lefut egy Roblox-utánzattal: hibát, alkatrészszámot és képeket ad). Pályamódosítás után futtasd.
 - Felépítés: `src/shared` (Config), `src/server` (Kit = építőkészlet, Levels = kézzel tervezett pályák), `src/client`.
   Minden hangolható érték a `src/shared/Config.luau`-ban van.
-- Elvek: a festékről, az épületek színéről és a pontokról mindig a szerver dönt; a saját karaktert a kliens mozgatja.
+- Elvek: a festékről, az épületek színéről, a lopásról és a pontokról mindig a szerver dönt; a saját karaktert
+  a kliens mozgatja (ezért a hátrapattanást is a kliens teszi rá, a szerver csak szól neki).
 - Szerzői jog: semmit nem veszünk át a de Blobból vagy a Splatoonból (nevek, figurák, modellek, zenék).
   A "Blob", "Splat", "Chroma" szavakat kerüljük a nevekben.

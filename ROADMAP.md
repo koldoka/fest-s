@@ -9,7 +9,7 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Festés érintéssel, fogyó festék; a szerver dönt
 - [x] Pontok (ranglista), a város festettsége a képernyő tetején
 - [x] Fröccsenő festék és felvillanás festéskor
-- [x] Újrakezdés, ha minden épület színes
+- [x] Újrakezdés, ha minden épület színes (a PvP-ben a meccsek körforgása váltotta fel)
 - [x] Első teszt a Studióban (a karakterbetöltés és a festékfelvétel javítva)
 - [ ] Hangolás (sebesség, ugrás, festékmennyiség)
 
@@ -59,10 +59,15 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [ ] Színkeverés: két szín egymás után keverve új színt ad (pl. piros + kék = lila)
 
 ## 3. mérföldkő: PvP
-- [ ] Csapatok (pl. 2 vagy 4 szín), a játékos a csapata színével fest
-- [ ] Kerületek: amelyik csapat egy kerület épületeinek nagyobb részét festi be, azé a kerület
-- [ ] Ütközés: ha nekigurulsz egy ellenfélnek, elveszed a festéke egy részét
-- [ ] Rövid meccsek (5–8 perc), visszaszámlálás, eredménytábla, győztes csapat
+- [x] Csapatok (alapból piros és kék, a `Config.TEAMS`-ben 4 is lehet), a játékos a csapata színével fest (`TeamService`)
+- [x] Festékesvödör ecsettel a színes tartály helyett; semleges, mindenki a csapata színét veszi fel belőle
+- [x] Az ellenfél házai átfesthetők (festékbe kerül, saját pont jár érte)
+- [x] Kerületek: amelyik csapatnak több háza van egy kerületben, azé; teljes elfoglaláskor 60 mp-es lezárás (`DistrictService`); a kisvárosban 11 kerület
+- [x] Festéklopás: nekigurulás (30%) és ráugrás (50%), hátrapattanás, 3 mp védettség (`StealService`, kliensen `Pvp`)
+- [x] Rövid meccsek: 15 mp szünet, 7 perc játék, eredmény; visszaszámlálás, csapatpontok sávja, bejelentések, győztes (`MatchService`)
+- [x] Térkép: kerületek a vezető csapat színével, házszám csapatonként, lezárás jelölése; a játékosok a csapatuk színével
+- [ ] PvP-teszt a Studióban (2–4 játékos), hangolás: lopás, hátrapattanás, meccshossz, kerületbónusz
+- [ ] Saját hang a festéklopáshoz és a kerület elfoglalásához
 - [ ] Lobby és meccs közti szavazás a pályára
 - [ ] Csalás elleni alapvédelem (sebesség, teleportálás)
 

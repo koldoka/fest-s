@@ -25,6 +25,22 @@ Level.seed = 11
 -- A térkép (M) által mutatott terület: x0, z0, x1, z1
 Level.bounds = { -228, -228, 228, 228 }
 
+-- Kerületek (PvP): név és téglalapok { x0, z0, x1, z1 }. Minden ház abba a kerületbe tartozik, amelyik
+-- téglalapjába esik (ha egyikbe sem, a legközelebbibe).
+Level.districts = {
+	{ name = "Market Square", rects = { { -100, -60, 20, 40 } } },
+	{ name = "North Gate", rects = { { -220, -220, -85, -60 } } },
+	{ name = "Old Quarter", rects = { { -85, -220, 55, -60 } } },
+	{ name = "West End", rects = { { -220, -60, -100, 100 } } },
+	{ name = "Windmill Farm", rects = { { -220, 100, -100, 220 } } },
+	{ name = "South Lanes", rects = { { -100, 40, 55, 130 }, { 20, -60, 55, 40 } } },
+	{ name = "Garden Lanes", rects = { { -100, 130, 55, 220 } } },
+	{ name = "Riverside", rects = { { 55, -220, 125, 220 } } },
+	{ name = "East Park", rects = { { 125, -220, 220, -30 } } },
+	{ name = "Terrace", rects = { { 125, -30, 220, 110 } } },
+	{ name = "Farmsteads", rects = { { 125, 110, 220, 220 } } },
+}
+
 Level.lighting = {
 	ClockTime = 15.5,
 	Brightness = 2.2,

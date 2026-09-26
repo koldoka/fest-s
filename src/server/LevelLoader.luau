@@ -1,6 +1,6 @@
 -- Pálya betöltése: létrehozza a mappákat, és lefuttatja a pályaleírást (src/server/Levels/<név>.luau).
 -- Egy pályaleírás egy táblát ad vissza:
---   { seed = szám, lighting = { ClockTime = 15, ... }, build = function(Kit) ... end }
+--   { seed = szám, bounds = {...}, districts = {...}, lighting = { ClockTime = 15, ... }, build = function(Kit) ... end }
 
 local Lighting = game:GetService("Lighting")
 
@@ -8,7 +8,14 @@ local Kit = require(script.Parent.Kit)
 
 local LevelLoader = {}
 
-export type LevelFolders = { world: Folder, buildings: Folder, props: Folder, tanks: Folder, tankSpots: { Vector3 } }
+export type LevelFolders = {
+	world: Folder,
+	buildings: Folder,
+	props: Folder,
+	tanks: Folder,
+	tankSpots: { Vector3 },
+	districts: { any },
+}
 
 function LevelLoader.load(name: string): LevelFolders
 	local old = workspace:FindFirstChild("Level")
@@ -43,6 +50,7 @@ function LevelLoader.load(name: string): LevelFolders
 
 	root.Parent = workspace
 	folders.tankSpots = Kit.tankSpots
+	folders.districts = level.districts or { { name = "Town", rects = { b } } }
 	return folders :: any
 end
 

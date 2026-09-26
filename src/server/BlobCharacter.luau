@@ -100,7 +100,10 @@ function BlobCharacter.update(player: Player)
 	local b = Config.BLOB
 	local paint = player:GetAttribute("Paint") or 0
 	local color = Config.PAINT_COLOR_BY_NAME[player:GetAttribute("PaintColor")]
-	blob.Color = if color and paint > 0 then color else b.EMPTY_COLOR
+	-- Festék nélkül a csapat színének halvány változata (hogy látszódjon, ki melyik csapatban van)
+	local teamColor = Config.PAINT_COLOR_BY_NAME[player:GetAttribute("Team")]
+	local empty = if teamColor then teamColor:Lerp(b.EMPTY_COLOR, 0.65) else b.EMPTY_COLOR
+	blob.Color = if color and paint > 0 then color else empty
 
 	local d = b.MIN_SIZE + (b.MAX_SIZE - b.MIN_SIZE) * paint / Config.PAINT_MAX
 	blob.Size = Vector3.one * d

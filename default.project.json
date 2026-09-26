@@ -9,7 +9,10 @@
       "Remotes": {
         "$className": "Folder",
         "Painted": { "$className": "RemoteEvent" },
-        "NeedPaint": { "$className": "RemoteEvent" }
+        "NeedPaint": { "$className": "RemoteEvent" },
+        "Announce": { "$className": "RemoteEvent" },
+        "Stolen": { "$className": "RemoteEvent" },
+        "Knockback": { "$className": "RemoteEvent" }
       }
     },
     "ServerScriptService": {

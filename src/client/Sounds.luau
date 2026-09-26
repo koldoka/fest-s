@@ -89,7 +89,7 @@ local function updateRolling()
 	end
 end
 
--- A saját paca hangjai: ugrás, földet érés, festékfelvétel; és a város elkészülte.
+-- A saját paca hangjai: ugrás, földet érés, festékfelvétel; és a meccs vége.
 function Sounds.start()
 	local player = Players.LocalPlayer
 
@@ -133,15 +133,11 @@ function Sounds.start()
 		task.spawn(onCharacter, player.Character)
 	end
 
-	local wasDone = false
-	workspace:GetAttributeChangedSignal("PaintedCount"):Connect(function()
-		local painted = workspace:GetAttribute("PaintedCount") or 0
-		local total = workspace:GetAttribute("BuildingCount") or 0
-		local done = total > 0 and painted >= total
-		if done and not wasDone then
+	-- A meccs vége: fanfár
+	workspace:GetAttributeChangedSignal("MatchState"):Connect(function()
+		if workspace:GetAttribute("MatchState") == "Ended" then
 			Sounds.play("CityDone")
 		end
-		wasDone = done
 	end)
 
 	RunService.Heartbeat:Connect(updateRolling)

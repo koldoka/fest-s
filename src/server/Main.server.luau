@@ -1,4 +1,5 @@
--- A szerver belépési pontja: betölti a pályát, elindítja a festést, és újrakezdi, ha minden ház színes.
+-- A szerver belépési pontja: betölti a pályát, felállítja a csapatokat és a kerületeket, elindítja a festést,
+-- a festéklopást és a meccsek körforgását.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,7 +12,7 @@ if not Remotes then
 	Remotes.Name = "Remotes"
 	Remotes.Parent = ReplicatedStorage
 end
-for _, name in { "Painted", "NeedPaint" } do
+for _, name in { "Painted", "NeedPaint", "Announce", "Stolen", "Knockback" } do
 	if not Remotes:FindFirstChild(name) then
 		local remote = Instance.new("RemoteEvent")
 		remote.Name = name
@@ -23,6 +24,10 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local LevelLoader = require(script.Parent.LevelLoader)
 local PaintService = require(script.Parent.PaintService)
 local TankService = require(script.Parent.TankService)
+local TeamService = require(script.Parent.TeamService)
+local DistrictService = require(script.Parent.DistrictService)
+local StealService = require(script.Parent.StealService)
+local MatchService = require(script.Parent.MatchService)
 
 -- A "Baseplate" sablon alap elemei útban lennének.
 for _, name in { "Baseplate", "SpawnLocation" } do
@@ -36,26 +41,14 @@ end
 -- és akkor a játékosnak nem lenne karaktere.
 Players.CharacterAutoLoads = true
 
+TeamService.start()
 local level = LevelLoader.load(Config.LEVEL)
 PaintService.setLevel(level.buildings, level.props, level.tanks)
+DistrictService.setup(level.buildings, level.districts)
 TankService.start(level.tanks, level.tankSpots, PaintService.refill)
-
-local resetting = false
-PaintService.start(function()
-	if resetting then
-		return
-	end
-	resetting = true
-	task.spawn(function()
-		for remaining = Config.RESET_DELAY, 1, -1 do
-			workspace:SetAttribute("Message", `Town painted! It turns grey again in {remaining}...`)
-			task.wait(1)
-		end
-		workspace:SetAttribute("Message", "")
-		PaintService.resetLevel()
-		resetting = false
-	end)
-end)
+PaintService.start(MatchService.isPlaying, MatchService.publishScores)
+StealService.start(MatchService.isPlaying)
+MatchService.start(PaintService.resetLevel)
 
 -- Aki a pálya felépülése előtt belépett és karakter nélkül maradt, kap egyet.
 -- Kis várakozás után nézzük, hogy ne akadjunk össze a Roblox saját karakterbetöltésével.

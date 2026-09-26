@@ -1,7 +1,8 @@
 -- Festés: a szerver nézi, mihez ér hozzá a játékos, és ő dönt a festékről, az épületek színéről és a pontokról.
---   Festéktartály -> felveszi a színt, teli lesz a tartálya
---   Épület, aminek más a színe -> befesti, a mérete szerinti festék elfogy; szürke épületért pont jár
+--   Festékesvödör -> a csapata színével teli lesz a festéke
+--   Épület, aminek más a színe -> befesti (az ellenfél házát is), a mérete szerinti festék elfogy
 --   Tárgy (fa, pad, veteményes…) -> színes lesz, 1 egység festék fogy
+-- Festeni csak meccs közben lehet, és lezárt kerületben (DistrictService) nem.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -10,9 +11,11 @@ local RunService = game:GetService("RunService")
 local Config = require(ReplicatedStorage.Shared.Config)
 local BlobCharacter = require(script.Parent.BlobCharacter)
 local TankService = require(script.Parent.TankService)
+local DistrictService = require(script.Parent.DistrictService)
 
 local PaintedRemote = ReplicatedStorage.Remotes.Painted
 local NeedPaintRemote = ReplicatedStorage.Remotes.NeedPaint
+local AnnounceRemote = ReplicatedStorage.Remotes.Announce
 
 local PaintService = {}
 
@@ -20,7 +23,10 @@ local buildingsFolder: Folder
 local propsFolder: Folder
 local tanksFolder: Folder
 local paintedCount = 0
-local onCityComplete: (() -> ())? = nil
+local isPlaying: () -> boolean = function()
+	return true
+end
+local onScoresChanged: () -> () = function() end
 
 local overlap = OverlapParams.new()
 overlap.FilterType = Enum.RaycastFilterType.Include
@@ -126,6 +132,15 @@ local function warnNeedPaint(player: Player, cost: number)
 	end
 end
 
+-- Lezárt kerület: csak ennek a játékosnak szól (legfeljebb 2 mp-enként).
+local lastLockWarning: { [Player]: number } = {}
+local function warnLocked(player: Player, building: BasePart)
+	if os.clock() - (lastLockWarning[player] or 0) > 2 then
+		lastLockWarning[player] = os.clock()
+		AnnounceRemote:FireClient(player, `{building:GetAttribute("District")} is locked!`, nil)
+	end
+end
+
 local function addScore(player: Player, points: number)
 	local score = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Score")
 	if score then
@@ -140,7 +155,7 @@ local function tryColorProp(player: Player, prop: Model)
 	local paintColor = Config.PAINT_COLOR_BY_NAME[colorName]
 	local paint = player:GetAttribute("Paint") or 0
 	local previous = prop:GetAttribute("ColorName")
-	if not paintColor or paint <= 0 or previous == colorName then
+	if not paintColor or paint <= 0 or previous == colorName or not isPlaying() then
 		return
 	end
 	local cost = Config.PAINT_COST.PROP
@@ -150,9 +165,7 @@ local function tryColorProp(player: Player, prop: Model)
 	end
 	player:SetAttribute("Paint", paint - cost)
 	BlobCharacter.update(player)
-	if previous == "" then
-		addScore(player, cost * Config.POINTS_PER_PAINT)
-	end
+	addScore(player, cost * Config.POINTS_PER_PAINT)
 	prop:SetAttribute("ColorName", colorName)
 	for _, part in prop:GetDescendants() do
 		if not part:IsA("BasePart") then
@@ -175,7 +188,8 @@ local function refill(player: Player, tank: BasePart)
 	if tank:GetAttribute("Used") then
 		return
 	end
-	local colorName = tank:GetAttribute("ColorName")
+	-- A vödörben semleges festék van: mindenki a saját csapata színét kapja
+	local colorName = player:GetAttribute("Team") or Config.TEAMS[1].name
 	if player:GetAttribute("PaintColor") == colorName and player:GetAttribute("Paint") == Config.PAINT_MAX then
 		return
 	end
@@ -190,11 +204,15 @@ local function tryPaint(player: Player, building: BasePart)
 	local colorName = player:GetAttribute("PaintColor")
 	local paint = player:GetAttribute("Paint") or 0
 	local color = Config.PAINT_COLOR_BY_NAME[colorName]
-	if not color or paint <= 0 then
+	if not color or paint <= 0 or not isPlaying() then
 		return
 	end
 	local previous = building:GetAttribute("ColorName")
 	if previous == colorName then
+		return
+	end
+	if DistrictService.isLocked(building) then
+		warnLocked(player, building)
 		return
 	end
 	local cost = building:GetAttribute("PaintCost") or Config.PAINT_COST.SMALL
@@ -210,14 +228,12 @@ local function tryPaint(player: Player, building: BasePart)
 
 	if previous == "" then
 		paintedCount += 1
-		addScore(player, cost * Config.POINTS_PER_PAINT)
 		updateCityStats()
 	end
+	addScore(player, cost * Config.POINTS_PER_PAINT)
 	PaintedRemote:FireAllClients(building, colorName, player, cost)
-
-	if paintedCount >= #buildingsFolder:GetChildren() and onCityComplete then
-		onCityComplete()
-	end
+	DistrictService.onPainted(building, previous, colorName)
+	onScoresChanged()
 end
 
 local function checkPlayer(player: Player)
@@ -315,8 +331,10 @@ function PaintService.resetLevel()
 	updateCityStats()
 end
 
-function PaintService.start(cityComplete: () -> ())
-	onCityComplete = cityComplete
+-- playing: lehet-e most festeni (a MatchService adja); scoresChanged: festés után a csapatpontok frissítése.
+function PaintService.start(playing: () -> boolean, scoresChanged: () -> ())
+	isPlaying = playing
+	onScoresChanged = scoresChanged
 
 	local elapsed = 0
 	RunService.Heartbeat:Connect(function(dt)
@@ -334,6 +352,10 @@ function PaintService.start(cityComplete: () -> ())
 	for _, player in Players:GetPlayers() do
 		setupPlayer(player)
 	end
+	Players.PlayerRemoving:Connect(function(player)
+		lastWarning[player] = nil
+		lastLockWarning[player] = nil
+	end)
 end
 
 return PaintService

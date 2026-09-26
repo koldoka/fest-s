@@ -1,11 +1,17 @@
--- Képernyőelemek: a város festettsége felül, a saját festék bal alul, üzenet középen.
+-- Képernyőelemek: felül a meccs ideje és a csapatok pontjai, bal alul a saját csapat és festék,
+-- középen a bejelentések (kerületfoglalás, festéklopás, győztes).
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 
 local Hud = {}
+
+-- Bejelentés a képernyő közepén (a Hud.start() után használható).
+function Hud.announce(_text: string, _color: Color3?) end
 
 local function corner(parent: Instance, radius: number)
 	local c = Instance.new("UICorner")
@@ -52,25 +58,73 @@ function Hud.start()
 	gui.IgnoreGuiInset = false
 	gui.Parent = player:WaitForChild("PlayerGui")
 
-	-- A város festettsége
-	local cityBar, cityFill = bar(gui, {
+	-- A meccs állapota és ideje
+	local timer = label({
 		AnchorPoint = Vector2.new(0.5, 0),
-		Position = UDim2.new(0.5, 0, 0, 10),
-		Size = UDim2.new(0.4, 0, 0, 26),
+		Position = UDim2.new(0.5, 0, 0, 6),
+		Size = UDim2.fromOffset(320, 30),
+		Parent = gui,
 	})
-	cityFill.BackgroundColor3 = Color3.fromRGB(120, 220, 140)
-	local cityText = label({ Size = UDim2.fromScale(1, 1), ZIndex = 2, Parent = cityBar })
+	local PHASE_TEXT = { Intermission = "Next match in", Playing = "", Ended = "New match in" }
+	local lastTimerText = ""
+	RunService.Heartbeat:Connect(function()
+		local state = workspace:GetAttribute("MatchState")
+		local endsAt = workspace:GetAttribute("PhaseEndsAt")
+		local text = ""
+		if state and endsAt then
+			local left = math.max(0, math.ceil(endsAt - workspace:GetServerTimeNow()))
+			local clock = string.format("%d:%02d", left // 60, left % 60)
+			local prefix = PHASE_TEXT[state] or ""
+			text = if prefix ~= "" then `{prefix} {clock}` else clock
+		end
+		if text ~= lastTimerText then
+			lastTimerText = text
+			timer.Text = text
+		end
+	end)
 
-	local function updateCity()
-		local painted = workspace:GetAttribute("PaintedCount") or 0
-		local total = workspace:GetAttribute("BuildingCount") or 0
-		local ratio = if total > 0 then painted / total else 0
-		cityFill.Size = UDim2.fromScale(ratio, 1)
-		cityText.Text = `Town painted: {math.floor(ratio * 100)}%`
+	-- A csapatok pontjai: egy sáv, amit a csapatok a pontjaik arányában töltenek ki
+	local scoreBar = Instance.new("Frame")
+	scoreBar.AnchorPoint = Vector2.new(0.5, 0)
+	scoreBar.Position = UDim2.new(0.5, 0, 0, 40)
+	scoreBar.Size = UDim2.new(0.4, 0, 0, 26)
+	scoreBar.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+	scoreBar.BackgroundTransparency = 0.3
+	scoreBar.ClipsDescendants = true
+	scoreBar.Parent = gui
+	corner(scoreBar, 8)
+	local layout = Instance.new("UIListLayout")
+	layout.FillDirection = Enum.FillDirection.Horizontal
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Parent = scoreBar
+	local segments = {}
+	for index, team in Config.TEAMS do
+		local segment = Instance.new("Frame")
+		segment.LayoutOrder = index
+		segment.BorderSizePixel = 0
+		segment.BackgroundColor3 = Config.PAINT_COLOR_BY_NAME[team.name]
+		segment.Size = UDim2.fromScale(1 / #Config.TEAMS, 1)
+		segment.Parent = scoreBar
+		local text = label({ Size = UDim2.fromScale(1, 1), Parent = segment })
+		segments[team.name] = { frame = segment, text = text }
 	end
-	workspace:GetAttributeChangedSignal("PaintedCount"):Connect(updateCity)
-	workspace:GetAttributeChangedSignal("BuildingCount"):Connect(updateCity)
-	updateCity()
+	local function updateScores()
+		local total = 0
+		for _, team in Config.TEAMS do
+			total += workspace:GetAttribute("Score_" .. team.name) or 0
+		end
+		for _, team in Config.TEAMS do
+			local score = workspace:GetAttribute("Score_" .. team.name) or 0
+			local share = if total > 0 then score / total else 1 / #Config.TEAMS
+			local seg = segments[team.name]
+			TweenService:Create(seg.frame, TweenInfo.new(0.3), { Size = UDim2.fromScale(share, 1) }):Play()
+			seg.text.Text = if share > 0.12 then `{team.name} {score}` else tostring(score)
+		end
+	end
+	for _, team in Config.TEAMS do
+		workspace:GetAttributeChangedSignal("Score_" .. team.name):Connect(updateScores)
+	end
+	updateScores()
 
 	-- Saját festék
 	local swatch = Instance.new("Frame")
@@ -97,6 +151,24 @@ function Hud.start()
 		Parent = gui,
 	})
 
+	-- Saját csapat a festéksáv fölött
+	local teamText = label({
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.new(0, 16, 1, -76),
+		Size = UDim2.fromOffset(246, 26),
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Text = "",
+		Parent = gui,
+	})
+	local function updateTeam()
+		local team = player:GetAttribute("Team")
+		teamText.Text = if team then `Team {team}` else ""
+		teamText.TextColor3 = Config.PAINT_COLOR_BY_NAME[team or ""] or Color3.new(1, 1, 1)
+		stroke.Color = teamText.TextColor3
+	end
+	player:GetAttributeChangedSignal("Team"):Connect(updateTeam)
+	updateTeam()
+
 	local function updatePaint()
 		local colorName = player:GetAttribute("PaintColor") or ""
 		local paint = player:GetAttribute("Paint") or 0
@@ -108,7 +180,7 @@ function Hud.start()
 		else
 			swatch.BackgroundColor3 = Config.BUILDINGS.GREY
 			paintFill.BackgroundColor3 = Config.BUILDINGS.GREY
-			paintText.Text = "Find a paint tank!"
+			paintText.Text = "Find a paint bucket!"
 		end
 		paintFill.Size = UDim2.fromScale(paint / Config.PAINT_MAX, 1)
 	end
@@ -119,7 +191,7 @@ function Hud.start()
 	-- Ha kevés a festék egy házhoz vagy tárgyhoz: rövid figyelmeztetés a festéksáv fölött
 	local warning = label({
 		AnchorPoint = Vector2.new(0, 1),
-		Position = UDim2.new(0, 16, 1, -80),
+		Position = UDim2.new(0, 16, 1, -104),
 		Size = UDim2.fromOffset(260, 28),
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextColor3 = Color3.fromRGB(255, 220, 120),
@@ -138,18 +210,32 @@ function Hud.start()
 		end)
 	end)
 
-	-- Üzenet középen
+	-- Bejelentések középen (a szerver küldi; a PvP modul is ezt használja). Pár mp után elhalványul.
 	local message = label({
 		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.fromScale(0.5, 0.3),
-		Size = UDim2.new(0.7, 0, 0, 48),
+		Position = UDim2.fromScale(0.5, 0.26),
+		Size = UDim2.new(0.7, 0, 0, 44),
+		Text = "",
 		Parent = gui,
 	})
-	local function updateMessage()
-		message.Text = workspace:GetAttribute("Message") or ""
+	local messageToken = 0
+	Hud.announce = function(text: string, color: Color3?)
+		messageToken += 1
+		local token = messageToken
+		message.Text = text
+		message.TextColor3 = color or Color3.new(1, 1, 1)
+		message.TextTransparency = 0
+		message.TextStrokeTransparency = 0.3
+		task.delay(3.5, function()
+			if token == messageToken then
+				TweenService:Create(message, TweenInfo.new(0.6), { TextTransparency = 1, TextStrokeTransparency = 1 })
+					:Play()
+			end
+		end)
 	end
-	workspace:GetAttributeChangedSignal("Message"):Connect(updateMessage)
-	updateMessage()
+	ReplicatedStorage.Remotes:WaitForChild("Announce").OnClientEvent:Connect(function(text: string, colorName: string?)
+		Hud.announce(text, colorName and Config.PAINT_COLOR_BY_NAME[colorName])
+	end)
 end
 
 return Hud

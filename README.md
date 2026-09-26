@@ -1,7 +1,7 @@
 # Paint Pop (munkacím)
 
-Színes festős platformjáték **Robloxra**: egy festékpacával ugrálsz végig egy szürke városon,
-és minden épületet kifestesz, amihez hozzáérsz.
+Színes festős csapatjáték **Robloxra**: festékpacaként gurulsz végig egy szürke városon, és a csapatod
+színére fested az épületeket. Két csapat (alapból piros és kék) versenyez a város kerületeiért.
 
 **Első pálya:** kézzel tervezett kisváros városfallal körülvéve: kanyargó utcák és sikátorok, főtér
 templommal és városházával, folyó három híddal, terasz kilátótoronnyal, szélmalmos domb, keleti park,
@@ -43,7 +43,7 @@ Mind fel van töltve és be van írva. Ha egy hangot vagy képet újragenerálun
 | `roll_loop.ogg` | `Roll` | gurulás (ismétlődik, a sebességgel hangosodik) |
 | `jump.ogg`, `land.ogg` | `Jump`, `Land` | ugrás, földet érés |
 | `refill.ogg` | `Refill` | festék felvétele tartályból |
-| `city_done.ogg` | `CityDone` | minden ház színes |
+| `city_done.ogg` | `CityDone` | a meccs vége |
 
 A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` üres szkript kapcsolja ki.
 
@@ -56,19 +56,27 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
 
 ## Játékmenet
 
-- Ugorj bele egy **festéktartályba** (színes, világító henger): felveszed a színét, és teli lesz a festéked.
-  A tartály ezután eltűnik, és kis idő múlva máshol, más színnel jelenik meg (egyszerre 20 van a pályán, minden további játékossal 4-gyel több, legfeljebb 40).
-- **Érj hozzá egy épülethez** (neki is ugorhatsz, vagy ráugorhatsz a tetejére): befested. Egy teli tartály 20 egység;
-  egy földszintes ház 1, egy kétszintes 3, egy három- vagy többszintes 4 egységbe kerül, egy tárgy (fa, pad,
-  veteményes…) 1-be. Festéskor egy felugró "-N" mutatja, mennyi fogyott.
-  Ha nincs elég festéked, a játék kiírja, mennyi kellene.
-- Pont az első befestésért jár (egységenként 5). Már befestett dolgot más színre át lehet festeni, de azért nincs pont.
-- A fák, padok, lámpák, kerítések és más tárgyak érintésre színesek lesznek.
-- Ha az összes ház színes, 10 másodperc múlva minden újra szürke lesz.
+- **Meccsek**: 15 mp szünet (lehet szaladgálni és festéket felvenni, festeni nem), 7 perc játék, majd az eredmény.
+  Utána minden visszaszürkül, és a csapatok újra összekeverednek. Belépéskor a kisebb csapatba kerülsz.
+- **Festékesvödör** (fehér festékes vödör, rajta ecset): ha beleugrasz, teli lesz a festéked a **csapatod színével**.
+  A vödör ezután eltűnik, és kis idő múlva máshol jelenik meg (egyszerre 20 van a pályán, minden további
+  játékossal 4-gyel több, legfeljebb 40).
+- **Érj hozzá egy épülethez**: a csapatod színére fested, az ellenfél házát is át lehet festeni. Egy teli vödör
+  20 egység; egy földszintes ház 1, egy kétszintes 3, egy három- vagy többszintes 4 egységbe kerül, egy tárgy
+  (fa, pad, veteményes…) 1-be. Festéskor egy felugró "-N" mutatja, mennyi fogyott; ha kevés a festéked, a játék kiírja,
+  mennyi kellene. Minden elfestett egységért 5 saját pont jár (ranglista).
+- **Kerületek** (a kisvárosban 11): amelyik csapatnak több háza van egy kerületben, azé a kerület. Ha egy csapat
+  a kerület **minden** házát befestette, a kerület 60 mp-re **lezárul**: addig senki nem festhet benne.
+- **Csapatpont**: minden ház a csapat színében 1 pont, minden kerület, ahol a csapat vezet, +5. A több pont nyer.
+- **Festéklopás**: ha nekigurulsz egy ellenfélnek, a gyorsabb elveszi a másik festékének 30%-át (legalább 2-t);
+  ha felülről ráugrasz, 50%-át. A lopott festék a lopó csapatának színére vált. Akitől loptak, hátrapattan,
+  és 3 mp-ig nem lehet újra meglopni.
+- Felül a meccs ideje és a csapatok pontjai, bal alul a csapatod és a festéked, középen a bejelentések.
 
 Irányítás: a Roblox alap irányítása (WASD + Space, mobilon joystick + ugrás gomb).
-**M**: térkép (mobilon a „Map” gomb, kontrolleren a Select): a szürke házak még festetlenek, a pöttyök a tartályok,
-a játékosokat az avatarjuk arcképe mutatja (valós időben).
+**M**: térkép (mobilon a „Map” gomb, kontrolleren a Select): a házak a színükkel, a kerületek a vezető csapat
+színével és a csapatonkénti házszámmal (a lezártak erősebb színnel, "LOCKED"), a pöttyök a vödrök, a játékosokat az
+avatarjuk arcképe mutatja a csapatuk színével szegélyezve (valós időben).
 
 ## Felépítés
 
@@ -77,7 +85,7 @@ default.project.json   Rojo: melyik mappa hová kerül a Studióban
 src/shared/
   Config.luau          minden beállítás: pálya, épületek, színek, festék, mozgás, hangok
 src/server/
-  Main.server.luau     indítás, a pálya újrakezdése
+  Main.server.luau     indítás: a szolgáltatások összekötése
   LevelLoader.luau     a pálya betöltése (Config.LEVEL)
   Kit/                 építőkészlet a pályákhoz
     init.luau          talaj, utcák, házsorok, kitöltés, városfal, lépcső, víz, híd, tartályhelyek
@@ -87,11 +95,16 @@ src/server/
   Levels/
     SmallTown.luau     1. pálya: kisváros főtérrel (kézzel tervezve)
   PaintService.luau    festés: mihez ér a játékos, festék, pontok (erről mindig a szerver dönt)
-  TankService.luau     festéktartályok: véletlen helyen és színnel, használat után máshol jelennek meg
+  TankService.luau     festékesvödrök: véletlen helyen, használat után máshol jelennek meg
+  TeamService.luau     csapatok (Config.TEAMS), a játékosok elosztása
+  DistrictService.luau kerületek: gazda csapat, teljes elfoglalás és lezárás, csapatpontok
+  StealService.luau    festéklopás ütközéskor (nekigurulás, ráugrás), hátrapattanás
+  MatchService.luau    a meccsek menete: szünet, játék, eredmény, újrakezdés
   BlobCharacter.luau   a paca figura: elrejti az avatart, szín és méret a festék szerint
 src/client/
   Main.client.luau     indítás
-  Hud.luau             a pálya festettsége, saját festék, üzenetek
+  Hud.luau             meccsidő, csapatpontok, saját csapat és festék, bejelentések
+  Pvp.luau             hátrapattanás és a festéklopás látványa
   Effects.luau         fröccsenő festék és felvillanás festéskor
   BlobAnimator.luau    a pacák lapulása és nyúlása (csak látvány)
   Trails.luau          festékcsík a paca után (csak látvány)
@@ -112,7 +125,9 @@ liget, termőföld, udvar). Egy foglaltsági térkép gondoskodik róla, hogy se
 hívja (épület, fa, pad, lámpa, szökőkút, lépcső, festéktartály…), a leírásuk a `Kit.luau` elején és
 a `Kit.building` fölött van. A betöltendő pályát a `Config.LEVEL` adja meg.
 
-- **Épületek**: a játékos befesti őket a saját színével, ezekért jár pont. Ha mind színes, a pálya újraindul.
+- **Épületek**: a játékos a csapata színére festi őket, ezekért jár pont.
+- **Kerületek** (`Level.districts`): név és téglalapok; minden ház abba a kerületbe tartozik, amelyik téglalapjába
+  esik. Érdemes nagyjából egyforma (6–25 házas) kerületeket csinálni.
 - **Tárgyak** (fák, padok, lámpák, kerítések, szökőkút, standok…): érintésre színesek lesznek; a festhető
   részeik (lomb, ülőke, lámpaoszlop, napernyő…) a festék színét kapják, a többi a természetes színét.
   Át is festhetők. Egységnyi festékbe kerülnek.
@@ -131,4 +146,5 @@ python tools/preview/preview.py SmallTown preview_out "square,0,8,-20,70,200,28,
 
 - A paca csak látvány: a mozgást és az ütközést a láthatatlan Roblox-avatar végzi, ezért a paca picit belelóghat a falakba.
 - A grafika egyszerű dobozokból áll, zene még nincs.
-- Nincs PvP, mentés és bolt. Ezek a [ROADMAP.md](ROADMAP.md) szerint jönnek.
+- Nincs lobby, pályaszavazás, mentés és bolt. Ezek a [ROADMAP.md](ROADMAP.md) szerint jönnek.
+- A festéklopás a karakterek közepe és sebessége alapján dönt; a hátrapattanást a meglopott játékos gépe végzi.

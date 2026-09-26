@@ -1,7 +1,7 @@
 -- Térkép: az M gombra (telefonon a "Map" gombra, kontrolleren a Select gombra) felülnézeti térkép nyílik.
 -- Látszanak rajta a házak a mostani színükkel (a festetlenek szürkék), az utcák, terek, a folyó, a városfal,
--- a festéktartályok és a játékosok (az avatarjuk arcképével). A játékosok helyzete képkockánként frissül,
--- a házak színe és a tartályok félmásodpercenként.
+-- a festékesvödrök, a kerületek (a gazda csapat színével, a lezártak jelölve) és a játékosok (az avatarjuk
+-- arcképével, a csapatuk színével szegélyezve). A játékosok helyzete képkockánként frissül, a többi félmásodpercenként.
 
 local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
@@ -28,6 +28,8 @@ local WORLD_STYLE: { [string]: Color3 } = {
 local gui: ScreenGui
 local canvas: Frame
 local buildingFrames: { [BasePart]: Frame } = {}
+type DistrictView = { folder: Instance, rects: { Frame }, label: TextLabel }
+local districtViews: { DistrictView } = {}
 local dynamic: Frame -- tartályok és játékosok (minden frissítéskor újra)
 local open = false
 local mapMin, mapMax = Vector2.new(-250, -250), Vector2.new(250, 250)
@@ -95,6 +97,62 @@ local function build(level: Instance)
 			end
 		end
 	end
+	-- Kerületek: halvány téglalapok a gazda csapat színével, a nevük a legnagyobb téglalap közepén
+	local districts = ReplicatedStorage:FindFirstChild("Districts")
+	if districts then
+		local size = mapMax - mapMin
+		for _, folder in districts:GetChildren() do
+			local view: DistrictView = { folder = folder, rects = {}, label = nil :: any }
+			local biggest, biggestArea = nil, -1
+			for _, rect in folder:GetChildren() do
+				local lo: Vector2 = rect:GetAttribute("Min")
+				local hi: Vector2 = rect:GetAttribute("Max")
+				if not lo or not hi then
+					continue
+				end
+				local frame = Instance.new("Frame")
+				frame.Position = toMap(lo.X, lo.Y)
+				frame.Size = UDim2.fromScale((hi.X - lo.X) / size.X, (hi.Y - lo.Y) / size.Y)
+				frame.BackgroundTransparency = 1
+				frame.BorderSizePixel = 0
+				frame.ZIndex = 4
+				local stroke = Instance.new("UIStroke")
+				stroke.Color = Color3.new(1, 1, 1)
+				stroke.Transparency = 0.5
+				stroke.Thickness = 1.5
+				stroke.Parent = frame
+				frame.Parent = canvas
+				table.insert(view.rects, frame)
+				local area = (hi.X - lo.X) * (hi.Y - lo.Y)
+				if area > biggestArea then
+					biggest, biggestArea = frame, area
+				end
+			end
+			if biggest then
+				local text = Instance.new("TextLabel")
+				text.AnchorPoint = Vector2.new(0.5, 0.5)
+				-- A vásznon, nem a téglalapban: így a házak fölött látszik
+				text.Position = UDim2.fromScale(
+					biggest.Position.X.Scale + biggest.Size.X.Scale / 2,
+					biggest.Position.Y.Scale + biggest.Size.Y.Scale / 2
+				)
+				text.Size = UDim2.new(biggest.Size.X.Scale, -8, 0, 34)
+				text.BackgroundTransparency = 1
+				text.Font = Enum.Font.FredokaOne
+				text.TextScaled = true
+				text.TextColor3 = Color3.new(1, 1, 1)
+				text.TextStrokeTransparency = 0.2
+				text.ZIndex = 9
+				text.Parent = canvas
+				local limit = Instance.new("UITextSizeConstraint")
+				limit.MaxTextSize = 16
+				limit.Parent = text
+				view.label = text
+				table.insert(districtViews, view)
+			end
+		end
+	end
+
 	local buildings = level:FindFirstChild("Buildings")
 	if buildings then
 		for _, building in buildings:GetChildren() do
@@ -114,6 +172,23 @@ end
 local function refresh()
 	for building, frame in buildingFrames do
 		frame.BackgroundColor3 = building.Color
+	end
+	local now = workspace:GetServerTimeNow()
+	for _, view in districtViews do
+		local d = view.folder
+		local owner = d:GetAttribute("Owner") or ""
+		local color = Config.PAINT_COLOR_BY_NAME[owner]
+		local lockedFor = math.ceil((d:GetAttribute("LockedUntil") or 0) - now)
+		for _, frame in view.rects do
+			frame.BackgroundColor3 = color or Color3.new(1, 1, 1)
+			frame.BackgroundTransparency = if not color then 1 elseif lockedFor > 0 then 0.45 else 0.7
+		end
+		local counts = {}
+		for _, team in Config.TEAMS do
+			table.insert(counts, tostring(d:GetAttribute("Count_" .. team.name) or 0))
+		end
+		local line = `{table.concat(counts, " : ")} / {d:GetAttribute("Total") or 0}`
+		view.label.Text = if lockedFor > 0 then `{d.Name}\nLOCKED {lockedFor}s` else `{d.Name}\n{line}`
 	end
 	dynamic:ClearAllChildren()
 	local level = workspace:FindFirstChild("Level")
@@ -214,7 +289,7 @@ local function updatePlayers()
 		if root then
 			local p = root.Position
 			icon.frame.Position = toMap(p.X, p.Z)
-			icon.stroke.Color = Config.PAINT_COLOR_BY_NAME[player:GetAttribute("PaintColor")] or Color3.new(1, 1, 1)
+			icon.stroke.Color = Config.PAINT_COLOR_BY_NAME[player:GetAttribute("Team") or ""] or Color3.new(1, 1, 1)
 			if icon.arrow then
 				local look = root.CFrame.LookVector
 				icon.arrow.Visible = true
@@ -303,7 +378,7 @@ function MapView.start()
 	title.TextScaled = true
 	title.TextColor3 = Color3.new(1, 1, 1)
 	title.TextStrokeTransparency = 0.4
-	title.Text = "Map  -  grey houses are still unpainted  -  press M to close"
+	title.Text = "Map  -  districts show houses per team  -  press M to close"
 	title.ZIndex = 20
 	title.Parent = panel
 

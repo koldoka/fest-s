@@ -60,7 +60,14 @@ local Config = {
 		{ name = "Orange", color = Color3.fromRGB(250, 140, 40) },
 	},
 
-	-- Festéktartályok: véletlen helyen és színnel; egy használat után eltűnik, és RESPAWN mp múlva máshol jelenik
+	-- Csapatok (PvP): a nevek a PAINT_COLORS-ból valók, a csapat ezzel a színnel fest. 4 csapathoz elég ide
+	-- felvenni még kettőt, pl. { name = "Yellow" }, { name = "Green" }.
+	TEAMS = {
+		{ name = "Red" },
+		{ name = "Blue" },
+	},
+
+	-- Festékesvödrök: véletlen helyen; egy használat után eltűnik, és RESPAWN mp múlva máshol jelenik
 	-- meg egy új. Egyszerre MIN darab van a pályán, minden további játékossal PER_PLAYER-rel több, legfeljebb MAX.
 	TANKS = {
 		MIN = 20,
@@ -80,7 +87,7 @@ local Config = {
 		LARGE = 4,
 		PROP = 1,
 	},
-	POINTS_PER_PAINT = 5, -- pont minden elfestett egységért (csak az első befestésnél, átfestésért nem jár)
+	POINTS_PER_PAINT = 5, -- saját pont (ranglista) minden elfestett egységért, átfestésért is
 
 	-- A paca figura (BlobCharacter). Az átmérő a festék mennyiségével nő MIN_SIZE és MAX_SIZE között.
 	BLOB = {
@@ -121,12 +128,34 @@ local Config = {
 		Refill = { ids = { "rbxassetid://124300779326945" }, volume = 0.5 }, -- festék felvétele
 		Jump = { ids = { "rbxassetid://108980992543334" }, volume = 0.35, vary = true },
 		Land = { ids = { "rbxassetid://129774262633784" }, volume = 0.45, vary = true },
-		CityDone = { ids = { "rbxassetid://125442387668911" }, volume = 0.7 }, -- az egész város színes
+		CityDone = { ids = { "rbxassetid://125442387668911" }, volume = 0.7 }, -- a meccs vége (győztes)
 		Roll = { ids = { "rbxassetid://75367702913623" }, volume = 0.5 }, -- roll_loop.ogg: ismétlődő gurulás, a sebességgel hangosodik
 	},
 
-	-- Kör
-	RESET_DELAY = 10, -- ennyi mp után lesz újra szürke a város, ha minden be van festve
+	-- Kerületek (PvP, a pálya Level.districts listája alapján)
+	DISTRICTS = {
+		LOCK_TIME = 60, -- ha egy csapat a kerület minden házát befestette, ennyi mp-ig senki nem festhet benne
+		BONUS = 5, -- ennyi pont jár a csapatnak minden kerületért, ahol a legtöbb háza van
+	},
+
+	-- Festéklopás (PvP): ha két ellenfél paca összeér
+	STEAL = {
+		RAM = 0.3, -- nekigurulás: a gyorsabb elveszi a másik festékének ekkora részét
+		STOMP = 0.5, -- ráugrás felülről: ekkora részét
+		MIN = 2, -- legalább ennyi egységet (ha van annyi)
+		IMMUNITY = 3, -- akitől loptak, ennyi mp-ig nem lehet újra meglopni
+		KNOCKBACK = 45, -- a meglopott paca ekkora sebességgel pattan hátra
+		REACH = 0.5, -- a két paca felszíne között ennyi hézag még ütközésnek számít (stud)
+		MIN_SPEED = 8, -- nekiguruláshoz legalább ekkora sebességgel kell a másik felé menni
+		STOMP_FALL_SPEED = 5, -- ráugráshoz legalább ekkora sebességgel kell esni
+	},
+
+	-- Meccs (PvP)
+	MATCH = {
+		INTERMISSION = 15, -- szünet a meccsek között (mp); ilyenkor nem lehet festeni
+		LENGTH = 420, -- egy meccs hossza (mp)
+		RESULTS = 10, -- ennyi ideig látszik az eredmény
+	},
 }
 
 -- Színnév -> szín, a gyors kereséshez
