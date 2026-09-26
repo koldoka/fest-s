@@ -67,6 +67,7 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
 - Ha az összes ház színes, 10 másodperc múlva minden újra szürke lesz.
 
 Irányítás: a Roblox alap irányítása (WASD + Space, mobilon joystick + ugrás gomb).
+**M**: térkép (mobilon a „Map” gomb, kontrolleren a Select): a szürke házak még festetlenek, a pöttyök a tartályok.
 
 ## Felépítés
 
@@ -94,6 +95,7 @@ src/client/
   BlobAnimator.luau    a pacák lapulása és nyúlása (csak látvány)
   Trails.luau          festékcsík a paca után (csak látvány)
   Sounds.luau          hangok, gurulás
+  MapView.luau         térkép az M gombra
 src/overrides/         a Roblox alapszkriptjeinek felülírása (lépéshangok ki)
 tools/generate_sounds.py    a hangok előállítása kódból (assets/sounds/*.ogg)
 tools/generate_textures.py  az ablakképek előállítása (assets/textures/*.png)

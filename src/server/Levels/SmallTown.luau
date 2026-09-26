@@ -22,6 +22,9 @@ local Level = {}
 
 Level.seed = 11
 
+-- A térkép (M) által mutatott terület: x0, z0, x1, z1
+Level.bounds = { -228, -228, 228, 228 }
+
 Level.lighting = {
 	ClockTime = 15.5,
 	Brightness = 2.2,

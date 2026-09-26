@@ -36,6 +36,10 @@ function LevelLoader.load(name: string): LevelFolders
 	for property, value in level.lighting or {} do
 		(Lighting :: any)[property] = value
 	end
+	-- A térképnek (kliens): melyik területet mutassa
+	local b = level.bounds or { -250, -250, 250, 250 }
+	workspace:SetAttribute("MapMin", Vector2.new(b[1], b[2]))
+	workspace:SetAttribute("MapMax", Vector2.new(b[3], b[4]))
 
 	root.Parent = workspace
 	folders.tankSpots = Kit.tankSpots
