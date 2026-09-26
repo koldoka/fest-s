@@ -45,6 +45,8 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Festékár a szintek szerint: földszintes 3, kétszintes 6, három- vagy többszintes 10, tárgy 1; tartály 20 egység; figyelmeztetés, ha kevés; felugró "-N" a festés helyén
 - [x] Javítások a Studio-teszt után: toronyóra nem lóg a tetőbe, rózsaablak az oromzatban, kirakat osztókkal, cégtábla felirattal, szélmalomlapát nem ér a tetőhöz, rendes széklábak
 - [x] Térkép az M gombra (mobilon Map gomb, kontrolleren Select): házak a színükkel, utcák, folyó, fal, tartályok, játékosok (`MapView`)
+- [x] Festékár csökkentve: 1 szint 1, 2 szint 3, 3+ szint 4, tárgy 1
+- [x] Térképen a játékosok az avatarjuk arcképével, valós idejű helyzettel; szélmalom tengellyel a falhoz rögzítve; a pad támlája hátradől
 - [ ] 1. pálya finomítása a Studio-teszt alapján
 - [ ] A szélmalom lapátjai forogjanak
 - [ ] További pályák

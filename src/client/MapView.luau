@@ -1,6 +1,7 @@
 -- Térkép: az M gombra (telefonon a "Map" gombra, kontrolleren a Select gombra) felülnézeti térkép nyílik.
 -- Látszanak rajta a házak a mostani színükkel (a festetlenek szürkék), az utcák, terek, a folyó, a városfal,
--- a festéktartályok és a játékosok. Nyitott állapotban félmásodpercenként frissül.
+-- a festéktartályok és a játékosok (az avatarjuk arcképével). A játékosok helyzete képkockánként frissül,
+-- a házak színe és a tartályok félmásodpercenként.
 
 local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
@@ -109,7 +110,7 @@ local function build(level: Instance)
 	end
 end
 
--- A változó rész: a házak színe, a tartályok és a játékosok
+-- A változó rész: a házak színe és a tartályok (a játékosokat az updatePlayers mozgatja képkockánként)
 local function refresh()
 	for building, frame in buildingFrames do
 		frame.BackgroundColor3 = building.Color
@@ -128,30 +129,101 @@ local function refresh()
 			end
 		end
 	end
-	local me = Players.LocalPlayer
+end
+
+-- Játékosikonok: a Roblox-avatar arcképe kör alakban, a festék színével szegélyezve.
+local icons: { [Player]: { frame: Frame, stroke: UIStroke, arrow: Frame? } } = {}
+local thumbnails: { [number]: string } = {}
+
+local function thumbnail(player: Player): string
+	local cached = thumbnails[player.UserId]
+	if cached then
+		return cached
+	end
+	local ok, content = pcall(function()
+		return Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size60x60)
+	end)
+	local image = if ok then content else ""
+	thumbnails[player.UserId] = image
+	return image
+end
+
+local function iconFor(player: Player)
+	local icon = icons[player]
+	if icon then
+		return icon
+	end
+	local isMe = player == Players.LocalPlayer
+	local size = if isMe then 34 else 28
+	local frame = Instance.new("Frame")
+	frame.AnchorPoint = Vector2.new(0.5, 0.5)
+	frame.Size = UDim2.fromOffset(size, size)
+	frame.BackgroundColor3 = Color3.fromRGB(230, 230, 236)
+	frame.BorderSizePixel = 0
+	frame.ZIndex = if isMe then 13 else 12
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(1, 0)
+	corner.Parent = frame
+	local stroke = Instance.new("UIStroke")
+	stroke.Thickness = if isMe then 4 else 3
+	stroke.Parent = frame
+	local image = Instance.new("ImageLabel")
+	image.Size = UDim2.fromScale(1, 1)
+	image.BackgroundTransparency = 1
+	image.ZIndex = frame.ZIndex
+	image.Parent = frame
+	local imageCorner = Instance.new("UICorner")
+	imageCorner.CornerRadius = UDim.new(1, 0)
+	imageCorner.Parent = image
+	task.spawn(function()
+		image.Image = thumbnail(player)
+	end)
+	local arrow: Frame? = nil
+	if isMe then
+		-- Irányjelző: kis pálcika az ikon előtt, a nézési irányba
+		local a = Instance.new("Frame")
+		a.AnchorPoint = Vector2.new(0.5, 0.5)
+		a.Size = UDim2.fromOffset(5, 14)
+		a.BackgroundColor3 = Color3.new(1, 1, 1)
+		a.BorderSizePixel = 0
+		a.ZIndex = 12
+		a.Parent = canvas
+		arrow = a
+	end
+	frame.Parent = canvas
+	icon = { frame = frame, stroke = stroke, arrow = arrow }
+	icons[player] = icon
+	return icon
+end
+
+-- A játékosok helyzete: minden képkockán, amíg a térkép nyitva van.
+local function updatePlayers()
+	for player, icon in icons do
+		if player.Parent == nil then
+			icon.frame:Destroy()
+			if icon.arrow then
+				icon.arrow:Destroy()
+			end
+			icons[player] = nil
+		end
+	end
 	for _, player in Players:GetPlayers() do
 		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+		local icon = iconFor(player)
+		icon.frame.Visible = root ~= nil
 		if root then
-			local color = Config.PAINT_COLOR_BY_NAME[player:GetAttribute("PaintColor")] or Config.BLOB.EMPTY_COLOR
-			local isMe = player == me
-			local d = dot(root.Position, color, if isMe then 16 else 12, 10)
-			local stroke = Instance.new("UIStroke")
-			stroke.Color = if isMe then Color3.new(1, 1, 1) else Color3.fromRGB(30, 30, 36)
-			stroke.Thickness = if isMe then 3 else 1.5
-			stroke.Parent = d
-			if isMe then
-				-- Irányjelző: egy kis pálcika a nézési irányba
+			local p = root.Position
+			icon.frame.Position = toMap(p.X, p.Z)
+			icon.stroke.Color = Config.PAINT_COLOR_BY_NAME[player:GetAttribute("PaintColor")] or Color3.new(1, 1, 1)
+			if icon.arrow then
 				local look = root.CFrame.LookVector
-				local arrow = Instance.new("Frame")
-				arrow.AnchorPoint = Vector2.new(0.5, 0.5)
-				arrow.Size = UDim2.fromOffset(4, 16)
-				arrow.Position = toMap(root.Position.X + look.X * 7, root.Position.Z + look.Z * 7)
-				arrow.Rotation = math.deg(math.atan2(look.X, -look.Z))
-				arrow.BackgroundColor3 = Color3.new(1, 1, 1)
-				arrow.BorderSizePixel = 0
-				arrow.ZIndex = 11
-				arrow.Parent = dynamic
+				icon.arrow.Visible = true
+				icon.arrow.Position =
+					UDim2.new(icon.frame.Position.X.Scale, look.X * 26, icon.frame.Position.Y.Scale, look.Z * 26)
+				icon.arrow.Rotation = math.deg(math.atan2(look.X, -look.Z))
 			end
+		elseif icon.arrow then
+			icon.arrow.Visible = false
 		end
 	end
 end
@@ -167,6 +239,7 @@ local function setOpen(value: boolean)
 			build(level)
 		end
 		refresh()
+		updatePlayers()
 		task.spawn(function()
 			while open do
 				task.wait(0.5)
@@ -179,6 +252,11 @@ local function setOpen(value: boolean)
 end
 
 function MapView.start()
+	game:GetService("RunService").RenderStepped:Connect(function()
+		if open then
+			updatePlayers()
+		end
+	end)
 	gui = Instance.new("ScreenGui")
 	gui.Name = "Map"
 	gui.ResetOnSpawn = false

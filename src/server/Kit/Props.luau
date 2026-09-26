@@ -111,7 +111,8 @@ function Props.bench(at: Vector3, rot: number)
 	propPart(model, WOOD, { Size = Vector3.new(5, 0.3, 1.5), CFrame = base * CFrame.new(0, 1.3, 0) }, "paint")
 	propPart(model, WOOD, {
 		Size = Vector3.new(5, 1.2, 0.25),
-		CFrame = base * CFrame.new(0, 2.2, 0.7) * CFrame.Angles(math.rad(-10), 0, 0),
+		-- Hátradőlő támla: a teteje az ülőtől elfelé (+Z) hajlik
+		CFrame = base * CFrame.new(0, 2.2, 0.75) * CFrame.Angles(math.rad(12), 0, 0),
 	}, "paint")
 	for _, x in { -2, 2 } do
 		propPart(model, IRON, { Size = Vector3.new(0.3, 1.2, 1.4), CFrame = base * CFrame.new(x, 0.6, 0) })
@@ -399,10 +400,23 @@ function Props.bollard(at: Vector3)
 end
 
 -- Szélmalom lapátjai: agy és négy lapát egy függőleges síkban. hub: az agy közepe, facing: merre néz.
-function Props.windmillBlades(hub: Vector3, facing: Vector3)
+-- axle: a tengely hossza az agytól vissza (a fal előtti távolság + egy kicsi a falba).
+function Props.windmillBlades(hub: Vector3, facing: Vector3, axle: number?)
+	local axleLength = axle or 3
 	local model = newProp("WindmillBlades")
 	local base = CFrame.lookAt(hub, hub + facing)
 	propPart(model, WOOD, { Shape = Enum.PartType.Ball, Size = Vector3.one * 1.6, CFrame = base }, "dark")
+	-- Tengely az agytól vissza a toronyba (a hátsó fele a falban van)
+	propPart(model, IRON, {
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(axleLength, 0.7, 0.7),
+		CFrame = base * CFrame.new(0, 0, axleLength / 2) * CFrame.Angles(0, math.rad(90), 0),
+	})
+	-- Tartókonzol a falon: egy kis kőlap, amibe a tengely befut
+	propPart(model, Color3.fromRGB(190, 180, 164), {
+		Size = Vector3.new(2.2, 2.2, 0.6),
+		CFrame = base * CFrame.new(0, 0, axleLength - 0.6),
+	}, "light")
 	for i = 0, 3 do
 		local arm = base * CFrame.Angles(0, 0, math.rad(45 + i * 90))
 		propPart(model, WOOD, { Size = Vector3.new(0.4, 10, 0.4), CFrame = arm * CFrame.new(0, 5.2, -0.3) }, "dark")

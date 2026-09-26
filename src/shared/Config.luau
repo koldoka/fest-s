@@ -75,9 +75,9 @@ local Config = {
 	PAINT_CHECK_INTERVAL = 0.1, -- ilyen gyakran nézi a szerver, mihez ér hozzá a játékos (mp)
 	-- Festékár: földszintes ház SMALL, kétszintes MEDIUM, három- vagy többszintes LARGE, tárgy PROP.
 	PAINT_COST = {
-		SMALL = 3,
-		MEDIUM = 6,
-		LARGE = 10,
+		SMALL = 1,
+		MEDIUM = 3,
+		LARGE = 4,
 		PROP = 1,
 	},
 	POINTS_PER_PAINT = 5, -- pont minden elfestett egységért (csak az első befestésnél, átfestésért nem jár)

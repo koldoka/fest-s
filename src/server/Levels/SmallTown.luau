@@ -236,7 +236,7 @@ local function windmillHill(Kit)
 		material = "stone",
 	})
 	-- A lapátok 2.5 studdal a fal előtt forognak, hogy ne érjenek az ereszhez
-	Kit.windmillBlades(V(-178.5, top + 14, 182), V(1, 0, 0))
+	Kit.windmillBlades(V(-178.5, top + 14, 182), V(1, 0, 0), 3.5)
 	Kit.building({
 		at = V(-160, top, 190),
 		size = V2(14, 10),

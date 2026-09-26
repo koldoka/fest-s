@@ -59,7 +59,7 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
 - Ugorj bele egy **festéktartályba** (színes, világító henger): felveszed a színét, és teli lesz a festéked.
   A tartály ezután eltűnik, és kis idő múlva máshol, más színnel jelenik meg (egyszerre 20 van a pályán, minden további játékossal 4-gyel több, legfeljebb 40).
 - **Érj hozzá egy épülethez** (neki is ugorhatsz, vagy ráugorhatsz a tetejére): befested. Egy teli tartály 20 egység;
-  egy földszintes ház 3, egy kétszintes 6, egy három- vagy többszintes 10 egységbe kerül, egy tárgy (fa, pad,
+  egy földszintes ház 1, egy kétszintes 3, egy három- vagy többszintes 4 egységbe kerül, egy tárgy (fa, pad,
   veteményes…) 1-be. Festéskor egy felugró "-N" mutatja, mennyi fogyott.
   Ha nincs elég festéked, a játék kiírja, mennyi kellene.
 - Pont az első befestésért jár (egységenként 5). Már befestett dolgot más színre át lehet festeni, de azért nincs pont.
@@ -67,7 +67,8 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
 - Ha az összes ház színes, 10 másodperc múlva minden újra szürke lesz.
 
 Irányítás: a Roblox alap irányítása (WASD + Space, mobilon joystick + ugrás gomb).
-**M**: térkép (mobilon a „Map” gomb, kontrolleren a Select): a szürke házak még festetlenek, a pöttyök a tartályok.
+**M**: térkép (mobilon a „Map” gomb, kontrolleren a Select): a szürke házak még festetlenek, a pöttyök a tartályok,
+a játékosokat az avatarjuk arcképe mutatja (valós időben).
 
 ## Felépítés
 
