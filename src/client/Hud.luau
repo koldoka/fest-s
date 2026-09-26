@@ -188,26 +188,11 @@ function Hud.start()
 	player:GetAttributeChangedSignal("Paint"):Connect(updatePaint)
 	updatePaint()
 
-	-- Ha kevés a festék egy házhoz vagy tárgyhoz: rövid figyelmeztetés a festéksáv fölött
-	local warning = label({
-		AnchorPoint = Vector2.new(0, 1),
-		Position = UDim2.new(0, 16, 1, -104),
-		Size = UDim2.fromOffset(260, 28),
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextColor3 = Color3.fromRGB(255, 220, 120),
-		Text = "",
-		Parent = gui,
-	})
-	local warningToken = 0
+	-- Ha kevés a festék egy házhoz vagy tárgyhoz: bejelentés középen (a szerver legfeljebb mp-enként küldi)
 	ReplicatedStorage.Remotes:WaitForChild("NeedPaint").OnClientEvent:Connect(function(cost: number)
-		warningToken += 1
-		local token = warningToken
-		warning.Text = `Not enough paint! This needs {cost}.`
-		task.delay(2, function()
-			if token == warningToken then
-				warning.Text = ""
-			end
-		end)
+		local paint = player:GetAttribute("Paint") or 0
+		local hint = if paint <= 0 then "Find a paint bucket!" else `This needs {cost}, you have {paint}.`
+		Hud.announce(`Not enough paint! {hint}`, Color3.fromRGB(255, 200, 90))
 	end)
 
 	-- Bejelentések középen (a szerver küldi; a PvP modul is ezt használja). Pár mp után elhalványul.

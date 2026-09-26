@@ -98,7 +98,7 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
 
 Irányítás: a Roblox alap irányítása (WASD + Space, mobilon joystick + ugrás gomb).
 **M**: térkép (mobilon a „Map” gomb, kontrolleren a Select): a házak a színükkel, a kerületek a vezető csapat
-színével és a csapatonkénti házszámmal (a lezártak erősebb színnel, "LOCKED"), 🪣 a vödrök, a játékosokat az
+színével és a csapatonkénti házszámmal (a lezártak erősebb színnel, "LOCKED"), kis vödör-ikonok a vödrök, a játékosokat az
 avatarjuk arcképe mutatja a csapatuk színével szegélyezve (valós időben).
 
 ## Felépítés

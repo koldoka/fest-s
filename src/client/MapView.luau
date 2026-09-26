@@ -1,6 +1,6 @@
 -- Térkép: az M gombra (telefonon a "Map" gombra, kontrolleren a Select gombra) felülnézeti térkép nyílik.
 -- Látszanak rajta a házak a mostani színükkel (a festetlenek szürkék), az utcák, terek, a folyó, a városfal,
--- a festékesvödrök (emojival), a kerületek (a gazda csapat színével, a lezártak jelölve) és a játékosok (az avatarjuk
+-- a festékesvödrök (kis vödör-ikonnal), a kerületek (a gazda csapat színével, a lezártak jelölve) és a játékosok (az avatarjuk
 -- arcképével, a csapatuk színével szegélyezve). A játékosok helyzete képkockánként frissül, a többi félmásodpercenként.
 
 local ContextActionService = game:GetService("ContextActionService")
@@ -55,6 +55,71 @@ local function rectFrame(part: BasePart, color: Color3, z: number): Frame
 	frame.ZIndex = z
 	frame.Parent = canvas
 	return frame
+end
+
+-- Festékesvödör-ikon a térképre (Frame-ekből, nem kell hozzá feltöltött kép): fémvödör sárga címkével,
+-- fölötte fül, fehér körvonallal, hogy a házak és az utak fölött is látsszon.
+local function bucketIcon(): Frame
+	local root = Instance.new("Frame")
+	root.AnchorPoint = Vector2.new(0.5, 0.5)
+	root.Size = UDim2.fromOffset(18, 20)
+	root.BackgroundTransparency = 1
+	root.ZIndex = 8
+	local function piece(props: { [string]: any }, radius: number?): Frame
+		local f = Instance.new("Frame")
+		f.BorderSizePixel = 0
+		f.ZIndex = 8
+		for key, value in props do
+			(f :: any)[key] = value
+		end
+		if radius then
+			local c = Instance.new("UICorner")
+			c.CornerRadius = UDim.new(0, radius)
+			c.Parent = f
+		end
+		f.Parent = root
+		return f
+	end
+	-- Fül: egy kör felső fele (a kerete látszik, az alja a vödör mögé kerül)
+	local handle = piece({
+		Position = UDim2.fromOffset(3, 0),
+		Size = UDim2.fromOffset(12, 12),
+		BackgroundTransparency = 1,
+	}, 6)
+	local handleStroke = Instance.new("UIStroke")
+	handleStroke.Color = Color3.fromRGB(60, 64, 72)
+	handleStroke.Thickness = 2
+	handleStroke.Parent = handle
+	-- Test, perem, címke
+	local body = piece({
+		Position = UDim2.fromOffset(2, 6),
+		Size = UDim2.fromOffset(14, 13),
+		BackgroundColor3 = Color3.fromRGB(196, 202, 210),
+		ZIndex = 9,
+	}, 3)
+	local outline = Instance.new("UIStroke")
+	outline.Color = Color3.new(1, 1, 1)
+	outline.Thickness = 1.5
+	outline.Parent = body
+	piece({
+		Position = UDim2.fromOffset(2, 10),
+		Size = UDim2.fromOffset(14, 5),
+		BackgroundColor3 = Color3.fromRGB(255, 212, 60),
+		ZIndex = 10,
+	})
+	piece({
+		Position = UDim2.fromOffset(2, 10),
+		Size = UDim2.fromOffset(14, 1),
+		BackgroundColor3 = Color3.fromRGB(226, 60, 60),
+		ZIndex = 11,
+	})
+	piece({
+		Position = UDim2.fromOffset(1, 5),
+		Size = UDim2.fromOffset(16, 3),
+		BackgroundColor3 = Color3.fromRGB(150, 156, 166),
+		ZIndex = 11,
+	}, 1)
+	return root
 end
 
 -- Az állandó rész: talaj, utcák, víz, fal, házak (egyszer, a térkép első megnyitásakor)
@@ -181,15 +246,8 @@ local function refresh()
 	if tanks then
 		for _, tank in tanks:GetChildren() do
 			if tank:IsA("BasePart") and not tank:GetAttribute("Used") then
-				-- Festékesvödör-emoji
-				local icon = Instance.new("TextLabel")
-				icon.AnchorPoint = Vector2.new(0.5, 0.5)
+				local icon = bucketIcon()
 				icon.Position = toMap(tank.Position.X, tank.Position.Z)
-				icon.Size = UDim2.fromOffset(18, 18)
-				icon.BackgroundTransparency = 1
-				icon.Text = "🪣"
-				icon.TextScaled = true
-				icon.ZIndex = 8
 				icon.Parent = dynamic
 			end
 		end

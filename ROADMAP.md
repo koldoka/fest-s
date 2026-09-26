@@ -66,7 +66,7 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Festéklopás: nekigurulás (30%) és ráugrás (50%), hátrapattanás, 3 mp védettség (`StealService`, kliensen `Pvp`)
 - [x] Rövid meccsek: 15 mp szünet, 7 perc játék, eredmény; visszaszámlálás, csapatpontok sávja, bejelentések, győztes (`MatchService`)
 - [x] Térkép: kerületek a vezető csapat színével, házszám csapatonként, lezárás jelölése; a játékosok a csapatuk színével
-- [x] Valósághűbb vödör: színes címke „PAINT” felirattal (betűnként a palásthoz simulva), színes csorgások, lapos ecset foglalattal és rojtos, festékes heggyel; a térképen 🪣
+- [x] Valósághűbb vödör: színes címke „PAINT” felirattal (betűnként a palásthoz simulva), színes csorgások, lapos ecset foglalattal és rojtos, festékes heggyel; a térképen saját vödör-ikon (az emoji nem jelent meg)
 - [x] Vízbe lépve elvész a festék (folyó, tó, szökőkút)
 - [x] A tárgyak is adnak csapatpontot: a csapatpont a csapat színében álló házak és tárgyak festékértéke + 10 kerületenként
 - [ ] Hangolás hosszabb játék alapján: lopás, hátrapattanás, meccshossz, kerületbónusz
@@ -75,6 +75,7 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Saját hangok (`tools/generate_sounds.py`): lopás, meglopva, elfoglalás, feloldás, visszaszámlálás, rajt, győzelem, vereség
 - [x] Az új PvP-hangok feltöltése (8 fájl), az azonosítók beírása a `Config.SOUNDS`-ba
 - [x] Friss festék: befestés után 5 mp-ig nem festhető át (`Config.PAINT_PROTECT`)
+- [x] "Not enough paint" a képernyő közepén (lent nem tűnt fel)
 - [x] A friss festék látszik: "WET PAINT" tábla az ajtón fogyó sávval, lefolyó festékcseppek a falon, fényes fal, ami megszárad (`Effects`)
 - [x] Javítás: a bolt cégtáblája nem ütközik az erkéllyel (a bolt oldalán az erkély a 3. emelettől), a boltok legalább kétszintesek, földszintes házon nincs előtető (belelógott az ereszbe)
 - [ ] Lobby és meccs közti szavazás a pályára
