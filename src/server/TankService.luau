@@ -102,30 +102,36 @@ local function buildBucket(at: Vector3, rot: number): BasePart
 			Color = band.color,
 		})
 	end
-	for _, side in { -1, 1 } do
-		local plate = visual(hitbox, {
-			Size = Vector3.new(1.6, 0.9, 0.05),
-			CFrame = base * CFrame.Angles(0, if side > 0 then math.pi else 0, 0) * CFrame.new(0, 1.65, -(d / 2 + 0.06)),
-			Transparency = 1,
-			CastShadow = false,
-		})
-		local gui = Instance.new("SurfaceGui")
-		gui.Face = Enum.NormalId.Front
-		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-		gui.PixelsPerStud = 60
-		gui.LightInfluence = 1
-		gui.Enabled = false -- a felbukkanáskor kapcsol be
-		gui.Parent = plate
-		local text = Instance.new("TextLabel")
-		text.Size = UDim2.fromScale(1, 1)
-		text.BackgroundTransparency = 1
-		text.Font = Enum.Font.FredokaOne
-		text.TextScaled = true
-		text.Text = "PAINT"
-		text.TextColor3 = Color3.fromRGB(214, 48, 48)
-		text.TextStrokeColor3 = Color3.new(1, 1, 1)
-		text.TextStrokeTransparency = 0.2
-		text.Parent = gui
+	-- A felirat betűnként: minden betű egy kis lapon, a palásthoz simulva (így követi a vödör ívét)
+	local radius = (d + 0.06) / 2 + 0.03
+	local step = 0.46 / radius -- ennyi radián jut egy betűre
+	for _, side in { 0, math.pi } do
+		for index, letter in { "P", "A", "I", "N", "T" } do
+			local angle = side + (index - 3) * step
+			local plate = visual(hitbox, {
+				Size = Vector3.new(0.46, 0.9, 0.02),
+				CFrame = base * CFrame.Angles(0, angle, 0) * CFrame.new(0, 1.65, -radius),
+				Transparency = 1,
+				CastShadow = false,
+			})
+			local gui = Instance.new("SurfaceGui")
+			gui.Face = Enum.NormalId.Front
+			gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+			gui.PixelsPerStud = 60
+			gui.LightInfluence = 1
+			gui.Enabled = false -- a felbukkanáskor kapcsol be
+			gui.Parent = plate
+			local text = Instance.new("TextLabel")
+			text.Size = UDim2.fromScale(1, 1)
+			text.BackgroundTransparency = 1
+			text.Font = Enum.Font.FredokaOne
+			text.TextSize = 46 -- egyforma betűméret (a TextScaled betűnként mást adna)
+			text.Text = letter
+			text.TextColor3 = Color3.fromRGB(214, 48, 48)
+			text.TextStrokeColor3 = Color3.new(1, 1, 1)
+			text.TextStrokeTransparency = 0.2
+			text.Parent = gui
+		end
 	end
 
 	-- Festék a vödörben (fehér: mindenki a csapata színét kapja belőle), a peremről színes csorgások
