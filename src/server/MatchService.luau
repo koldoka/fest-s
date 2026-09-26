@@ -12,6 +12,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local DistrictService = require(script.Parent.DistrictService)
 local TeamService = require(script.Parent.TeamService)
 local BlobCharacter = require(script.Parent.BlobCharacter)
+local StatueService = require(script.Parent.StatueService)
 
 local AnnounceRemote = ReplicatedStorage.Remotes.Announce
 
@@ -95,6 +96,18 @@ local function loop()
 			winner = ""
 		end
 		workspace:SetAttribute("Winner", winner)
+		-- MVP: a legtöbb saját pont; az avatarja a főtéri szoborra kerül
+		local mvp, mvpScore = nil, 0
+		for _, player in Players:GetPlayers() do
+			local stats = player:FindFirstChild("leaderstats")
+			local score = stats and stats:FindFirstChild("Score") :: IntValue?
+			if score and score.Value > mvpScore then
+				mvp, mvpScore = player, score.Value
+			end
+		end
+		if mvp then
+			StatueService.setMvp(mvp, mvpScore)
+		end
 		setPhase("Ended", m.RESULTS)
 		-- A győztest a kliens eredménytáblája mutatja (Results)
 		task.wait(m.RESULTS)

@@ -28,6 +28,7 @@ local TeamService = require(script.Parent.TeamService)
 local DistrictService = require(script.Parent.DistrictService)
 local StealService = require(script.Parent.StealService)
 local MatchService = require(script.Parent.MatchService)
+local StatueService = require(script.Parent.StatueService)
 
 -- A "Baseplate" sablon alap elemei útban lennének.
 for _, name in { "Baseplate", "SpawnLocation" } do
@@ -51,6 +52,7 @@ workspace:SetAttribute("LevelInstances", instanceCount)
 print(string.format("[Paint Pop] Level built in %.2f s (%d instances)", buildTime, instanceCount))
 PaintService.setLevel(level.buildings, level.props, level.tanks)
 DistrictService.setup(level.buildings, level.districts)
+StatueService.setup(level.props)
 TankService.start(level.tanks, level.tankSpots, PaintService.refill)
 PaintService.start(MatchService.isPlaying, MatchService.publishScores)
 StealService.start(MatchService.isPlaying)

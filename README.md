@@ -91,6 +91,8 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
 - Felül a meccs ideje és a csapatok pontjai, bal alul a csapatod és a festéked, középen a bejelentések.
   Rajt előtt 3-2-1-GO, a meccs utolsó 10 mp-ében nagy visszaszámlálás, a végén eredménytábla (csapatpontok,
   a legjobb 3 festő) konfettivel, győzelmi vagy vesztes dallammal; 1 perccel a vége előtt figyelmeztetés.
+- **MVP-szobor**: a meccs legjobb festőjének (a legtöbb saját pont) Roblox-avatarja a főtéri szobor talapzatára
+  kerül győzelmi pózban, arany plaketten a nevével és a pontjával; a következő meccs MVP-jéig ott áll.
 - A pályán minden kerület fölött tábla lebeg (név, a csapatok házai, a gazda színe, lezárva a hátralévő idő).
   Lezárt kerület határán csapatszínű, csillogó erőtér-fal áll; elfoglaláskor a házakból konfetti pattan ki.
 - A többi paca fölött a neve a csapata színében, alatta a festéke (kit érdemes meglopni). Lopáskor a lopónak
@@ -123,6 +125,7 @@ src/server/
   DistrictService.luau kerületek: gazda csapat, teljes elfoglalás és lezárás, csapatpontok
   StealService.luau    festéklopás ütközéskor (nekigurulás, ráugrás), hátrapattanás
   MatchService.luau    a meccsek menete: szünet, játék, eredmény, újrakezdés
+  StatueService.luau   MVP-szobor: a legjobb festő avatarja a főtéri talapzaton, plakett a nevével
   BlobCharacter.luau   a paca figura: elrejti az avatart, szín és méret a festék szerint
 src/client/
   Main.client.luau     indítás

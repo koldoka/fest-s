@@ -131,7 +131,7 @@ local function showResults()
 	label(panel, {
 		Position = UDim2.fromScale(0.05, top),
 		Size = UDim2.fromScale(0.9, 0.07),
-		Text = "Top painters",
+		Text = "Top painters (1st gets the statue!)",
 		TextColor3 = Color3.fromRGB(255, 220, 120),
 	})
 	local players = Players:GetPlayers()

@@ -436,21 +436,35 @@ function Props.statue(at: Vector3, rot: number)
 	occupy(at, 3, 3, rot)
 	local model = newProp("Statue")
 	local base = CFrame.new(at) * CFrame.Angles(0, math.rad(rot), 0)
+	-- Az MVP-szobor (StatueService): a talapzat teteje és iránya; az alak részeit "StatueFigure" jelöli,
+	-- ezeket a legutóbbi meccs legjobb játékosának avatarja váltja fel.
+	model:SetAttribute("MvpTop", (base * CFrame.new(0, 3.5, 0)).Position)
+	model:SetAttribute("MvpRot", rot)
 	propPart(model, STONE, { Size = Vector3.new(4, 3, 4), CFrame = base * CFrame.new(0, 1.5, 0) })
 	propPart(model, STONE, { Size = Vector3.new(4.6, 0.5, 4.6), CFrame = base * CFrame.new(0, 3.25, 0) }, "light")
 	local bronze = Color3.fromRGB(150, 120, 80)
-	propPart(model, bronze, { Size = Vector3.new(1.8, 3.2, 1.2), CFrame = base * CFrame.new(0, 5.1, 0) }, "paint")
-	propPart(
-		model,
-		bronze,
-		{ Shape = Enum.PartType.Ball, Size = Vector3.one * 1.5, CFrame = base * CFrame.new(0, 7.4, 0) },
-		"paint"
-	)
-	propPart(model, bronze, {
-		Size = Vector3.new(0.5, 2.6, 0.5),
-		CFrame = base * CFrame.new(1.2, 6.9, 0) * CFrame.Angles(0, 0, math.rad(-25)),
-	}, "paint")
-	propPart(model, bronze, { Size = Vector3.new(0.5, 2.2, 0.5), CFrame = base * CFrame.new(-1.15, 4.9, 0) }, "paint")
+	local figure = {
+		propPart(model, bronze, { Size = Vector3.new(1.8, 3.2, 1.2), CFrame = base * CFrame.new(0, 5.1, 0) }, "paint"),
+		propPart(
+			model,
+			bronze,
+			{ Shape = Enum.PartType.Ball, Size = Vector3.one * 1.5, CFrame = base * CFrame.new(0, 7.4, 0) },
+			"paint"
+		),
+		propPart(model, bronze, {
+			Size = Vector3.new(0.5, 2.6, 0.5),
+			CFrame = base * CFrame.new(1.2, 6.9, 0) * CFrame.Angles(0, 0, math.rad(-25)),
+		}, "paint"),
+		propPart(
+			model,
+			bronze,
+			{ Size = Vector3.new(0.5, 2.2, 0.5), CFrame = base * CFrame.new(-1.15, 4.9, 0) },
+			"paint"
+		),
+	}
+	for _, part in figure do
+		part:SetAttribute("StatueFigure", true)
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
