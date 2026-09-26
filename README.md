@@ -72,7 +72,8 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
   20 egység; egy földszintes ház 1, egy kétszintes 3, egy három- vagy többszintes 4 egységbe kerül, egy tárgy
   (fa, pad, veteményes…) 1-be. Festéskor egy felugró "-N" mutatja, mennyi fogyott; ha kevés a festéked, a játék kiírja,
   mennyi kellene. Minden elfestett egységért 5 saját pont jár (ranglista).
-- **Friss festék**: egy befestett házat 5 mp-ig más csapat nem festhet át.
+- **Friss festék**: egy befestett házat 5 mp-ig más csapat nem festhet át. Addig "WET PAINT" tábla áll fölötte
+  fogyó sávval, a falairól csöpög a festék, és a fal fényes, majd fokozatosan megszárad.
 - **Kerületek** (a kisvárosban 11): amelyik csapatnak több háza van egy kerületben, azé a kerület. Ha egy csapat
   a kerület **minden** házát befestette, a kerület 60 mp-re **lezárul**: addig senki nem festhet benne.
 - **Csapatpont**: a csapat színében álló házak és tárgyak festékértéke (ház 1/3/4, tárgy 1), és minden kerület,
