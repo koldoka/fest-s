@@ -18,11 +18,14 @@ local Config = {
 		-- Ablakképek (assets/textures, a tools/generate_textures.py készíti). Mindegyik szürke (festetlen) és
 		-- kivilágított (befestett) változatban. Ami még üres, ott a FACADE régi képe látszik.
 		WINDOWS = {
-			classic = { grey = "", lit = "" }, -- window_classic_grey.png, window_classic_lit.png
-			curtain = { grey = "", lit = "" }, -- window_curtain_*.png: függönnyel, virágládával
-			tall = { grey = "", lit = "" }, -- window_tall_*.png: magas, íves (templom, városháza)
+			-- window_classic_grey.png, window_classic_lit.png
+			classic = { grey = "rbxassetid://126750374345516", lit = "rbxassetid://75102740074434" },
+			-- window_curtain_*.png: függönnyel, virágládával
+			curtain = { grey = "rbxassetid://104866367880237", lit = "rbxassetid://125613555917244" },
+			-- window_tall_*.png: magas, íves (templom, városháza)
+			tall = { grey = "rbxassetid://91938070754489", lit = "rbxassetid://98292753643780" },
 		},
-		SHUTTERS = "", -- shutters.png: zsalugáterek (a játék színezi); amíg üres, alkatrészekből
+		SHUTTERS = "rbxassetid://99631545557841", -- shutters.png: zsalugáterek (a játék színezi); amíg üres, alkatrészekből
 		FACADE = {
 			GREY = "rbxassetid://115620819300161", -- window_grey.png: a régi ablakkép (tartalék)
 			LIT = "rbxassetid://75949786836220", -- window_lit.png

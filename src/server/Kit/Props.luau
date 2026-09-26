@@ -562,7 +562,9 @@ function Props.shed(at: Vector3, rot: number)
 		propPart(model, WOOD, {
 			ClassName = "WedgePart",
 			Size = Vector3.new(w, d / 2, d / 2),
-			CFrame = base * CFrame.new(0, h + d / 4, sign * d / 4) * (if sign > 0 then CFrame.Angles(0, math.pi, 0) else CFrame.identity),
+			CFrame = base * CFrame.new(0, h + d / 4, sign * d / 4) * (if sign > 0
+				then CFrame.Angles(0, math.pi, 0)
+				else CFrame.identity),
 			Material = Enum.Material.WoodPlanks,
 		}, "paint")
 	end
