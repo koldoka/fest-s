@@ -12,7 +12,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 
 local Ambient = {}
 
-local SWAY_NAMES = { Tree = 1.3, FruitTree = 1.1, Bush = 1.8 } -- tárgynév -> kilengés (fok)
+local SWAY_NAMES = { Tree = 3, FruitTree = 2.5, Bush = 3 } -- tárgynév -> kilengés (fok)
 local SWAY_DISTANCE = 140 -- ennél közelebb lévő fák mozognak
 local RIPPLE_DISTANCE = 160
 local WIND = Vector3.new(1, 0, 0.35).Unit -- a szél iránya
@@ -200,18 +200,31 @@ function Ambient.start()
 		local level = workspace:WaitForChild("Level")
 		local props = level:WaitForChild("Props")
 		task.wait(1) -- a pálya teljes megérkezése
+		local fountains, failures = 0, 0
 		for _, model in props:GetChildren() do
 			local amplitude = SWAY_NAMES[model.Name]
-			if amplitude and model:IsA("Model") then
-				addSwayer(model, amplitude)
-			elseif model.Name == "Fountain" and model:IsA("Model") then
-				fountainSpray(model)
+			local ok, err = pcall(function()
+				if amplitude and model:IsA("Model") then
+					addSwayer(model, amplitude)
+				elseif model.Name == "Fountain" and model:IsA("Model") then
+					fountainSpray(model)
+					fountains += 1
+				end
+			end)
+			if not ok then
+				failures += 1
+				if failures <= 3 then
+					warn(`[Paint Pop] Ambient: {model.Name} failed: {err}`)
+				end
 			end
 		end
 		for _, part in level:GetDescendants() do
 			if part:IsA("BasePart") and part:GetAttribute("Water") then
 				table.insert(waters, part)
-				glints(part)
+				local ok, err = pcall(glints, part)
+				if not ok then
+					warn(`[Paint Pop] Ambient: water glints failed: {err}`)
+				end
 				if part.Parent and part.Parent.Name == "World" then
 					-- A folyó színe lassan hullámzik (a tavat és a szökőkutat festeni lehet, azokét nem)
 					local base = part.Color
@@ -223,6 +236,9 @@ function Ambient.start()
 				end
 			end
 		end
+		print(
+			`[Paint Pop] Ambient: {#swayers} trees, {#waters} water surfaces, {fountains} fountains ({failures} failed)`
+		)
 	end)
 
 	local elapsed, rippleTimer = 0, 0

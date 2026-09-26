@@ -17,15 +17,28 @@ local Decor = require(script.Parent.Decor)
 local Music = require(script.Parent.Music)
 local Ambient = require(script.Parent.Ambient)
 
-Hud.start()
-Effects.start()
-BlobAnimator.start()
-Sounds.start()
-Trails.start()
-MapView.start()
-Pvp.start()
-Districts.start()
-Results.start()
-Decor.start()
-Music.start()
-Ambient.start()
+-- Minden modul külön szálon, védetten indul: ha az egyik hibára fut, a többi ettől még működik,
+-- a hiba pedig a modul nevével együtt megjelenik az Output ablakban.
+local modules = {
+	{ "Hud", Hud },
+	{ "Effects", Effects },
+	{ "BlobAnimator", BlobAnimator },
+	{ "Sounds", Sounds },
+	{ "Trails", Trails },
+	{ "MapView", MapView },
+	{ "Pvp", Pvp },
+	{ "Districts", Districts },
+	{ "Results", Results },
+	{ "Decor", Decor },
+	{ "Music", Music },
+	{ "Ambient", Ambient },
+}
+for _, entry in modules do
+	local name, module = entry[1], entry[2]
+	task.spawn(function()
+		local ok, err = xpcall(module.start, debug.traceback)
+		if not ok then
+			warn(`[Paint Pop] {name} failed to start: {err}`)
+		end
+	end)
+end

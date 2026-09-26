@@ -71,6 +71,10 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Valósághűbb vödör: színes címke „PAINT” felirattal (betűnként a palásthoz simulva), színes csorgások, lapos ecset foglalattal és rojtos, festékes heggyel; a térképen saját vödör-ikon (az emoji nem jelent meg)
 - [x] Vízbe lépve elvész a festék (folyó, tó, szökőkút)
 - [x] A tárgyak is adnak csapatpontot: a csapatpont a csapat színében álló házak és tárgyak festékértéke + 10 kerületenként
+- [x] Tó medencében (kőperem, mély meder, nem szilárd víz: el lehet merülni benne, mint a folyóban; tavirózsa, nád); a szökőkút medencéje is ilyen
+- [x] A park pavilonja rendes nyeregtetőt kapott (a két keresztbe fordított hasáb helyett)
+- [x] A kliens moduljai külön, védetten indulnak (egy hiba nem állítja le a többit), az Ambient kiírja, mit talált
+- [x] Javítás 2: az MVP-szobor póza a rögzített részek elforgatásával (az ízületek átállítása a szerveren nem mozgatta a karokat)
 - [x] Javítás: az MVP-szobor póza (a méretezés után áll be, utána minden rész rögzítve)
 - [x] MVP-szobor: az előző meccs legjobb festőjének avatarja győzelmi pózban a főtéri talapzaton, arany plakett a nevével (`StatueService`)
 - [ ] Hangolás hosszabb játék alapján: lopás, hátrapattanás, meccshossz, kerületbónusz

@@ -244,10 +244,25 @@ function Props.fountain(at: Vector3, radius: number)
 	occupy(at, radius + 1, radius + 1)
 	local model = newProp("Fountain")
 	local water = Color3.fromRGB(80, 170, 230)
-	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 0.8, 0), 1.6, radius * 2), "light")
-	local pool = propPart(model, water, cylinderUp(at + Vector3.new(0, 1.2, 0), 1.0, radius * 2 - 1.6))
+	local rimHeight = 1.9
+	-- Medence: kő alj, körben kőperem darabokból, benne nem szilárd víztükör (a paca elmerül benne)
+	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 0.15, 0), 0.3, radius * 2), "light")
+	local segments = 14
+	local ringRadius = radius - 0.45
+	local segmentLength = 2 * math.pi * ringRadius / segments + 0.3
+	for i = 1, segments do
+		local angle = (i / segments) * math.pi * 2
+		local frame = CFrame.new(at) * CFrame.Angles(0, angle, 0) * CFrame.new(0, rimHeight / 2, -ringRadius)
+		propPart(model, STONE, { Size = Vector3.new(segmentLength, rimHeight, 0.9), CFrame = frame }, "light")
+	end
+	local pool = propPart(model, water, {
+		Shape = Enum.PartType.Cylinder,
+		Size = Vector3.new(0.2, (ringRadius - 0.45) * 2, (ringRadius - 0.45) * 2),
+		CFrame = CFrame.new(at + Vector3.new(0, rimHeight - 0.35, 0)) * CFrame.Angles(0, 0, math.rad(90)),
+		CanCollide = false,
+	})
 	pool.Material = Enum.Material.Glass
-	pool.Transparency = 0.15
+	pool.Transparency = 0.25
 	pool:SetAttribute("Water", true)
 	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 3.2, 0), 4.2, 2.4))
 	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 5.4, 0), 0.8, radius * 0.8), "light")
@@ -261,23 +276,61 @@ function Props.fountain(at: Vector3, radius: number)
 	)
 end
 
--- Tavacska: lapos víztükör kőszegéllyel.
+-- Tavacska medencében: sötét meder, alacsony kőperem körben, kicsit lejjebb a víztükör (át lehet esni rajta, a
+-- meder alatta van; aki belemegy, elveszíti a festékét), rajta tavirózsa-levelek, a sarkokban nád.
 function Props.pond(at: Vector3, size: Vector2)
 	occupy(at, size.X / 2 + 1.5, size.Y / 2 + 1.5)
 	local model = newProp("Pond")
-	propPart(
-		model,
-		STONE,
-		{ Size = Vector3.new(size.X + 1.6, 0.5, size.Y + 1.6), Position = at + Vector3.new(0, 0.25, 0) },
-		"light"
-	)
-	local water = propPart(
-		model,
-		Color3.fromRGB(70, 160, 220),
-		{ Size = Vector3.new(size.X, 0.5, size.Y), Position = at + Vector3.new(0, 0.3, 0) }
-	)
+	local rim, rimHeight = 1, 2.2 -- elég mély, hogy a paca elmerüljön benne (át kell ugrani a peremet)
+	-- Meder
+	propPart(model, Color3.fromRGB(46, 70, 76), {
+		Size = Vector3.new(size.X, 0.3, size.Y),
+		Position = at + Vector3.new(0, 0.15, 0),
+		Material = Enum.Material.Slate,
+	})
+	-- Kőperem négy oldalon
+	for _, side in { -1, 1 } do
+		propPart(model, STONE, {
+			Size = Vector3.new(size.X + rim * 2, rimHeight, rim),
+			Position = at + Vector3.new(0, rimHeight / 2, side * (size.Y / 2 + rim / 2)),
+		}, "light")
+		propPart(model, STONE, {
+			Size = Vector3.new(rim, rimHeight, size.Y),
+			Position = at + Vector3.new(side * (size.X / 2 + rim / 2), rimHeight / 2, 0),
+		}, "light")
+	end
+	-- Víztükör a perem teteje alatt
+	local water = propPart(model, Color3.fromRGB(60, 150, 210), {
+		Size = Vector3.new(size.X, 0.2, size.Y),
+		Position = at + Vector3.new(0, rimHeight - 0.4, 0),
+		CanCollide = false,
+		Transparency = 0.25,
+	})
 	water.Material = Enum.Material.Glass
 	water:SetAttribute("Water", true)
+	-- Tavirózsa-levelek (a festék színét kapják) és nád a sarkokban
+	-- Saját véletlen (a pálya közös véletlenét nem fogyasztja, így a pálya többi része nem változik)
+	local rng = Random.new(math.floor(at.X * 3 + at.Z * 7))
+	for _ = 1, math.floor(size.X * size.Y / 60) do
+		local x = rng:NextNumber(-0.4, 0.4) * size.X
+		local z = rng:NextNumber(-0.4, 0.4) * size.Y
+		local d = rng:NextNumber(1.2, 2)
+		local pad = cylinderUp(at + Vector3.new(x, rimHeight - 0.25, z), 0.1, d)
+		pad.CanCollide = false
+		propPart(model, Color3.fromRGB(70, 150, 70), pad, "paint")
+	end
+	for _, corner in { Vector2.new(-1, -1), Vector2.new(1, 1) } do
+		for k = 1, 4 do
+			local x = corner.X * (size.X / 2 - 0.8 - (k % 2) * 0.6)
+			local z = corner.Y * (size.Y / 2 - 0.8 - math.floor(k / 2) * 0.5)
+			local height = rng:NextNumber(3, 4.2)
+			propPart(model, Color3.fromRGB(110, 140, 70), {
+				Size = Vector3.new(0.18, height, 0.18),
+				Position = at + Vector3.new(x, 0.3 + height / 2, z),
+				CanCollide = false,
+			}, "dark")
+		end
+	end
 end
 
 -- Sövény két pont között.
@@ -373,19 +426,28 @@ function Props.gazebo(at: Vector3, size: number)
 			)
 		end
 	end
-	local side = (size + 1.2) / math.sqrt(2)
-	local roofs = {
-		{ Vector3.new(size + 1, side, side), CFrame.Angles(math.rad(45), 0, 0) },
-		{ Vector3.new(side, side, size + 1), CFrame.Angles(0, 0, math.rad(45)) },
-	}
-	for _, roof in roofs do
-		propPart(
-			model,
-			Color3.fromRGB(64, 120, 110),
-			{ Size = roof[1], CFrame = CFrame.new(at + Vector3.new(0, h, 0)) * roof[2] },
-			"paint"
-		)
+	-- Nyeregtető két ékből (az ék függőleges háta a helyi +Z, a lejtője a -Z felé), gerinccel és gombbal
+	local roofColor = Color3.fromRGB(64, 120, 110)
+	local span = size + 1.4
+	local rise = size * 0.35
+	propPart(model, white, { Size = Vector3.new(size + 0.4, 0.4, size + 0.4), Position = at + Vector3.new(0, h, 0) })
+	for _, turn in { 0, 180 } do
+		local frame = CFrame.new(at + Vector3.new(0, h + 0.2, 0)) * CFrame.Angles(0, math.rad(turn), 0)
+		propPart(model, roofColor, {
+			ClassName = "WedgePart",
+			Size = Vector3.new(span, rise, span / 2),
+			CFrame = frame * CFrame.new(0, rise / 2, -span / 4),
+		}, "paint")
 	end
+	propPart(model, WOOD, {
+		Size = Vector3.new(span + 0.2, 0.35, 0.35),
+		Position = at + Vector3.new(0, h + 0.2 + rise, 0),
+	}, "dark")
+	propPart(model, white, {
+		Shape = Enum.PartType.Ball,
+		Size = Vector3.one * 0.8,
+		Position = at + Vector3.new(0, h + 0.5 + rise, 0),
+	}, "light")
 end
 
 -- Kikötőbak / terelőoszlop.

@@ -92,19 +92,59 @@ local function descriptionOf(player: Player): HumanoidDescription
 end
 
 -- Győzelmi póz: mindkét kar ferdén a magasba (V), a fej kicsit felfelé néz.
+-- Az ízületek átállítása a szerveren nem mozgatja a végtagokat, ezért a már rögzített (Anchored) részeket
+-- közvetlenül forgatjuk el: egy végtag minden részét (és a rá erősített kiegészítőket) a csukló/váll
+-- pontja körül, a törzs saját tengelyei szerint.
 local function pose(model: Model)
-	local function turn(partName: string, jointName: string, angles: CFrame)
-		local part = model:FindFirstChild(partName)
-		local joint = part and part:FindFirstChild(jointName)
-		if joint and joint:IsA("Motor6D") then
-			joint.C0 = joint.C0 * angles
+	local torso = model:FindFirstChild("UpperTorso") :: BasePart?
+	if not torso then
+		return
+	end
+	-- Melyik kiegészítő melyik testrészhez van erősítve
+	local attachedTo: { [BasePart]: { BasePart } } = {}
+	for _, weld in model:GetDescendants() do
+		if weld:IsA("JointInstance") and weld.Part0 and weld.Part1 then
+			local handle = if weld.Part0.Name == "Handle" then weld.Part0 else weld.Part1
+			local body = if handle == weld.Part0 then weld.Part1 else weld.Part0
+			if handle.Name == "Handle" and body then
+				attachedTo[body] = attachedTo[body] or {}
+				table.insert(attachedTo[body] :: { BasePart }, handle)
+			end
 		end
 	end
-	turn("RightUpperArm", "RightShoulder", CFrame.Angles(0, 0, math.rad(150)))
-	turn("LeftUpperArm", "LeftShoulder", CFrame.Angles(0, 0, math.rad(-150)))
-	turn("RightLowerArm", "RightElbow", CFrame.Angles(math.rad(10), 0, 0))
-	turn("LeftLowerArm", "LeftElbow", CFrame.Angles(math.rad(10), 0, 0))
-	turn("Head", "Neck", CFrame.Angles(math.rad(12), 0, 0))
+	local function rotate(partNames: { string }, jointPart: string, jointName: string, rotation: CFrame)
+		local first = model:FindFirstChild(jointPart)
+		local joint = first and first:FindFirstChild(jointName)
+		if not joint or not joint:IsA("Motor6D") or not joint.Part0 then
+			return
+		end
+		-- A forgáspont: az ízület helye, a törzs irányában
+		local pivotPosition = (joint.Part0.CFrame * joint.C0).Position
+		local pivot = CFrame.new(pivotPosition) * torso.CFrame.Rotation
+		local transform = pivot * rotation * pivot:Inverse()
+		for _, name in partNames do
+			local part = model:FindFirstChild(name) :: BasePart?
+			if part then
+				part.CFrame = transform * part.CFrame
+				for _, handle in attachedTo[part] or {} do
+					handle.CFrame = transform * handle.CFrame
+				end
+			end
+		end
+	end
+	rotate(
+		{ "RightUpperArm", "RightLowerArm", "RightHand" },
+		"RightUpperArm",
+		"RightShoulder",
+		CFrame.Angles(0, 0, math.rad(150))
+	)
+	rotate(
+		{ "LeftUpperArm", "LeftLowerArm", "LeftHand" },
+		"LeftUpperArm",
+		"LeftShoulder",
+		CFrame.Angles(0, 0, math.rad(-150))
+	)
+	rotate({ "Head" }, "Head", "Neck", CFrame.Angles(math.rad(12), 0, 0))
 end
 
 local function buildFigure(player: Player): Model?
@@ -157,10 +197,8 @@ local function place(model: Model)
 	local bottom = box.Position.Y - size.Y / 2
 	model:PivotTo(model:GetPivot() + Vector3.new(0, top.Y - bottom + 0.05, 0))
 
-	-- Póz: a méretezés újraépíti az ízületeket (és elvesztené a pózt), ezért csak utána állítjuk be.
-	-- Egy fizikai lépés után, amikor a végtagok már a helyükre kerültek, minden részt rögzítünk, így a pózt
-	-- semmi (animáció, ízület-újraépítés) nem írhatja felül.
-	pose(model)
+	-- Egy-két fizikai lépés, amíg a végtagok a helyükre kerülnek; utána minden részt rögzítünk (így az
+	-- ízületek már nem mozgatják őket), és a pózt a részek elforgatásával állítjuk be.
 	RunService.Heartbeat:Wait()
 	RunService.Heartbeat:Wait()
 	for _, item in model:GetDescendants() do
@@ -168,6 +206,7 @@ local function place(model: Model)
 			item.Anchored = true
 		end
 	end
+	pose(model)
 
 	-- Aranyló csillogás körülötte
 	local root = model:FindFirstChild("HumanoidRootPart") :: BasePart?
