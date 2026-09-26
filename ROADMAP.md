@@ -75,7 +75,8 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Saját hangok (`tools/generate_sounds.py`): lopás, meglopva, elfoglalás, feloldás, visszaszámlálás, rajt, győzelem, vereség
 - [x] Az új PvP-hangok feltöltése (8 fájl), az azonosítók beírása a `Config.SOUNDS`-ba
 - [x] Friss festék: befestés után 5 mp-ig nem festhető át (`Config.PAINT_PROTECT`)
-- [x] A friss festék látszik: "WET PAINT" tábla fogyó sávval, csöpögő falak, száradó fényes fal (`Effects`)
+- [x] A friss festék látszik: "WET PAINT" tábla az ajtón fogyó sávval, lefolyó festékcseppek a falon, fényes fal, ami megszárad (`Effects`)
+- [x] Javítás: a bolt cégtáblája nem ütközik az erkéllyel (a bolt oldalán az erkély a 3. emelettől), a boltok legalább kétszintesek, földszintes házon nincs előtető (belelógott az ereszbe)
 - [ ] Lobby és meccs közti szavazás a pályára
 - [ ] Csalás elleni alapvédelem (sebesség, teleportálás)
 

@@ -215,7 +215,9 @@ local function addWindows(
 end
 
 -- Ajtó kerettel, előtetővel és lépcsővel.
-local function addDoor(body: BasePart, dir: Vector3, shift: number)
+-- canopy = false: nincs előtető (a boltnál a napellenző takarja az ajtót). Földszintes háznál sincs,
+-- mert ott az eresz lóg az ajtó fölé, és az előtető belelógna a tetőbe.
+local function addDoor(body: BasePart, dir: Vector3, shift: number, canopy: boolean?)
 	local b = Config.BUILDINGS
 	local dw, dh = b.DOOR_SIZE.X, b.DOOR_SIZE.Y
 	trimDetail(
@@ -231,12 +233,14 @@ local function addDoor(body: BasePart, dir: Vector3, shift: number)
 		darker(body.Color, 0.45),
 		pick(b.DOOR_COLORS)
 	)
-	detail(
-		body,
-		"Canopy",
-		{ Size = faceSize(dir, dw + 1.6, 0.35, 1.6), CFrame = onFace(body, dir, 0.8, shift, dh + 0.8) },
-		darker(body.Color, 0.15)
-	)
+	if canopy ~= false and body.Size.Y >= b.FLOOR_HEIGHT * 1.5 then
+		detail(
+			body,
+			"Canopy",
+			{ Size = faceSize(dir, dw + 1.6, 0.35, 1.6), CFrame = onFace(body, dir, 0.8, shift, dh + 0.8) },
+			darker(body.Color, 0.15)
+		)
+	end
 	detail(
 		body,
 		"Step",
@@ -400,7 +404,7 @@ local function addShopfront(body: BasePart, dir: Vector3): number
 	local width = faceWidth(body.Size, dir)
 	local doorSide = if Common.rng:NextNumber() < 0.5 then -1 else 1
 	local doorShift = doorSide * width * 0.3
-	addDoor(body, dir, doorShift)
+	addDoor(body, dir, doorShift, false)
 
 	local windowWidth = width * 0.5
 	local windowShift = -doorSide * width * 0.18
@@ -472,11 +476,11 @@ local function addShopfront(body: BasePart, dir: Vector3): number
 	return doorShift
 end
 
--- Erkélyek a második emelettől egy oszlopban: padló + korlát.
-local function addBalconies(body: BasePart, dir: Vector3, floors: number, shift: number)
+-- Erkélyek egy oszlopban (firstFloor emelettől felfelé): padló + korlát.
+local function addBalconies(body: BasePart, dir: Vector3, floors: number, shift: number, firstFloor: number)
 	local b = Config.BUILDINGS
 	local width = math.min(faceWidth(body.Size, dir) * 0.45, 7)
-	for floor = 2, floors do
+	for floor = firstFloor, floors do
 		local y = (floor - 1) * b.FLOOR_HEIGHT
 		detail(
 			body,
@@ -581,7 +585,8 @@ Egy épület. A spec mezői (csak az "at" és a "size" kötelező):
 ]]
 function Buildings.building(spec: { [string]: any }): BasePart
 	local b = Config.BUILDINGS
-	local floors = spec.floors or 2
+	-- A bolt kirakata, napellenzője és cégtáblája egy emeletnyi falon nem fér el a tetőeresz alatt
+	local floors = if spec.shop then math.max(spec.floors or 2, 2) else spec.floors or 2
 	local height = floors * b.FLOOR_HEIGHT
 	local grey = Common.greyShade()
 	local body = newPart({
@@ -635,6 +640,8 @@ function Buildings.building(spec: { [string]: any }): BasePart
 
 	local balconyDir = spec.balconies and FACES[spec.balconies.face or "front"].dir
 	local balconyShift = spec.balconies and (spec.balconies.shift or 0) or 0
+	-- A bolt cégtáblája a 2. emelet aljáig ér: ugyanazon az oldalon az erkélyek csak a 3. emelettől kezdődnek
+	local balconyFrom = if spec.shop and balconyDir == doorDir then 3 else 2
 	local style = spec.windows or "plain"
 	addWindows(body, body, floors, style, function(dir, floor, shift)
 		if floor == 1 and dir == doorDir then
@@ -651,10 +658,10 @@ function Buildings.building(spec: { [string]: any }): BasePart
 			return true
 		end
 		-- Az erkély mögött nincs ablak (ott erkélyajtó lenne)
-		return floor >= 2 and dir == balconyDir and math.abs(shift - balconyShift) < b.BAY_WIDTH * 0.6
+		return floor >= balconyFrom and dir == balconyDir and math.abs(shift - balconyShift) < b.BAY_WIDTH * 0.6
 	end)
 	if balconyDir then
-		addBalconies(body, balconyDir, floors, balconyShift)
+		addBalconies(body, balconyDir, floors, balconyShift, balconyFrom)
 	end
 
 	-- A tető a legfelső tömbre kerül: a felső emeletre, ha van, különben a testre.
