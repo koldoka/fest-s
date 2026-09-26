@@ -135,7 +135,9 @@ local Config = {
 	-- Kerületek (PvP, a pálya Level.districts listája alapján)
 	DISTRICTS = {
 		LOCK_TIME = 60, -- ha egy csapat a kerület minden házát befestette, ennyi mp-ig senki nem festhet benne
-		BONUS = 5, -- ennyi pont jár a csapatnak minden kerületért, ahol a legtöbb háza van
+		-- Csapatpont: a csapat színében álló házak és tárgyak festékértéke (PAINT_COST), és ennyi minden
+		-- kerületért, ahol a csapatnak van a legtöbb háza
+		BONUS = 10,
 	},
 
 	-- Festéklopás (PvP): ha két ellenfél paca összeér

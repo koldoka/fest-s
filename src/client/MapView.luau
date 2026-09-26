@@ -1,6 +1,6 @@
 -- Térkép: az M gombra (telefonon a "Map" gombra, kontrolleren a Select gombra) felülnézeti térkép nyílik.
 -- Látszanak rajta a házak a mostani színükkel (a festetlenek szürkék), az utcák, terek, a folyó, a városfal,
--- a festékesvödrök, a kerületek (a gazda csapat színével, a lezártak jelölve) és a játékosok (az avatarjuk
+-- a festékesvödrök (emojival), a kerületek (a gazda csapat színével, a lezártak jelölve) és a játékosok (az avatarjuk
 -- arcképével, a csapatuk színével szegélyezve). A játékosok helyzete képkockánként frissül, a többi félmásodpercenként.
 
 local ContextActionService = game:GetService("ContextActionService")
@@ -54,21 +54,6 @@ local function rectFrame(part: BasePart, color: Color3, z: number): Frame
 	frame.BorderSizePixel = 0
 	frame.ZIndex = z
 	frame.Parent = canvas
-	return frame
-end
-
-local function dot(position: Vector3, color: Color3, pixels: number, z: number): Frame
-	local frame = Instance.new("Frame")
-	frame.AnchorPoint = Vector2.new(0.5, 0.5)
-	frame.Position = toMap(position.X, position.Z)
-	frame.Size = UDim2.fromOffset(pixels, pixels)
-	frame.BackgroundColor3 = color
-	frame.BorderSizePixel = 0
-	frame.ZIndex = z
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(1, 0)
-	corner.Parent = frame
-	frame.Parent = dynamic
 	return frame
 end
 
@@ -196,11 +181,16 @@ local function refresh()
 	if tanks then
 		for _, tank in tanks:GetChildren() do
 			if tank:IsA("BasePart") and not tank:GetAttribute("Used") then
-				local d = dot(tank.Position, tank.Color, 9, 8)
-				local stroke = Instance.new("UIStroke")
-				stroke.Color = Color3.new(1, 1, 1)
-				stroke.Thickness = 1.5
-				stroke.Parent = d
+				-- Festékesvödör-emoji
+				local icon = Instance.new("TextLabel")
+				icon.AnchorPoint = Vector2.new(0.5, 0.5)
+				icon.Position = toMap(tank.Position.X, tank.Position.Z)
+				icon.Size = UDim2.fromOffset(18, 18)
+				icon.BackgroundTransparency = 1
+				icon.Text = "🪣"
+				icon.TextScaled = true
+				icon.ZIndex = 8
+				icon.Parent = dynamic
 			end
 		end
 	end

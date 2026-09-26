@@ -248,6 +248,7 @@ function Props.fountain(at: Vector3, radius: number)
 	local pool = propPart(model, water, cylinderUp(at + Vector3.new(0, 1.2, 0), 1.0, radius * 2 - 1.6))
 	pool.Material = Enum.Material.Glass
 	pool.Transparency = 0.15
+	pool:SetAttribute("Water", true)
 	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 3.2, 0), 4.2, 2.4))
 	propPart(model, STONE, cylinderUp(at + Vector3.new(0, 5.4, 0), 0.8, radius * 0.8), "light")
 	local top = propPart(model, water, cylinderUp(at + Vector3.new(0, 5.75, 0), 0.2, radius * 0.8 - 0.8))
@@ -276,6 +277,7 @@ function Props.pond(at: Vector3, size: Vector2)
 		{ Size = Vector3.new(size.X, 0.5, size.Y), Position = at + Vector3.new(0, 0.3, 0) }
 	)
 	water.Material = Enum.Material.Glass
+	water:SetAttribute("Water", true)
 end
 
 -- Sövény két pont között.

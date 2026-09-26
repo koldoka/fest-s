@@ -23,6 +23,8 @@ type District = {
 }
 
 local districts: { [string]: District } = {}
+-- Csapatonként a színükben álló házak és tárgyak festékértéke (ebből jön a csapatpont)
+local values: { [string]: number } = {}
 local order: { District } = {}
 local onAnnounce: ((string, string?) -> ())? = nil
 
@@ -121,6 +123,13 @@ end
 -- Egy ház színe megváltozott (oldName -> newName; "" = festetlen).
 function DistrictService.onPainted(building: BasePart, oldName: string, newName: string)
 	local d = districts[building:GetAttribute("District") or ""]
+	local value = building:GetAttribute("PaintCost") or Config.PAINT_COST.SMALL
+	if oldName ~= "" then
+		values[oldName] = (values[oldName] or 0) - value
+	end
+	if newName ~= "" then
+		values[newName] = (values[newName] or 0) + value
+	end
 	if not d then
 		return
 	end
@@ -165,18 +174,25 @@ function DistrictService.onPainted(building: BasePart, oldName: string, newName:
 	publish(d)
 end
 
--- Csapatpontok: házanként 1 + kerületenként (ahol a csapat a gazda) Config.DISTRICTS.BONUS.
+-- Egy tárgy színe megváltozott: a csapatpontba a festékértéke számít.
+function DistrictService.onPropPainted(oldName: string, newName: string)
+	local value = Config.PAINT_COST.PROP
+	if oldName ~= "" then
+		values[oldName] = (values[oldName] or 0) - value
+	end
+	if newName ~= "" then
+		values[newName] = (values[newName] or 0) + value
+	end
+end
+
+-- Csapatpontok: a csapat színében álló házak és tárgyak festékértéke (ház 1/3/4, tárgy 1)
+-- + kerületenként (ahol a csapat a gazda) Config.DISTRICTS.BONUS.
 function DistrictService.scores(): { [string]: number }
 	local scores = {}
 	for _, team in Config.TEAMS do
-		scores[team.name] = 0
+		scores[team.name] = math.max(0, values[team.name] or 0)
 	end
 	for _, d in order do
-		for team, count in d.counts do
-			if scores[team] then
-				scores[team] += count
-			end
-		end
 		if d.owner ~= "" and scores[d.owner] then
 			scores[d.owner] += Config.DISTRICTS.BONUS
 		end
@@ -185,6 +201,7 @@ function DistrictService.scores(): { [string]: number }
 end
 
 function DistrictService.reset()
+	values = {}
 	for _, d in order do
 		d.counts = {}
 		d.owner = ""

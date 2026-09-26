@@ -58,7 +58,7 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
 
 - **Meccsek**: 15 mp szünet (lehet szaladgálni és festéket felvenni, festeni nem), 7 perc játék, majd az eredmény.
   Utána minden visszaszürkül, és a csapatok újra összekeverednek. Belépéskor a kisebb csapatba kerülsz.
-- **Festékesvödör** (fehér festékes vödör, rajta ecset): ha beleugrasz, teli lesz a festéked a **csapatod színével**.
+- **Festékesvödör** (fémvödör színes „PAINT” címkével, rajta lapos ecset): ha beleugrasz, teli lesz a festéked a **csapatod színével**.
   A vödör ezután eltűnik, és kis idő múlva máshol jelenik meg (egyszerre 20 van a pályán, minden további
   játékossal 4-gyel több, legfeljebb 40).
 - **Érj hozzá egy épülethez**: a csapatod színére fested, az ellenfél házát is át lehet festeni. Egy teli vödör
@@ -67,7 +67,9 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
   mennyi kellene. Minden elfestett egységért 5 saját pont jár (ranglista).
 - **Kerületek** (a kisvárosban 11): amelyik csapatnak több háza van egy kerületben, azé a kerület. Ha egy csapat
   a kerület **minden** házát befestette, a kerület 60 mp-re **lezárul**: addig senki nem festhet benne.
-- **Csapatpont**: minden ház a csapat színében 1 pont, minden kerület, ahol a csapat vezet, +5. A több pont nyer.
+- **Csapatpont**: a csapat színében álló házak és tárgyak festékértéke (ház 1/3/4, tárgy 1), és minden kerület,
+  ahol a csapat vezet, +10. A több pont nyer.
+- **Víz**: aki a folyóba, a tóba vagy a szökőkútba megy, elveszíti az összes festékét.
 - **Festéklopás**: ha nekigurulsz egy ellenfélnek, a gyorsabb elveszi a másik festékének 30%-át (legalább 2-t);
   ha felülről ráugrasz, 50%-át. A lopott festék a lopó csapatának színére vált. Akitől loptak, hátrapattan,
   és 3 mp-ig nem lehet újra meglopni.
@@ -75,7 +77,7 @@ A Roblox alap lépéshangjait a `src/overrides/RbxCharacterSounds.client.luau` �
 
 Irányítás: a Roblox alap irányítása (WASD + Space, mobilon joystick + ugrás gomb).
 **M**: térkép (mobilon a „Map” gomb, kontrolleren a Select): a házak a színükkel, a kerületek a vezető csapat
-színével és a csapatonkénti házszámmal (a lezártak erősebb színnel, "LOCKED"), a pöttyök a vödrök, a játékosokat az
+színével és a csapatonkénti házszámmal (a lezártak erősebb színnel, "LOCKED"), 🪣 a vödrök, a játékosokat az
 avatarjuk arcképe mutatja a csapatuk színével szegélyezve (valós időben).
 
 ## Felépítés

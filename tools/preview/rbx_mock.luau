@@ -127,7 +127,7 @@ Imt.__newindex = function(t, k, v)
 	if k == "CFrame" and getmetatable(v) ~= CFmt then error("CFrame expected") end
 	local cls = rawget(t, "ClassName")
 	if k == "Size" and (cls == "Part" or cls == "WedgePart") and getmetatable(v) ~= V3mt then error("Size expected") end
-	if k == "Color" and getmetatable(v) ~= C3mt then error("Color expected for " .. tostring(rawget(t, "_props").Name)) end
+	if k == "Color" and (cls == "Part" or cls == "WedgePart") and getmetatable(v) ~= C3mt then error("Color expected for " .. tostring(rawget(t, "_props").Name)) end
 	rawget(t, "_props")[k] = v
 end
 Instance = {

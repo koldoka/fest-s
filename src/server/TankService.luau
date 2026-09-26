@@ -51,7 +51,7 @@ local function upright(p: Vector3): CFrame
 	return CFrame.new(p) * CFrame.Angles(0, 0, math.rad(90))
 end
 
--- Festékesvödör fedő nélkül, tetején keresztbe fektetett ecsettel.
+-- Festékesvödör fedő nélkül: színes címke "PAINT" felirattal, színes csorgások, tetején keresztbe fektetett ecset.
 local function buildBucket(at: Vector3, rot: number): BasePart
 	local hitbox = Instance.new("Part")
 	hitbox.Name = "Bucket"
@@ -86,24 +86,76 @@ local function buildBucket(at: Vector3, rot: number): BasePart
 		Color = METAL:Lerp(Color3.new(0, 0, 0), 0.15),
 		Material = Enum.Material.Metal,
 	})
-	-- Festék a vödörben és egy lecsorgó csík az oldalán
+	-- Színes címke körben (sárga, fölötte piros, alatta kék csík), elöl és hátul "PAINT" felirattal
+	local label = Color3.fromRGB(255, 212, 60)
+	for _, band in
+		{
+			{ y = 1.65, height = 1.1, color = label },
+			{ y = 2.28, height = 0.16, color = Color3.fromRGB(226, 60, 60) },
+			{ y = 1.02, height = 0.16, color = Color3.fromRGB(60, 120, 230) },
+		}
+	do
+		visual(hitbox, {
+			Shape = Enum.PartType.Cylinder,
+			Size = Vector3.new(band.height, d + 0.06, d + 0.06),
+			CFrame = upright((base * CFrame.new(0, band.y, 0)).Position),
+			Color = band.color,
+		})
+	end
+	for _, side in { -1, 1 } do
+		local plate = visual(hitbox, {
+			Size = Vector3.new(1.6, 0.9, 0.05),
+			CFrame = base * CFrame.Angles(0, if side > 0 then math.pi else 0, 0) * CFrame.new(0, 1.65, -(d / 2 + 0.06)),
+			Transparency = 1,
+			CastShadow = false,
+		})
+		local gui = Instance.new("SurfaceGui")
+		gui.Face = Enum.NormalId.Front
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 60
+		gui.LightInfluence = 1
+		gui.Enabled = false -- a felbukkanáskor kapcsol be
+		gui.Parent = plate
+		local text = Instance.new("TextLabel")
+		text.Size = UDim2.fromScale(1, 1)
+		text.BackgroundTransparency = 1
+		text.Font = Enum.Font.FredokaOne
+		text.TextScaled = true
+		text.Text = "PAINT"
+		text.TextColor3 = Color3.fromRGB(214, 48, 48)
+		text.TextStrokeColor3 = Color3.new(1, 1, 1)
+		text.TextStrokeTransparency = 0.2
+		text.Parent = gui
+	end
+
+	-- Festék a vödörben (fehér: mindenki a csapata színét kapja belőle), a peremről színes csorgások
 	visual(hitbox, {
 		Shape = Enum.PartType.Cylinder,
 		Size = Vector3.new(0.2, d - 0.3, d - 0.3),
 		CFrame = upright((base * CFrame.new(0, h - 0.2, 0)).Position),
 		Color = PAINT_WHITE,
 	})
-	visual(hitbox, {
-		Size = Vector3.new(0.5, 1.4, 0.2),
-		CFrame = base * CFrame.new(0.6, h - 0.6, -d / 2 - 0.02),
-		Color = PAINT_WHITE,
-	})
-	visual(hitbox, {
-		Shape = Enum.PartType.Ball,
-		Size = Vector3.one * 0.55,
-		CFrame = base * CFrame.new(0.6, h - 1.35, -d / 2 - 0.02),
-		Color = PAINT_WHITE,
-	})
+	for _, drip in
+		{
+			{ angle = 20, length = 1.2, color = Color3.fromRGB(235, 64, 64) },
+			{ angle = 130, length = 0.8, color = Color3.fromRGB(56, 128, 240) },
+			{ angle = 235, length = 1.5, color = Color3.fromRGB(70, 200, 96) },
+			{ angle = 300, length = 0.7, color = PAINT_WHITE },
+		}
+	do
+		local around = base * CFrame.Angles(0, math.rad(drip.angle), 0)
+		visual(hitbox, {
+			Size = Vector3.new(0.45, drip.length, 0.12),
+			CFrame = around * CFrame.new(0, h + 0.1 - drip.length / 2, -(d / 2 + 0.1)),
+			Color = drip.color,
+		})
+		visual(hitbox, {
+			Shape = Enum.PartType.Ball,
+			Size = Vector3.one * 0.5,
+			CFrame = around * CFrame.new(0, h + 0.1 - drip.length, -(d / 2 + 0.1)),
+			Color = drip.color,
+		})
+	end
 	-- Fül: két kis tartó és a felhajtott fogantyú
 	for _, x in { -1, 1 } do
 		visual(hitbox, {
@@ -116,23 +168,60 @@ local function buildBucket(at: Vector3, rot: number): BasePart
 		hitbox,
 		{ Size = Vector3.new(d + 0.3, 0.15, 0.15), CFrame = base * CFrame.new(0, h + 1.15, 0), Color = METAL }
 	)
-	-- Ecset keresztben a vödör tetején: nyél, fémfoglalat, festékes sörte
-	local brush = base * CFrame.new(0, h + 0.35, 0.3) * CFrame.Angles(0, math.rad(25), math.rad(4))
+
+	-- Lapos ecset a vödör tetején: lakkozott fanyél, bádog foglalat, sörte, festékbe mártott, rojtos vége.
+	-- Az ecset hossza a helyi X, a szélessége a helyi Z.
+	local brush = base * CFrame.new(-0.2, h + 0.3, 0.35) * CFrame.Angles(0, math.rad(25), math.rad(5))
+	local wood = Color3.fromRGB(196, 72, 52)
 	visual(hitbox, {
 		Shape = Enum.PartType.Cylinder,
-		Size = Vector3.new(2.6, 0.35, 0.35),
-		CFrame = brush * CFrame.new(-0.9, 0, 0),
-		Color = Color3.fromRGB(176, 118, 70),
+		Size = Vector3.new(2.2, 0.34, 0.34),
+		CFrame = brush * CFrame.new(-1.2, 0, 0),
+		Color = wood,
 		Material = Enum.Material.Wood,
 	})
 	visual(hitbox, {
-		Shape = Enum.PartType.Cylinder,
-		Size = Vector3.new(0.6, 0.55, 0.55),
-		CFrame = brush * CFrame.new(0.65, 0, 0),
+		Shape = Enum.PartType.Ball,
+		Size = Vector3.one * 0.46,
+		CFrame = brush * CFrame.new(-2.3, 0, 0),
+		Color = wood,
+		Material = Enum.Material.Wood,
+	})
+	visual(hitbox, {
+		Size = Vector3.new(0.3, 0.3, 0.6),
+		CFrame = brush * CFrame.new(-0.05, 0, 0),
+		Color = wood,
+		Material = Enum.Material.Wood,
+	})
+	visual(hitbox, {
+		Size = Vector3.new(0.6, 0.36, 1.1),
+		CFrame = brush * CFrame.new(0.4, 0, 0),
 		Color = METAL,
 		Material = Enum.Material.Metal,
 	})
-	visual(hitbox, { Size = Vector3.new(0.9, 0.35, 1.0), CFrame = brush * CFrame.new(1.35, 0, 0), Color = PAINT_WHITE })
+	visual(hitbox, {
+		Size = Vector3.new(0.06, 0.4, 1.14),
+		CFrame = brush * CFrame.new(0.25, 0, 0),
+		Color = METAL:Lerp(Color3.new(0, 0, 0), 0.25),
+		Material = Enum.Material.Metal,
+	})
+	visual(hitbox, {
+		Size = Vector3.new(0.7, 0.3, 1.04),
+		CFrame = brush * CFrame.new(1.05, 0, 0),
+		Color = Color3.fromRGB(222, 192, 140),
+	})
+	visual(hitbox, {
+		Size = Vector3.new(0.35, 0.26, 1.0),
+		CFrame = brush * CFrame.new(1.55, 0, 0),
+		Color = PAINT_WHITE,
+	})
+	for i, tuft in { { -0.4, 0.3 }, { -0.14, 0.45 }, { 0.12, 0.25 }, { 0.38, 0.4 } } do
+		visual(hitbox, {
+			Size = Vector3.new(tuft[2], 0.14 + (i % 2) * 0.04, 0.2),
+			CFrame = brush * CFrame.new(1.72 + tuft[2] / 2, (i % 2 - 0.5) * 0.06, tuft[1]),
+			Color = PAINT_WHITE,
+		})
+	end
 
 	-- Fény és csillogás, hogy messziről is látszódjon
 	local light = Instance.new("PointLight")
@@ -155,6 +244,10 @@ end
 -- A látható részek megjelenítése vagy elrejtése (felbukkanás, eltűnés).
 local function fade(hitbox: BasePart, visible: boolean, time: number)
 	for _, part in hitbox:GetChildren() do
+		local label = part:FindFirstChildOfClass("SurfaceGui")
+		if label then
+			label.Enabled = visible
+		end
 		if part:IsA("BasePart") then
 			local target = if visible then part:GetAttribute("Transparency0") or 0 else 1
 			TweenService:Create(part, TweenInfo.new(time), { Transparency = target }):Play()

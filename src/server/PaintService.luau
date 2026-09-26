@@ -3,6 +3,7 @@
 --   Épület, aminek más a színe -> befesti (az ellenfél házát is), a mérete szerinti festék elfogy
 --   Tárgy (fa, pad, veteményes…) -> színes lesz, 1 egység festék fogy
 -- Festeni csak meccs közben lehet, és lezárt kerületben (DistrictService) nem.
+-- Aki vízbe megy (folyó, tó, szökőkút: "Water" attribútumú alkatrészek), elveszíti a festékét.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -22,6 +23,7 @@ local PaintService = {}
 local buildingsFolder: Folder
 local propsFolder: Folder
 local tanksFolder: Folder
+local waters: { BasePart } = {}
 local paintedCount = 0
 local isPlaying: () -> boolean = function()
 	return true
@@ -167,6 +169,8 @@ local function tryColorProp(player: Player, prop: Model)
 	BlobCharacter.update(player)
 	addScore(player, cost * Config.POINTS_PER_PAINT)
 	prop:SetAttribute("ColorName", colorName)
+	DistrictService.onPropPainted(previous or "", colorName)
+	onScoresChanged()
 	for _, part in prop:GetDescendants() do
 		if not part:IsA("BasePart") then
 			continue
@@ -236,11 +240,46 @@ local function tryPaint(player: Player, building: BasePart)
 	onScoresChanged()
 end
 
+-- A játékos lába egy víz alkatrész felszíne alatt (vagy épp rajta) van-e.
+local function inWater(root: BasePart, humanoid: Humanoid): boolean
+	local feet = root.Position - Vector3.new(0, humanoid.HipHeight + root.Size.Y / 2, 0)
+	for _, water in waters do
+		local lp = water.CFrame:PointToObjectSpace(feet)
+		local inside, top
+		if water:IsA("Part") and water.Shape == Enum.PartType.Cylinder then
+			-- Álló henger: a tengelye a helyi X
+			inside = math.sqrt(lp.Y * lp.Y + lp.Z * lp.Z) < water.Size.Y / 2
+			top = water.Position.Y + water.Size.X / 2
+		else
+			inside = math.abs(lp.X) < water.Size.X / 2 and math.abs(lp.Z) < water.Size.Z / 2
+			top = water.Position.Y + water.Size.Y / 2
+		end
+		if inside and feet.Y < top + 0.4 and feet.Y > top - 12 then
+			return true
+		end
+	end
+	return false
+end
+
+local function washOff(player: Player)
+	if (player:GetAttribute("Paint") or 0) <= 0 then
+		return
+	end
+	player:SetAttribute("Paint", 0)
+	player:SetAttribute("PaintColor", "")
+	BlobCharacter.update(player)
+	AnnounceRemote:FireClient(player, "Splash! The water washed your paint away.", nil)
+end
+
 local function checkPlayer(player: Player)
 	local character = player.Character
 	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if not root or not humanoid or humanoid.Health <= 0 then
+		return
+	end
+	if inWater(root, humanoid) then
+		washOff(player)
 		return
 	end
 	-- A paca körül nézzük (ha még nincs paca, a karakter közepe körül).
@@ -308,6 +347,13 @@ function PaintService.setLevel(buildings: Folder, props: Folder, tanks: Folder)
 	propsFolder = props
 	tanksFolder = tanks
 	overlap.FilterDescendantsInstances = { buildings, props, tanks }
+	waters = {}
+	local level = buildings.Parent
+	for _, part in if level then level:GetDescendants() else {} do
+		if part:IsA("BasePart") and part:GetAttribute("Water") then
+			table.insert(waters, part)
+		end
+	end
 	paintedCount = 0
 	updateCityStats()
 end

@@ -66,6 +66,9 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Festéklopás: nekigurulás (30%) és ráugrás (50%), hátrapattanás, 3 mp védettség (`StealService`, kliensen `Pvp`)
 - [x] Rövid meccsek: 15 mp szünet, 7 perc játék, eredmény; visszaszámlálás, csapatpontok sávja, bejelentések, győztes (`MatchService`)
 - [x] Térkép: kerületek a vezető csapat színével, házszám csapatonként, lezárás jelölése; a játékosok a csapatuk színével
+- [x] Valósághűbb vödör: színes címke „PAINT” felirattal, színes csorgások, lapos ecset foglalattal és rojtos, festékes heggyel; a térképen 🪣
+- [x] Vízbe lépve elvész a festék (folyó, tó, szökőkút)
+- [x] A tárgyak is adnak csapatpontot: a csapatpont a csapat színében álló házak és tárgyak festékértéke + 10 kerületenként
 - [ ] PvP-teszt a Studióban (2–4 játékos), hangolás: lopás, hátrapattanás, meccshossz, kerületbónusz
 - [ ] Saját hang a festéklopáshoz és a kerület elfoglalásához
 - [ ] Lobby és meccs közti szavazás a pályára

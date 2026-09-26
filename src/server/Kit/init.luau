@@ -514,9 +514,10 @@ function Kit.stairs(from: Vector3, dir: Vector3, width: number, rise: number, ma
 end
 
 -- Vízfelszín (x0, z0)-(x1, z1) között "top" magasságban. Át lehet rajta esni (a meder alatta van).
+-- A "Water" attribútum miatt aki belemegy, elveszíti a festékét (PaintService).
 function Kit.water(name: string, x0: number, z0: number, x1: number, z1: number, top: number): BasePart
 	Common.occupy(Common.rect((x0 + x1) / 2, (z0 + z1) / 2, math.abs(x1 - x0) / 2 + 3, math.abs(z1 - z0) / 2))
-	return Kit.block({
+	local water = Kit.block({
 		Name = name,
 		Size = Vector3.new(math.abs(x1 - x0), 0.4, math.abs(z1 - z0)),
 		Position = Vector3.new((x0 + x1) / 2, top - 0.2, (z0 + z1) / 2),
@@ -526,6 +527,8 @@ function Kit.water(name: string, x0: number, z0: number, x1: number, z1: number,
 		CanCollide = false,
 		CanQuery = false,
 	})
+	water:SetAttribute("Water", true)
+	return water
 end
 
 -- Kőhíd "from"-tól "to"-ig (a két hídfő a talajon), korláttal. A korlát festhető kerítés.
