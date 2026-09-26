@@ -51,11 +51,49 @@ local function splash(building: BasePart, color: Color3, painter: Player?)
 	Debris:AddItem(flash, 0.4)
 end
 
+-- Felugró "-N" felirat: mennyi festék fogyott (csak a festőnek).
+local function costPopup(position: Vector3, cost: number, color: Color3)
+	local anchor = Instance.new("Part")
+	anchor.Anchored = true
+	anchor.CanCollide = false
+	anchor.CanQuery = false
+	anchor.CanTouch = false
+	anchor.Transparency = 1
+	anchor.Size = Vector3.one * 0.2
+	anchor.Position = position
+	local gui = Instance.new("BillboardGui")
+	gui.Size = UDim2.fromOffset(120, 50)
+	gui.AlwaysOnTop = true
+	gui.Parent = anchor
+	local text = Instance.new("TextLabel")
+	text.Size = UDim2.fromScale(1, 1)
+	text.BackgroundTransparency = 1
+	text.Font = Enum.Font.FredokaOne
+	text.TextScaled = true
+	text.TextColor3 = color
+	text.TextStrokeTransparency = 0.2
+	text.Text = `-{cost}`
+	text.Parent = gui
+	anchor.Parent = workspace
+	TweenService:Create(anchor, TweenInfo.new(1.1), { Position = position + Vector3.new(0, 4, 0) }):Play()
+	TweenService:Create(text, TweenInfo.new(1.1, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+		TextTransparency = 1,
+		TextStrokeTransparency = 1,
+	}):Play()
+	Debris:AddItem(anchor, 1.2)
+end
+
 function Effects.start()
-	PaintedRemote.OnClientEvent:Connect(function(building: BasePart, colorName: string, painter: Player?)
+	local localPlayer = game:GetService("Players").LocalPlayer
+	PaintedRemote.OnClientEvent:Connect(function(building: BasePart, colorName: string, painter: Player?, cost: number?)
 		local color = Config.PAINT_COLOR_BY_NAME[colorName]
 		if building and building.Parent and color then
 			splash(building, color, painter)
+			if painter == localPlayer and cost then
+				local root = localPlayer.Character
+					and localPlayer.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+				costPopup((if root then root.Position else building.Position) + Vector3.new(0, 4, 0), cost, color)
+			end
 			local root = painter
 				and painter.Character
 				and painter.Character:FindFirstChild("HumanoidRootPart") :: BasePart?

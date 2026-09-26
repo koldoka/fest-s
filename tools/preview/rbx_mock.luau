@@ -30,6 +30,7 @@ V2mt.__index = function(v, k)
 	error("Vector2." .. tostring(k))
 end
 Vector2 = { new = V2 }
+UDim2 = { new = function() return {} end, fromScale = function() return {} end, fromOffset = function() return {} end }
 
 local C3mt = {}
 local function C3(r, g, b) return setmetatable({ R = r, G = g, B = b }, C3mt) end
@@ -124,7 +125,8 @@ Imt.__newindex = function(t, k, v)
 		rawget(t, "_props").CFrame = CF(v, cf.rx, cf.ry, cf.rz) return
 	end
 	if k == "CFrame" and getmetatable(v) ~= CFmt then error("CFrame expected") end
-	if k == "Size" and getmetatable(v) ~= V3mt then error("Size expected") end
+	local cls = rawget(t, "ClassName")
+	if k == "Size" and (cls == "Part" or cls == "WedgePart") and getmetatable(v) ~= V3mt then error("Size expected") end
 	if k == "Color" and getmetatable(v) ~= C3mt then error("Color expected for " .. tostring(rawget(t, "_props").Name)) end
 	rawget(t, "_props")[k] = v
 end

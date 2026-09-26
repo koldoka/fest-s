@@ -167,7 +167,7 @@ local function tryColorProp(player: Player, prop: Model)
 		end
 	end
 	if prop.PrimaryPart then
-		PaintedRemote:FireAllClients(prop.PrimaryPart, colorName, player)
+		PaintedRemote:FireAllClients(prop.PrimaryPart, colorName, player, cost)
 	end
 end
 
@@ -213,7 +213,7 @@ local function tryPaint(player: Player, building: BasePart)
 		addScore(player, cost * Config.POINTS_PER_PAINT)
 		updateCityStats()
 	end
-	PaintedRemote:FireAllClients(building, colorName, player)
+	PaintedRemote:FireAllClients(building, colorName, player, cost)
 
 	if paintedCount >= #buildingsFolder:GetChildren() and onCityComplete then
 		onCityComplete()

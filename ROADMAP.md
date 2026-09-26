@@ -42,7 +42,8 @@ A haladás nyilvántartása. A kész pontokat `[x]`-szel jelöljük.
 - [x] Oromfal két ékből: a fal anyagának mintája (tégla, deszka) vízszintes marad (a ferde minta helyett)
 - [x] Részletesebb ablakképek: klasszikus, függönyös virágládával, magas íves; a zsalugáter is kép a festék színében (ablakonként 1 alkatrész)
 - [x] Az új ablakképek feltöltése (7 kép), az azonosítók beírása (`BUILDINGS.WINDOWS`, `BUILDINGS.SHUTTERS`)
-- [x] Festékár méret szerint: kis ház 3, közepes 6, nagy 10, tárgy 1; tartály 20 egység; figyelmeztetés, ha kevés
+- [x] Festékár a szintek szerint: földszintes 3, kétszintes 6, három- vagy többszintes 10, tárgy 1; tartály 20 egység; figyelmeztetés, ha kevés; felugró "-N" a festés helyén
+- [x] Javítások a Studio-teszt után: toronyóra nem lóg a tetőbe, rózsaablak az oromzatban, kirakat osztókkal, cégtábla felirattal, szélmalomlapát nem ér a tetőhöz, rendes széklábak
 - [ ] 1. pálya finomítása a Studio-teszt alapján
 - [ ] A szélmalom lapátjai forogjanak
 - [ ] További pályák

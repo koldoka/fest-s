@@ -39,6 +39,18 @@ local WALL_MATERIALS = {
 }
 local ROOF_MATERIAL = material("ClayRoofTiles", Enum.Material.SmoothPlastic)
 local DARK_GLASS = Color3.fromRGB(70, 82, 102)
+local SHOP_NAMES =
+	{ "BAKERY", "CAFE", "BOOKS", "FLOWERS", "TOYS", "CANDY", "SHOES", "TAILOR", "PHARMACY", "BUTCHER", "HATS", "TEA" }
+
+-- Egy helyi irányhoz tartozó oldal (NormalId).
+local function normalOf(dir: Vector3): Enum.NormalId
+	for _, face in FACES do
+		if face.dir == dir then
+			return face.normal
+		end
+	end
+	return Enum.NormalId.Front
+end
 
 -- Részlet az épületen. baseColor: festetlen szín; paintedColor: fix szín befestve (ha nincs, a szerep dönt).
 local function detail(
@@ -404,6 +416,17 @@ local function addShopfront(body: BasePart, dir: Vector3): number
 		Material = Enum.Material.Glass,
 		Reflectance = 0.15,
 	}, DARK_GLASS)
+	-- Osztók: két függőleges és egy vízszintes léc
+	for _, k in { -1, 1 } do
+		trimDetail(body, "WindowFrame", {
+			Size = faceSize(dir, 0.25, 3.4, 0.3),
+			CFrame = onFace(body, dir, 0.25, windowShift + k * windowWidth / 6, 2.9),
+		}, lighter(body.Color, 0.3))
+	end
+	trimDetail(body, "WindowFrame", {
+		Size = faceSize(dir, windowWidth, 0.25, 0.3),
+		CFrame = onFace(body, dir, 0.25, windowShift, 3.9),
+	}, lighter(body.Color, 0.3))
 
 	-- Napellenző: lefelé lejtő lap csíkokból. A lap síkjának normálisa a függőlegestől kifelé dől.
 	local stripes = 7
@@ -427,12 +450,25 @@ local function addShopfront(body: BasePart, dir: Vector3): number
 			CFrame = body.CFrame * CFrame.fromMatrix(center, along, normal),
 		}, base)
 	end
-	trimDetail(
-		body,
-		"Sign",
-		{ Size = faceSize(dir, width * 0.45, 1.2, 0.3), CFrame = onFace(body, dir, 0.1, 0, 6.5) },
-		lighter(body.Color, 0.35)
-	)
+	-- Cégtábla felirattal (a felirat felület-GUI, nem alkatrész)
+	local sign = trimDetail(body, "Sign", {
+		Size = faceSize(dir, width * 0.5, 1.4, 0.3),
+		CFrame = onFace(body, dir, 0.1, 0, 6.5),
+	}, lighter(body.Color, 0.35))
+	local gui = Instance.new("SurfaceGui")
+	gui.Face = normalOf(dir)
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	gui.PixelsPerStud = 40
+	gui.LightInfluence = 1
+	local text = Instance.new("TextLabel")
+	text.Size = UDim2.fromScale(1, 1)
+	text.BackgroundTransparency = 1
+	text.Font = Enum.Font.FredokaOne
+	text.TextScaled = true
+	text.TextColor3 = Color3.fromRGB(50, 44, 40)
+	text.Text = pick(SHOP_NAMES)
+	text.Parent = gui
+	gui.Parent = sign
 	return doorShift
 end
 
@@ -466,7 +502,8 @@ end
 
 -- Óra a torony egyik oldalán.
 local function addClock(body: BasePart, onPart: BasePart, dir: Vector3, y: number)
-	local diameter = math.min(faceWidth(onPart.Size, dir) * 0.7, 6)
+	-- Ne lógjon bele a tetőbe: a tömb magasságának legfeljebb kb. kétharmada
+	local diameter = math.min(faceWidth(onPart.Size, dir) * 0.7, 6, onPart.Size.Y * 0.6)
 	local center = onFace(onPart, dir, 0.2, 0, y)
 	-- A henger tengelye (helyi X) nézzen kifelé.
 	local facing = CFrame.fromMatrix(center.Position, (center.Rotation * dir).Unit, Vector3.yAxis)
@@ -499,9 +536,8 @@ local function addClock(body: BasePart, onPart: BasePart, dir: Vector3, y: numbe
 	)
 end
 
--- Kerek ablak (rózsaablak) egy oldal tetején.
-local function addRoseWindow(body: BasePart, dir: Vector3, y: number)
-	local diameter = math.min(faceWidth(body.Size, dir) * 0.35, 6)
+-- Kerek ablak (rózsaablak): az oromzatban, vagy ha ott nincs hely, a fal tetején.
+local function addRoseWindow(body: BasePart, dir: Vector3, y: number, diameter: number)
 	local center = onFace(body, dir, 0.15, 0, y)
 	local facing = CFrame.fromMatrix(center.Position, (center.Rotation * dir).Unit, Vector3.yAxis)
 	trimDetail(
@@ -541,7 +577,7 @@ Egy épület. A spec mezői (csak az "at" és a "size" kötelező):
   clock     string    óra ezen az oldalon (a felső emeleten, ha van)
   rose      string    kerek ablak ezen az oldalon, fent (templomok)
   windowVariant string "classic" vagy "curtain" (függönyös, virágládás); alapból sorsolt
-  paintCost number    festékár (alapból a méret szerint: Config.PAINT_COST)
+  paintCost number    festékár (alapból a szintek szerint: Config.PAINT_COST)
 ]]
 function Buildings.building(spec: { [string]: any }): BasePart
 	local b = Config.BUILDINGS
@@ -561,18 +597,11 @@ function Buildings.building(spec: { [string]: any }): BasePart
 		"WindowVariant",
 		spec.windowVariant or (if Common.rng:NextNumber() < 0.3 then "curtain" else "classic")
 	)
-	-- Festékár a ház mérete szerint (alapterület × emeletek)
+	-- Festékár a szintek száma szerint: földszintes kicsi, kétszintes közepes, három- vagy többszintes nagy
 	local cost = Config.PAINT_COST
-	local volume = spec.size.X * spec.size.Y * floors
 	body:SetAttribute(
 		"PaintCost",
-		spec.paintCost
-			or (
-				if volume >= cost.LARGE_FROM
-					then cost.LARGE
-					elseif volume >= cost.MEDIUM_FROM then cost.MEDIUM
-					else cost.SMALL
-			)
+		spec.paintCost or (if floors >= 3 then cost.LARGE elseif floors == 2 then cost.MEDIUM else cost.SMALL)
 	)
 
 	addPlinth(body)
@@ -596,12 +625,30 @@ function Buildings.building(spec: { [string]: any }): BasePart
 			addDoor(body, doorDir :: Vector3, doorShift)
 		end
 	end
+	-- A tető típusa és a gerinc iránya (a rózsaablak helyéhez már itt kell)
+	local roof = (spec.tier and spec.tier.roof) or spec.roof or (if floors <= 2 then "gable" else "flat")
+	local alongX = if spec.ridge then spec.ridge == "x" else body.Size.X >= body.Size.Z
+	local roseDir = spec.rose and FACES[spec.rose].dir
+	-- Oromzat van ezen az oldalon, ha nyeregtető van, és a gerinc merőleges az oldalra
+	local roseInGable = roseDir ~= nil and roof == "gable" and not spec.tier and ((roseDir.X ~= 0) == alongX)
+	local roseDiameter = if roseDir then math.min(faceWidth(body.Size, roseDir) * 0.35, 6) else 0
+
 	local balconyDir = spec.balconies and FACES[spec.balconies.face or "front"].dir
 	local balconyShift = spec.balconies and (spec.balconies.shift or 0) or 0
 	local style = spec.windows or "plain"
 	addWindows(body, body, floors, style, function(dir, floor, shift)
 		if floor == 1 and dir == doorDir then
 			return spec.shop or math.abs(shift - doorShift) < b.BAY_WIDTH * 0.7
+		end
+		-- A fal tetején lévő rózsaablak alatt nincs ablak
+		if
+			roseDir
+			and not roseInGable
+			and dir == roseDir
+			and floor == floors
+			and math.abs(shift) < roseDiameter / 2 + 2
+		then
+			return true
 		end
 		-- Az erkély mögött nincs ablak (ott erkélyajtó lenne)
 		return floor >= 2 and dir == balconyDir and math.abs(shift - balconyShift) < b.BAY_WIDTH * 0.6
@@ -627,11 +674,13 @@ function Buildings.building(spec: { [string]: any }): BasePart
 		end
 	end
 
-	local roof = (spec.tier and spec.tier.roof) or spec.roof or (if floors <= 2 then "gable" else "flat")
 	local roofColor = spec.roofColor or pick(b.ROOF_COLORS)
+	local roofHeight = 0
 	if roof == "gable" then
-		local alongX = if spec.ridge then spec.ridge == "x" else top.Size.X >= top.Size.Z
-		local roofHeight = addGable(body, top, alongX, roofColor)
+		if top ~= body then
+			alongX = if spec.ridge then spec.ridge == "x" else top.Size.X >= top.Size.Z
+		end
+		roofHeight = addGable(body, top, alongX, roofColor)
 		if spec.chimney and top == body then
 			addChimney(body, top, alongX, roofHeight)
 		end
@@ -644,10 +693,16 @@ function Buildings.building(spec: { [string]: any }): BasePart
 	end
 
 	if spec.clock then
-		addClock(body, top, FACES[spec.clock].dir, top.Size.Y * 0.5)
+		addClock(body, top, FACES[spec.clock].dir, top.Size.Y * 0.45)
 	end
-	if spec.rose then
-		addRoseWindow(body, FACES[spec.rose].dir, height - 3.5)
+	if roseDir then
+		if roseInGable then
+			-- Az oromzat háromszögében, a tető alatt
+			local d = math.min(roseDiameter, roofHeight * 0.8)
+			addRoseWindow(body, roseDir, height + roofHeight * 0.4, d)
+		else
+			addRoseWindow(body, roseDir, height - roseDiameter / 2 - 1, roseDiameter)
+		end
 	end
 
 	body.Parent = Common.folders.buildings

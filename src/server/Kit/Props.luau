@@ -193,11 +193,16 @@ function Props.cafeTable(at: Vector3)
 			{ Size = Vector3.new(0.25, 1.3, 1.2), Position = at + Vector3.new(x + (if x > 0 then 0.5 else -0.5), 2, 0) },
 			"dark"
 		)
-		propPart(
-			model,
-			IRON,
-			{ Size = Vector3.new(0.9, 1.2, 0.9), Position = at + Vector3.new(x, 0.6, 0), Transparency = 0.6 }
-		)
+		-- Négy vékony vasláb az ülőke sarkainál
+		for _, lx in { -0.45, 0.45 } do
+			for _, lz in { -0.45, 0.45 } do
+				propPart(
+					model,
+					IRON,
+					{ Size = Vector3.new(0.18, 1.2, 0.18), Position = at + Vector3.new(x + lx, 0.6, lz) }
+				)
+			end
+		end
 	end
 end
 

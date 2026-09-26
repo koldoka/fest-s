@@ -73,13 +73,11 @@ local Config = {
 	PAINT_MAX = 20, -- egy teli tartály ennyi egység festék
 	PAINT_REACH = 1.5, -- a paca felszínétől ennyire lévő dolgokat festi be / tölti fel belőlük (stud)
 	PAINT_CHECK_INTERVAL = 0.1, -- ilyen gyakran nézi a szerver, mihez ér hozzá a játékos (mp)
-	-- Festékár: a ház mérete (alapterület × emeletek, köbstud helyett "négyzetstud-emelet") szerint, a tárgyaké 1.
+	-- Festékár: földszintes ház SMALL, kétszintes MEDIUM, három- vagy többszintes LARGE, tárgy PROP.
 	PAINT_COST = {
 		SMALL = 3,
-		MEDIUM = 6, -- MEDIUM_FROM-tól
-		LARGE = 10, -- LARGE_FROM-tól
-		MEDIUM_FROM = 300,
-		LARGE_FROM = 700,
+		MEDIUM = 6,
+		LARGE = 10,
 		PROP = 1,
 	},
 	POINTS_PER_PAINT = 5, -- pont minden elfestett egységért (csak az első befestésnél, átfestésért nem jár)

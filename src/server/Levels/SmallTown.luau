@@ -227,12 +227,13 @@ local function windmillHill(Kit)
 	Kit.building({
 		at = V(-186, top, 182),
 		size = V2(10, 10),
-		floors = 3,
+		floors = 4, -- magasabb torony, hogy a lapátok ne érjenek le
 		rot = -90,
 		roof = "cross",
 		material = "stone",
 	})
-	Kit.windmillBlades(V(-180.2, top + 14, 182), V(1, 0, 0))
+	-- A lapátok 2.5 studdal a fal előtt forognak, hogy ne érjenek az ereszhez
+	Kit.windmillBlades(V(-178.5, top + 14, 182), V(1, 0, 0))
 	Kit.building({
 		at = V(-160, top, 190),
 		size = V2(14, 10),
